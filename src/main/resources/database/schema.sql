@@ -1,13 +1,13 @@
-CREATE TABLE users(
-    id text,
-    username text,
-    password text,
+CREATE TABLE IF NOT EXISTS users(
+    id serial,
+    email text,
+    name text,
     PRIMARY KEY (id)
 );
 
-CREATE TABLE testdata(
+CREATE TABLE IF NOT EXISTS testdata(
     id text,
-    users text,
+    users serial,
     data text,
     PRIMARY KEY (id),
     FOREIGN KEY (users) REFERENCES users(id)
