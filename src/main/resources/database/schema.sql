@@ -1,14 +1,17 @@
+DROP TABLE users, boulders;
+
 CREATE TABLE IF NOT EXISTS users(
     id serial,
-    email text,
-    name text,
+    email text UNIQUE NOT NULL,
+    name text NOT NULL,
     PRIMARY KEY (id)
 );
-
-CREATE TABLE IF NOT EXISTS testdata(
-    id text,
-    users serial,
-    data text,
+CREATE TABLE IF NOT EXISTS boulders(
+    id SERIAL,
+    attempts INT,
+    grade text,
+    image text,
+    userID SERIAL,
     PRIMARY KEY (id),
-    FOREIGN KEY (users) REFERENCES users(id)
+    FOREIGN KEY (userID) REFERENCES users(id)
 );

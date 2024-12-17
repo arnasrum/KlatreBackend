@@ -2,6 +2,8 @@ package com.arnas.klatrebackend.controller
 
 import com.arnas.klatrebackend.service.LoginService
 import com.arnas.klatrebackend.service.UserService
+import com.nimbusds.jose.shaded.gson.JsonObject
+import com.nimbusds.jose.shaded.gson.JsonParser
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 
@@ -14,7 +16,7 @@ class OAuthController {
     @Autowired
     lateinit var userService: UserService
 
-    @PostMapping("/google_login")
+    @PostMapping("/old")
     fun googleLogin(@RequestBody requestBody: Map<String, String>): String {
         val token = requestBody["code"]
         if (token.isNullOrBlank()) {
@@ -24,24 +26,13 @@ class OAuthController {
         return "success"
     }
 
-    @GetMapping("/google_login")
-    fun getGoogleLogin(@RequestParam token: String): String {
-
+    @PostMapping("/google_login")
+    fun getGoogleLogin(@RequestBody requestBody: Map<String, String>): String {
+        val token = requestBody["token"]
+        if (token.isNullOrBlank()) {
+            return "invalid token"
+        }
         userService.getGoogleUserProfile(token)
-
-
         return "success"
     }
-
-
-    @GetMapping("/test")
-    fun testAPI(): String {
-        return "dette fungerer"
-    }
-    @PostMapping("/test")
-    fun testAPIPost(@RequestBody requestBody: Map<String, String>): String {
-        println(requestBody)
-        return "dette fungerer"
-    }
-
 }
