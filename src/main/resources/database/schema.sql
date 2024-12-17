@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users(
 );
 CREATE TABLE IF NOT EXISTS boulders(
     id SERIAL,
+    name TEXT,
     attempts INT,
     grade text,
     image text,

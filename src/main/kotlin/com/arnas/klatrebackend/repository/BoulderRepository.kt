@@ -23,8 +23,10 @@ class BoulderRepository {
             MapSqlParameterSource()
                 .addValue("userID", userID),
             RowMapper { rs, _ ->
+                var i = 1
                 do {
-                    bouldersMap[rs.getInt("id")] = mapOf(
+                    bouldersMap[i++] = mapOf(
+                        "name" to rs.getString("name"),
                         "attempts" to rs.getString("attempts"),
                         "grade" to rs.getString("grade"),
                         "image" to rs.getString("image")
