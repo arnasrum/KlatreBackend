@@ -42,5 +42,10 @@ class UserService {
         return user
     }
 
+    fun getUserID(accessToken: String): Int? {
+        val user: User = getUserByToken(accessToken) ?: return null
+        val userID: Int = userRepository.getUserIDByObject(user)
+        return userID
+    }
 
 }
