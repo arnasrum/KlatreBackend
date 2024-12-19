@@ -1,4 +1,4 @@
-DROP TABLE users, boulders;
+DROP TABLE IF EXISTS users, boulders;
 
 CREATE TABLE IF NOT EXISTS users(
     id serial,
