@@ -28,8 +28,9 @@ class ImageController {
     fun saveImage(@RequestParam("image") image: MultipartFile): ResponseEntity<String> {
 
         println(image)
-        imageService.storeImage()
+        imageService.storeImage(image)
         return ResponseEntity.ok("Image uploaded successfully")
+        //return mapOf("status" to "200")
     }
 
 

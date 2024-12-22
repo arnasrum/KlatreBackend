@@ -10,8 +10,9 @@ CREATE TABLE IF NOT EXISTS boulders(
     id SERIAL,
     name TEXT,
     attempts INT,
-    grade text,
-    image text,
+    grade TEXT,
+    image TEXT,
+    description TEXT,
     userID SERIAL,
     PRIMARY KEY (id),
     FOREIGN KEY (userID) REFERENCES users(id)
