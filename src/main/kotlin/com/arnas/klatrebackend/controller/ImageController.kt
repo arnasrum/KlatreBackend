@@ -25,9 +25,7 @@ class ImageController {
     private val uploadDir: String = "/storage"
 
     @PostMapping("/image")
-    fun saveImage(@RequestParam("image") image: MultipartFile): ResponseEntity<String> {
-
-        println(image)
+    fun saveImage(@RequestParam("image") image: MultipartFile, @RequestParam("access_token") token: String): ResponseEntity<String> {
         imageService.storeImage(image)
         return ResponseEntity.ok("Image uploaded successfully")
         //return mapOf("status" to "200")
