@@ -4,32 +4,33 @@ import com.arnas.klatrebackend.service.ImageService
 import com.arnas.klatrebackend.service.UserService
 import org.apache.tomcat.util.http.parser.MediaType
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.CrossOrigin
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.awt.Image
 import javax.print.attribute.standard.Media
 
 @RestController
 @CrossOrigin(origins = ["http://localhost:5173"])
-class ImageController {
+@RequestMapping("/image")
+class ImageController(private val userService: UserService, private val imageService: ImageService) {
 
-    @Autowired
-    lateinit var userService: UserService
-    @Autowired
-    lateinit var imageService: ImageService
-    private val uploadDir: String = "/storage"
+    @GetMapping("")
+    fun getImage(@RequestParam("boulderID") boulderID: Long, @RequestParam("access_token") token: String): ResponseEntity<ByteArray> {
+        val image: com.arnas.klatrebackend.dataclass.Image = imageService.getImage(boulderID) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
+        return ResponseEntity(
+            HttpStatus.OK,
+        )
+    }
 
-    @PostMapping("/image")
+    @PostMapping("")
     fun saveImage(@RequestParam("image") image: MultipartFile, @RequestParam("access_token") token: String): ResponseEntity<String> {
         imageService.storeImage(image)
         return ResponseEntity.ok("Image uploaded successfully")
         //return mapOf("status" to "200")
     }
+
 
 
 }

@@ -2,17 +2,12 @@ package com.arnas.klatrebackend.repository
 
 import com.arnas.klatrebackend.dataclass.User
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import org.springframework.jdbc.core.namedparam.SqlParameterSource
 import org.springframework.stereotype.Repository
 
 @Repository
-class UserRepository {
-
-    @Autowired
-    lateinit var jdbcTemplate: NamedParameterJdbcTemplate
+class UserRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
 
     fun createUser(user: User): Boolean {
 
@@ -32,9 +27,8 @@ class UserRepository {
     fun getUserIDByObject(user: User): Int {
         val userID = jdbcTemplate.query("SELECT id FROM USERS WHERE email=:email",
             MapSqlParameterSource()
-                .addValue("email", user.email),
-            { rs, _ -> rs.getInt("id") }
-        )
+                .addValue("email", user.email)
+        ) { rs, _ -> rs.getInt("id") }
         return userID[0]
     }
 }

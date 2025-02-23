@@ -9,16 +9,13 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 
 @Repository
-class BoulderRepository {
+class BoulderRepository(private var userRepository: UserRepository,
+                        private var jdbcTemplate: NamedParameterJdbcTemplate) {
 
-    @Autowired
-    private lateinit var userRepository: UserRepository
 
-    @Autowired
-    lateinit var jdbcTemplate: NamedParameterJdbcTemplate
-
-    fun getBouldersByUser(user: User): Map<Int, Map<String, String>> {
-        val bouldersMap = mutableMapOf<Int, Map<String, String>>()
+    fun getBouldersByUser(user: User): List<Boulder> {
+        //val bouldersMap = mutableMapOf<Int, Map<String, String>>()
+        val boulders: MutableList<Boulder> = mutableListOf()
         val userID = userRepository.getUserIDByObject(user)
         jdbcTemplate.query("SELECT * FROM boulders WHERE userID=:userID ORDER BY id",
             MapSqlParameterSource()
@@ -26,16 +23,17 @@ class BoulderRepository {
             RowMapper { rs, _ ->
                 var i = 1
                 do {
-                    bouldersMap[i++] = mapOf(
-                        "id" to rs.getString("id"),
-                        "name" to rs.getString("name"),
-                        "attempts" to rs.getString("attempts"),
-                        "grade" to rs.getString("grade"),
-                        "image" to rs.getString("image")
-                    )
+                    boulders.add(
+                        Boulder(
+                            rs.getLong("id"),
+                            rs.getString("name"),
+                            rs.getInt("attempts"),
+                            rs.getString("grade"),
+                            null
+                        ))
                 } while (rs.next())
             })
-            return bouldersMap
+            return boulders.toList()
     }
 
     fun addBoulder(userId: Int, boulderInfo: Map<String, String>): Boolean {
@@ -45,7 +43,6 @@ class BoulderRepository {
                 .addValue("name", boulderInfo["name"])
                 .addValue("attempts", boulderInfo["attempts"]?.toInt())
                 .addValue("grade", boulderInfo["grade"])
-                .addValue("image", boulderInfo["image"])
                 .addValue("userID", userId)
         )
         return true

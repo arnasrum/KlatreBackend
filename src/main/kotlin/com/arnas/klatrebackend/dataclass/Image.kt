@@ -1,7 +1,7 @@
 package com.arnas.klatrebackend.dataclass
 
 data class Image(
-    val name: String,
     val id: Long,
-    val imageData: ByteArray,
+    val image: String, // Base64
+    val boulder: Long,
 )
