@@ -1,9 +1,9 @@
-DROP TABLE IF EXISTS users, boulders;
+DROP TABLE IF EXISTS users, boulders, image;
 
 CREATE TABLE IF NOT EXISTS users(
-    id serial,
-    email text UNIQUE NOT NULL,
-    name text NOT NULL,
+    id SERIAL,
+    email TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
     PRIMARY KEY (id)
 );
 CREATE TABLE IF NOT EXISTS boulders(
@@ -11,9 +11,16 @@ CREATE TABLE IF NOT EXISTS boulders(
     name TEXT,
     attempts INT,
     grade TEXT,
-    image TEXT,
     description TEXT,
     userID SERIAL,
     PRIMARY KEY (id),
     FOREIGN KEY (userID) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS image(
+    id SERIAL,
+    image_base64 TEXT,
+    boulderID SERIAL,
+    PRIMARY KEY(id),
+    FOREIGN KEY (boulderID) REFERENCES boulders(id)
 );
