@@ -4,6 +4,7 @@ import com.arnas.klatrebackend.dataclass.Boulder
 import com.arnas.klatrebackend.dataclass.User
 import com.arnas.klatrebackend.repository.BoulderRepository
 import com.arnas.klatrebackend.service.BoulderService
+import com.arnas.klatrebackend.service.ImageService
 import com.arnas.klatrebackend.service.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -20,31 +21,40 @@ import org.springframework.web.bind.annotation.RestController
 class BoulderController(
     private val userService: UserService,
     private val boulderRepository: BoulderRepository,
-    private val boulderService: BoulderService
+    private val boulderService: BoulderService,
+    private val imageService: ImageService
 ) {
 
     @GetMapping("/boulders")
-    fun getBoulders(@RequestParam access_token: String): ResponseEntity<List<Boulder>> {
-        val user: User = userService.getUserByToken(access_token) ?:
+    fun getBoulders(@RequestParam accessToken: String): ResponseEntity<List<Boulder>> {
+        val user: User = userService.getUserByToken(accessToken) ?:
             return ResponseEntity(HttpStatus.UNAUTHORIZED)
         val json = boulderService.getBouldersByUser(user)
         //println(json)
         return ResponseEntity(json, HttpStatus.OK)
     }
 
-
-
     @PostMapping("/boulder")
-    fun postBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): Map<String, String> {
-        boulderService.addBoulder(accessToken, requestBody)
-        return mapOf("status" to "OK")
+    fun postBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<List<Boulder>> {
+        val status = boulderService.addBoulder(accessToken, requestBody)
+        if (requestBody["image"] != null) {
+            println("Image included")
+            val boulderID = status["boulderID"]?.toLong() ?: throw Exception("Boulder id not found")
+            val image = requestBody["image"]
+            if (image != null) {
+                imageService.storeImage(boulderID, image)
+            }
+        } else {
+            println("Image not included")
+        }
+        return ResponseEntity(HttpStatus.OK)
     }
 
     @PutMapping("/boulder")
-    fun putBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): Map<String, String> {
-        val userID: Int = userService.getUserID(accessToken) ?: return mapOf("status" to "Invalid access_token")
+    fun putBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<List<Boulder>> {
+        val userID: Int = userService.getUserID(accessToken) ?: return  ResponseEntity(HttpStatus.UNAUTHORIZED)
         boulderService.updateBoulder(accessToken, requestBody)
-        return mapOf("status" to "OK")
+        return ResponseEntity(HttpStatus.OK)
     }
 
 

@@ -26,21 +26,8 @@ class ImageService {
     @Autowired
     private lateinit var userService: UserService
 
-    private val uploadDir: String = "./upload/"
-
-    fun storeImage(image: MultipartFile) {
-
-
-        //val userID: Int = userService.getUserID(token) ?: return // The user was not found
-        println("contentType ${image.contentType}")
-        //val filePath: Path = Paths.get(uploadDir)
-        val fileName: String = UUID.randomUUID().toString() + ".png"
-        val filePath = Path(uploadDir + fileName)
-        filePath.parent.createDirectories()
-        //image.transferTo(filePath)
-        val imageString = Base64.getEncoder().encodeToString(image.bytes)
-        imageRepository.storeImage(imageString, 1)
-
+    fun storeImage(boulderID: Long, image: String) {
+        imageRepository.storeImage(image, boulderID)
     }
 
     fun getImage(boulderID: Long): Image? {

@@ -17,7 +17,7 @@ import javax.print.attribute.standard.Media
 class ImageController(private val userService: UserService, private val imageService: ImageService) {
 
     @GetMapping("")
-    fun getImage(@RequestParam("boulderID") boulderID: Long, @RequestParam("access_token") token: String): ResponseEntity<ByteArray> {
+    fun getImage(@RequestParam("boulderID") boulderID: Long, @RequestParam("accessToken") token: String): ResponseEntity<ByteArray> {
         val image: com.arnas.klatrebackend.dataclass.Image = imageService.getImage(boulderID) ?: return ResponseEntity(HttpStatus.NOT_FOUND)
         return ResponseEntity(
             HttpStatus.OK,
@@ -25,8 +25,8 @@ class ImageController(private val userService: UserService, private val imageSer
     }
 
     @PostMapping("")
-    fun saveImage(@RequestParam("image") image: MultipartFile, @RequestParam("access_token") token: String): ResponseEntity<String> {
-        imageService.storeImage(image)
+    fun saveImage(@RequestParam("image") image: MultipartFile, @RequestParam("accessToken") token: String): ResponseEntity<String> {
+        //imageService.storeImage(image)
         return ResponseEntity.ok("Image uploaded successfully")
         //return mapOf("status" to "200")
     }

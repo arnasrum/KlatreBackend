@@ -15,7 +15,7 @@ class ImageRepository(private var jdbcTemplate: NamedParameterJdbcTemplate) {
 
     }
 
-    fun storeImage(image: String, boulderID: Int) {
+    fun storeImage(image: String, boulderID: Long) {
         println("insertImageMetaData")
         jdbcTemplate.update("INSERT INTO image(boulderid, image_base64)" +
                 "VALUES(:boulderid, :image)", MapSqlParameterSource()

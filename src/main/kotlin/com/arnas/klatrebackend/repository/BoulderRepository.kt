@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
+import org.springframework.jdbc.support.GeneratedKeyHolder
+import org.springframework.jdbc.support.KeyHolder
 
 @Repository
 class BoulderRepository(private var userRepository: UserRepository,
@@ -21,7 +23,6 @@ class BoulderRepository(private var userRepository: UserRepository,
             MapSqlParameterSource()
                 .addValue("userID", userID),
             RowMapper { rs, _ ->
-                var i = 1
                 do {
                     boulders.add(
                         Boulder(
@@ -36,18 +37,24 @@ class BoulderRepository(private var userRepository: UserRepository,
             return boulders.toList()
     }
 
-    fun addBoulder(userId: Int, boulderInfo: Map<String, String>): Boolean {
-        jdbcTemplate.update("INSERT INTO boulders (name, attempts, grade, image, userID)" +
-                    " VALUES (:name, :attempts, :grade, :image, :userID)",
+    fun addBoulder(userId: Int, boulderInfo: Map<String, String>): Long {
+        val keyHolder: KeyHolder = GeneratedKeyHolder()
+        
+        jdbcTemplate.update(
+            "INSERT INTO boulders (name, attempts, grade, userID)" +
+            " VALUES (:name, :attempts, :grade, :userID)",
             MapSqlParameterSource()
                 .addValue("name", boulderInfo["name"])
                 .addValue("attempts", boulderInfo["attempts"]?.toInt())
                 .addValue("grade", boulderInfo["grade"])
-                .addValue("userID", userId)
+                .addValue("userID", userId),
+            keyHolder
         )
-        return true
+        
+        // Use getKeys() instead of getKey() and extract the ID
+        val keys = keyHolder.keys ?: throw RuntimeException("Failed to retrieve generated keys")
+        return (keys["id"] as Number).toLong()
     }
-
 
     fun updateBoulder(boulderID: Int, boulderInfo: Map<String, String>): Boolean {
         jdbcTemplate.update(
@@ -62,6 +69,4 @@ class BoulderRepository(private var userRepository: UserRepository,
         )
         return true
     }
-
-
 }
