@@ -15,10 +15,8 @@ class BoulderRepository(private var userRepository: UserRepository,
                         private var jdbcTemplate: NamedParameterJdbcTemplate) {
 
 
-    fun getBouldersByUser(user: User): List<Boulder> {
-        //val bouldersMap = mutableMapOf<Int, Map<String, String>>()
+    fun getBouldersByUser(userID: Long): List<Boulder> {
         val boulders: MutableList<Boulder> = mutableListOf()
-        val userID = userRepository.getUserIDByObject(user)
         jdbcTemplate.query("SELECT * FROM boulders WHERE userID=:userID ORDER BY id",
             MapSqlParameterSource()
                 .addValue("userID", userID),
@@ -51,12 +49,11 @@ class BoulderRepository(private var userRepository: UserRepository,
             keyHolder
         )
         
-        // Use getKeys() instead of getKey() and extract the ID
         val keys = keyHolder.keys ?: throw RuntimeException("Failed to retrieve generated keys")
         return (keys["id"] as Number).toLong()
     }
 
-    fun updateBoulder(boulderID: Int, boulderInfo: Map<String, String>): Boolean {
+    fun updateBoulder(boulderInfo: Map<String, String>): Boolean {
         jdbcTemplate.update(
             "UPDATE boulders " +
                     "SET attempts = :attempts, name = :name, grade = :grade" +
