@@ -1,20 +1,19 @@
 package com.arnas.klatrebackend.service
 
 import com.arnas.klatrebackend.dataclass.Boulder
-import com.arnas.klatrebackend.dataclass.User
 import com.arnas.klatrebackend.repository.BoulderRepository
-import com.arnas.klatrebackend.service.ImageService
 import org.springframework.stereotype.Service
 
 @Service
-class BoulderService(private val userService: UserService,
+class BoulderService(
+    private val userService: UserService,
     private val boulderRepository: BoulderRepository,
-    private val imageService: ImageService
+    private val imageService: ImageService,
 ) {
 
 
-    fun getBouldersByUser(user: User): List<Boulder> {
-        val boulders = boulderRepository.getBouldersByUser(user)
+    fun getBouldersByUser(userID: Long): List<Boulder> {
+        val boulders = boulderRepository.getBouldersByUser(userID)
         for (boulder in boulders) {
             val image = imageService.getImage(boulder.id)
             if (image != null) {boulder.image = image.image}
@@ -28,15 +27,16 @@ class BoulderService(private val userService: UserService,
         return mapOf("status" to "OK", "boulderID" to boulderID.toString())
     }
 
-    fun updateBoulder(accessToken: String, boulderInfo: Map<String, String>): Map<String, String> {
-        val user: User = userService.getUserByToken(accessToken) ?: return mapOf("status" to "Invalid Token")
-        val userBoulders = boulderRepository.getBouldersByUser(user)
-        val id = boulderInfo["id"]?.toInt() ?: return mapOf("status" to "Invalid Id")
-        //if (!userBoulders.keys.contains(id)) {
-            //return mapOf("0" to mapOf("status" to "User not authorized to edit this boulder"))
-        //}
-        boulderRepository.updateBoulder(id, boulderInfo)
-        return mapOf()
+    fun updateBoulder(userID: Long, boulderInfo: Map<String, String>): Map<String, String> {
+        val userBoulders = boulderRepository.getBouldersByUser(userID)
+        println(userBoulders.filter { it.id == boulderInfo["id"]?.toLong() })
+        boulderRepository.updateBoulder(boulderInfo)
+        return mapOf("status" to "OK")
+    }
+
+    fun deleteBoulder(userID: Long, boulderID: Long) {
+
+
     }
 
 }
