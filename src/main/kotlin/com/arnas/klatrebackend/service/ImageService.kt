@@ -29,6 +29,10 @@ class ImageService {
     fun storeImage(boulderID: Long, image: String) {
         imageRepository.storeImage(image, boulderID)
     }
+    fun updateImage(boulderID: Long, image: String)  {
+        imageRepository.deleteImage(boulderID)
+        imageRepository.storeImage(image, boulderID)
+    }
 
     fun getImage(boulderID: Long): Image? {
        return imageRepository.getImageByID(boulderID)

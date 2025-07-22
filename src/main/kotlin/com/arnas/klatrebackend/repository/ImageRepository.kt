@@ -16,7 +16,6 @@ class ImageRepository(private var jdbcTemplate: NamedParameterJdbcTemplate) {
     }
 
     fun storeImage(image: String, boulderID: Long) {
-        println("insertImageMetaData")
         jdbcTemplate.update("INSERT INTO image(boulderid, image_base64)" +
                 "VALUES(:boulderid, :image)", MapSqlParameterSource()
                     .addValue("boulderid", boulderID)
@@ -34,9 +33,16 @@ class ImageRepository(private var jdbcTemplate: NamedParameterJdbcTemplate) {
                     rs.getLong("boulderid")
                 )
             }
-        if (result.size < 1) {
+        if (result.isEmpty()) {
             return null
         }
         return result[0]
+    }
+
+    fun deleteImage(boulderID: Long) {
+        jdbcTemplate.update("DELETE FROM image WHERE boulderid=:boulderID",
+            MapSqlParameterSource()
+                .addValue("boulderID", boulderID)
+        )
     }
 }
