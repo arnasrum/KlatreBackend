@@ -20,22 +20,28 @@ import org.springframework.web.bind.annotation.RestController
 @CrossOrigin(origins = arrayOf("http://localhost:5173"))
 class BoulderController(
     private val userService: UserService,
-    private val boulderRepository: BoulderRepository,
     private val boulderService: BoulderService,
     private val imageService: ImageService
 ) {
 
+
+    private fun validateUser(accessToken: String): User? {
+        return userService.getUserByToken(accessToken)
+    }
+
+
     @GetMapping("/boulders")
-    fun getBoulders(@RequestParam accessToken: String): ResponseEntity<List<Boulder>> {
-        val user: User = userService.getUserByToken(accessToken) ?:
+    open fun getBoulders(@RequestParam accessToken: String): ResponseEntity<List<Boulder>> {
+        val user: User = validateUser(accessToken) ?:
             return ResponseEntity(HttpStatus.UNAUTHORIZED)
-        val json = boulderService.getBouldersByUser(user)
-        //println(json)
+        val userID: Long = userService.getUserID(accessToken)?.toLong() ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
+        val json = boulderService.getBouldersByUser(userID)
         return ResponseEntity(json, HttpStatus.OK)
     }
 
     @PostMapping("/boulder")
     fun postBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<List<Boulder>> {
+        val user: User = validateUser(accessToken) ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
         val status = boulderService.addBoulder(accessToken, requestBody)
         if (requestBody["image"] != null) {
             println("Image included")
@@ -51,9 +57,19 @@ class BoulderController(
     }
 
     @PutMapping("/boulder")
-    fun putBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<List<Boulder>> {
+    fun putBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<Any> {
         val userID: Int = userService.getUserID(accessToken) ?: return  ResponseEntity(HttpStatus.UNAUTHORIZED)
-        boulderService.updateBoulder(accessToken, requestBody)
+        boulderService.updateBoulder(userID.toLong(), requestBody)
+        if(requestBody["image"] != null) {
+            imageService.updateImage(requestBody["id"]!!.toLong(), requestBody["image"]!!)
+        }
+        return ResponseEntity(HttpStatus.OK)
+    }
+
+    fun deleteBoulder(@RequestParam accessToken: String, @RequestParam requestBody: Map<String, String>): ResponseEntity<Any> {
+        val userID: Int = userService.getUserID(accessToken) ?: return  ResponseEntity(HttpStatus.UNAUTHORIZED)
+        boulderService.deleteBoulder(userID.toLong(), requestBody["id"]!!.toLong())
+
         return ResponseEntity(HttpStatus.OK)
     }
 
