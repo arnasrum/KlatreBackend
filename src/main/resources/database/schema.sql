@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS boulders(
 CREATE TABLE IF NOT EXISTS image(
     id SERIAL,
     image_base64 TEXT,
-    boulderID SERIAL,
+    boulderID SERIAL UNIQUE,
     PRIMARY KEY(id),
     FOREIGN KEY (boulderID) REFERENCES boulders(id)
 );
