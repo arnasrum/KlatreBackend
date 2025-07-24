@@ -34,9 +34,16 @@ class BoulderService(
         return mapOf("status" to "OK")
     }
 
-    fun deleteBoulder(userID: Long, boulderID: Long) {
+    fun deleteBoulder(userID: Long, boulderID: Long) : Map<String, String> {
+        val usersBoulders = getBouldersByUser(userID)
+        usersBoulders.any { it.id == boulderID } || return mapOf("status" to "401", "message" to "Unauthorized")
+        val image = imageService.getImage(boulderID)
+        if(image != null) {
+            imageService.deleteImage(image)
+        }
+        boulderRepository.deleteBoulder(boulderID)
 
-
+        return mapOf("status" to "200", "message" to "Image deleted successfully")
     }
 
 }

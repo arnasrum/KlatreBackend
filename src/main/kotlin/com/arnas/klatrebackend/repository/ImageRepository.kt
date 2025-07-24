@@ -11,10 +11,6 @@ import org.springframework.web.multipart.MultipartFile
 @Repository
 class ImageRepository(private var jdbcTemplate: NamedParameterJdbcTemplate) {
 
-    fun insertImageMetaData(userID: Int, image: MultipartFile) {
-
-    }
-
     fun storeImage(image: String, boulderID: Long) {
         jdbcTemplate.update("INSERT INTO image(boulderid, image_base64)" +
                 "VALUES(:boulderid, :image)", MapSqlParameterSource()
@@ -39,10 +35,10 @@ class ImageRepository(private var jdbcTemplate: NamedParameterJdbcTemplate) {
         return result[0]
     }
 
-    fun deleteImage(boulderID: Long) {
-        jdbcTemplate.update("DELETE FROM image WHERE boulderid=:boulderID",
+    fun deleteImage(imageID: Long) {
+        jdbcTemplate.update("DELETE FROM image WHERE id=:imageid",
             MapSqlParameterSource()
-                .addValue("boulderID", boulderID)
+                .addValue("imageid", imageID)
         )
     }
 }

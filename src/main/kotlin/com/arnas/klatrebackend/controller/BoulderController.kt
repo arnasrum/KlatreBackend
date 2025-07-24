@@ -9,6 +9,7 @@ import com.arnas.klatrebackend.service.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CrossOrigin
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -40,7 +41,7 @@ class BoulderController(
     }
 
     @PostMapping("/boulder")
-    fun postBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<List<Boulder>> {
+    open fun postBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<List<Boulder>> {
         val user: User = validateUser(accessToken) ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
         val status = boulderService.addBoulder(accessToken, requestBody)
         if (requestBody["image"] != null) {
@@ -57,7 +58,7 @@ class BoulderController(
     }
 
     @PutMapping("/boulder")
-    fun putBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<Any> {
+    open fun putBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<Any> {
         val userID: Int = userService.getUserID(accessToken) ?: return  ResponseEntity(HttpStatus.UNAUTHORIZED)
         boulderService.updateBoulder(userID.toLong(), requestBody)
         if(requestBody["image"] != null) {
@@ -66,8 +67,10 @@ class BoulderController(
         return ResponseEntity(HttpStatus.OK)
     }
 
-    fun deleteBoulder(@RequestParam accessToken: String, @RequestParam requestBody: Map<String, String>): ResponseEntity<Any> {
+    @DeleteMapping("/boulder")
+    open fun deleteBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<Any> {
         val userID: Int = userService.getUserID(accessToken) ?: return  ResponseEntity(HttpStatus.UNAUTHORIZED)
+        println("Deleting boulder with id ${requestBody["id"]}")
         boulderService.deleteBoulder(userID.toLong(), requestBody["id"]!!.toLong())
 
         return ResponseEntity(HttpStatus.OK)

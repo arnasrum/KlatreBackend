@@ -66,4 +66,14 @@ class BoulderRepository(private var userRepository: UserRepository,
         )
         return true
     }
+
+    open fun deleteBoulder(boulderID: Long): Boolean {
+        jdbcTemplate.update("DELETE FROM boulders WHERE id=:boulderID",
+            MapSqlParameterSource()
+                .addValue("boulderID", boulderID)
+        )
+        return true
+    }
+
+
 }

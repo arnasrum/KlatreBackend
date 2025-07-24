@@ -38,5 +38,9 @@ class ImageService {
        return imageRepository.getImageByID(boulderID)
     }
 
+    open fun deleteImage(image: Image) {
+        imageRepository.deleteImage(image.id)
+    }
+
 
 }
