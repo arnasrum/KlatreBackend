@@ -17,18 +17,6 @@ class UserService(
     open val client: HttpClient = HttpClient.newBuilder().build()
 
 
-    open fun registerUser(accessToken: String) {
-
-        val userInfo = getGoogleUserProfile(accessToken)
-        val email = userInfo["email"] ?: return
-        val name = userInfo["name"] ?: return
-        userRepository.createUser(User(email, name))
-    }
-
-    open fun loginUser(token: String): User? {
-        return getUserByToken(token)
-    }
-
     open fun getGoogleUserProfile(token: String): Map<String, String> {
         val request = HttpRequest.newBuilder()
             .uri(URI.create("https://www.googleapis.com/oauth2/v1/userinfo?access_token=${token}"))
@@ -49,8 +37,12 @@ class UserService(
         if (userInfo.isEmpty()) {return null}
         val email = userInfo["email"] ?: return null
         val name = userInfo["name"] ?: return null
-        val user: User = User(email, name)
-        userRepository.createUser(user)
+
+
+        val userID = userRepository.createUser(email, name)
+
+
+        val user = User(userID, email, name)
         return user
     }
 
