@@ -1,6 +1,7 @@
 package com.arnas.klatrebackend.service
 
 import com.arnas.klatrebackend.dataclass.User
+import com.arnas.klatrebackend.repository.GroupRepository
 import com.arnas.klatrebackend.repository.UserRepository
 import org.json.JSONObject
 import org.springframework.stereotype.Service
@@ -11,11 +12,12 @@ import java.net.http.HttpResponse
 
 @Service
 class UserService(
-    var userRepository: UserRepository
+    var userRepository: UserRepository,
+    private val groupService: GroupService,
+    private val groupRepository: GroupRepository
 ) {
 
     open val client: HttpClient = HttpClient.newBuilder().build()
-
 
     open fun getGoogleUserProfile(token: String): Map<String, String> {
         val request = HttpRequest.newBuilder()
@@ -51,5 +53,16 @@ class UserService(
         val userID: Int = userRepository.getUserIDByObject(user)
         return userID
     }
+
+    open fun usersPlacePermissions(userID: Long, placeID: Long): Boolean {
+
+        val groups = groupRepository.getGroups(userID)
+        val hasAccess = groups.any { group ->
+            group.places.any{ it.id == placeID }
+        }
+        return hasAccess
+    }
+
+
 
 }

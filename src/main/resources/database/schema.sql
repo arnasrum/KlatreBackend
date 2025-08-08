@@ -1,20 +1,39 @@
-DROP TABLE IF EXISTS group_invites, user_groups, image, boulders, team_groups, users, roles CASCADE;
+DROP TABLE IF EXISTS group_invites, user_groups, image, boulders, klatre_groups, users, roles, places CASCADE;
 
 CREATE TABLE IF NOT EXISTS users(
-    id BIGSERIAL,
+    id BIGSERIAL PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
-    name TEXT NOT NULL,
-    PRIMARY KEY (id)
+    name TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS roles(
+    id INT PRIMARY KEY,
+    role_name TEXT
+);
+
+CREATE TABLE IF NOT EXISTS klatre_groups(
+    id BIGSERIAL PRIMARY KEY,
+    owner BIGSERIAL REFERENCES users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    personal BOOL NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS places(
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    group_id BIGSERIAL REFERENCES klatre_groups(id)
+);
+
 CREATE TABLE IF NOT EXISTS boulders(
-    id BIGSERIAL,
+    id BIGSERIAL PRIMARY KEY,
     name TEXT,
     attempts INT,
     grade TEXT,
     description TEXT,
-    userID BIGSERIAL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (userID) REFERENCES users(id)
+    userID BIGSERIAL REFERENCES users(id),
+    place BIGSERIAL REFERENCES places(id)
 );
 
 CREATE TABLE IF NOT EXISTS image(
@@ -25,22 +44,9 @@ CREATE TABLE IF NOT EXISTS image(
     FOREIGN KEY (boulderID) REFERENCES boulders(id)
 );
 
-CREATE TABLE IF NOT EXISTS team_groups(
-    id BIGSERIAL PRIMARY KEY,
-    owner BIGSERIAL REFERENCES users(id) ON DELETE CASCADE,
-    name TEXT,
-    description TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS roles(
-    id INT PRIMARY KEY,
-    role_name TEXT
-);
-
 CREATE TABLE IF NOT EXISTS user_groups(
     user_id BIGSERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    group_id BIGSERIAL NOT NULL REFERENCES team_groups(id) ON DELETE CASCADE,
+    group_id BIGSERIAL NOT NULL REFERENCES klatre_groups(id) ON DELETE CASCADE,
     role INT references roles(id) ON DELETE CASCADE, -- OWNER, ADMIN, USER
     joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     PRIMARY KEY(user_id, group_id)
@@ -48,7 +54,7 @@ CREATE TABLE IF NOT EXISTS user_groups(
 
 CREATE TABLE IF NOT EXISTS group_invites(
     id BIGSERIAL PRIMARY KEY,
-    group_id BIGSERIAL REFERENCES team_groups(id) ON DELETE CASCADE,
+    group_id BIGSERIAL REFERENCES klatre_groups(id) ON DELETE CASCADE,
     user_id BIGSERIAL REFERENCES users(id) ON DELETE CASCADE,
     status VARCHAR(50) NOT NULL DEFAULT 'pending', -- 'pending', 'accepted', 'declined', 'revoked', 'expired'
     invited_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

@@ -1,8 +1,7 @@
 package com.arnas.klatrebackend.repository
 
 import com.arnas.klatrebackend.dataclass.Boulder
-import com.arnas.klatrebackend.dataclass.User
-import org.springframework.beans.factory.annotation.Autowired
+import com.arnas.klatrebackend.dataclass.BoulderRequest
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -28,6 +27,7 @@ class BoulderRepository(private var userRepository: UserRepository,
                             rs.getString("name"),
                             rs.getInt("attempts"),
                             rs.getString("grade"),
+                            rs.getLong("place"),
                             null
                         ))
                 } while (rs.next())
@@ -35,17 +35,18 @@ class BoulderRepository(private var userRepository: UserRepository,
             return boulders.toList()
     }
 
-    fun addBoulder(userId: Int, boulderInfo: Map<String, String>): Long {
+    fun addBoulder(userId: Long, boulder: BoulderRequest): Long {
         val keyHolder: KeyHolder = GeneratedKeyHolder()
         
         jdbcTemplate.update(
-            "INSERT INTO boulders (name, attempts, grade, userID)" +
-            " VALUES (:name, :attempts, :grade, :userID)",
+            "INSERT INTO boulders (name, attempts, grade, userID, place)" +
+            " VALUES (:name, :attempts, :grade, :userID, :place)",
             MapSqlParameterSource()
-                .addValue("name", boulderInfo["name"])
-                .addValue("attempts", boulderInfo["attempts"]?.toInt())
-                .addValue("grade", boulderInfo["grade"])
-                .addValue("userID", userId),
+                .addValue("name", boulder.name)
+                .addValue("attempts", boulder.attempts)
+                .addValue("grade", boulder.grade)
+                .addValue("userID", userId)
+                .addValue("place", boulder.place),
             keyHolder
         )
         
@@ -75,5 +76,23 @@ class BoulderRepository(private var userRepository: UserRepository,
         return true
     }
 
-
+    open fun getBouldersByPlace(placeID: Long): Array<Boulder> {
+        val boulders: MutableList<Boulder> = mutableListOf()
+        jdbcTemplate.query("SELECT * FROM boulders WHERE place=:placeID ORDER BY id",
+            MapSqlParameterSource()
+                .addValue("placeID", placeID)
+        ) { rs, _ ->
+            boulders.add(
+                Boulder(
+                    rs.getLong("id"),
+                    rs.getString("name"),
+                    rs.getInt("attempts"),
+                    rs.getString("grade"),
+                    rs.getLong("place"),
+                    null
+                )
+            )
+        }
+        return boulders.toTypedArray()
+    }
 }

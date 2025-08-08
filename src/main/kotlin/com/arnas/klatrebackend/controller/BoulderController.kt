@@ -2,10 +2,10 @@ package com.arnas.klatrebackend.controller
 
 import com.arnas.klatrebackend.dataclass.Boulder
 import com.arnas.klatrebackend.dataclass.User
-import com.arnas.klatrebackend.repository.BoulderRepository
 import com.arnas.klatrebackend.service.BoulderService
 import com.arnas.klatrebackend.service.ImageService
 import com.arnas.klatrebackend.service.UserService
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CrossOrigin
@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.client.UnknownHttpStatusCodeException
 
 @RestController
+@Tag(name = "Boulder", description = "Boulder CRUD operations")
 @CrossOrigin(origins = arrayOf("http://localhost:5173"))
 class BoulderController(
     private val userService: UserService,
@@ -40,22 +42,55 @@ class BoulderController(
         return ResponseEntity(json, HttpStatus.OK)
     }
 
-    @PostMapping("/boulder")
-    open fun postBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<List<Boulder>> {
-        val user: User = validateUser(accessToken) ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
-        val status = boulderService.addBoulder(accessToken, requestBody)
-        if (requestBody["image"] != null) {
-            println("Image included")
-            val boulderID = status["boulderID"]?.toLong() ?: throw Exception("Boulder id not found")
-            val image = requestBody["image"]
-            if (image != null) {
-                imageService.storeImage(boulderID, image)
-            }
-        } else {
-            println("Image not included")
+    @GetMapping("/boulders/place")
+    open fun getBouldersByPlace(@RequestParam accessToken: String, @RequestParam placeID: Long): ResponseEntity<out Any> {
+        val user: User = validateUser(accessToken) ?:
+        return ResponseEntity(HttpStatus.UNAUTHORIZED)
+        val userID: Long = userService.getUserID(accessToken)?.toLong() ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
+        if(!userService.usersPlacePermissions(userID, placeID)) {
+            return ResponseEntity(HttpStatus.UNAUTHORIZED)
         }
+        val boulders = boulderService.getBouldersByPlace(placeID)
+        boulders.data?.forEach {
+            it.image = imageService.getImage(it.id)?.image
+        }
+        return ResponseEntity(boulders, HttpStatus.OK)
+    }
+
+    @PostMapping("/boulders/place")
+    open fun addBoulderToPlace(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<out Any> {
+        val user: User = validateUser(accessToken) ?:
+        return ResponseEntity(HttpStatus.UNAUTHORIZED)
+        val userID: Long = userService.getUserID(accessToken)?.toLong() ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
+        val placeID: Long = requestBody["placeID"]?.toLong() ?: return ResponseEntity(HttpStatus.BAD_REQUEST)
+        if(!userService.usersPlacePermissions(userID, placeID)) {
+            return ResponseEntity(HttpStatus.UNAUTHORIZED)
+        }
+        val serviceResult = boulderService.addBoulderToPlace(userID,  placeID, requestBody)
+        requestBody["image"]?.let {
+            if(!serviceResult.success) return ResponseEntity(HttpStatus.BAD_REQUEST)
+            imageService.storeImage(serviceResult.data!!, it)
+        }
+
         return ResponseEntity(HttpStatus.OK)
     }
+
+    //@PostMapping("/boulder")
+    //open fun postBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<List<Boulder>> {
+    //    val user: User = validateUser(accessToken) ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
+    //    val status = boulderService.addBoulder(accessToken, requestBody)
+    //    if (requestBody["image"] != null) {
+    //        println("Image included")
+    //        val boulderID = status["boulderID"]?.toLong() ?: throw Exception("Boulder id not found")
+    //        val image = requestBody["image"]
+    //        if (image != null) {
+    //            imageService.storeImage(boulderID, image)
+    //        }
+    //    } else {
+    //        println("Image not included")
+    //    }
+    //    return ResponseEntity(HttpStatus.OK)
+    //}
 
     @PutMapping("/boulder")
     open fun putBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<Any> {

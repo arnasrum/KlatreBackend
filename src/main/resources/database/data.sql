@@ -1,10 +1,33 @@
 INSERT INTO users (email, name)
-VALUES ('a.rumbavicius@gmail.com', 'Arnas Rumbavicius');
-
-INSERT INTO boulders (name, attempts, grade, userID)
 VALUES
-    ('svaberg', 5, '5a', 1),
-    ('sva', 10, '8a', 1);
+    ('a.rumbavicius@gmail.com', 'Arnas Rumbavicius'),
+    ('a.rumbavi@gmail.com', 'Rune')
+;
+
+INSERT INTO klatre_groups(owner, name, personal)
+VALUES
+    (1, 'Personal', true),
+    (2, 'Group 2', true)
+    ;
+
+INSERT INTO user_groups(user_id, group_id)
+VALUES
+    (1, 1),
+    (2, 2),
+    (1, 2)
+;
+
+INSERT INTO places(name, group_id)
+VALUES
+    ('LA', 1),
+    ('Stavern', 1),
+    ('Test', 2)
+;
+
+INSERT INTO boulders (name, attempts, grade, userID, place)
+VALUES
+    ('svaberg', 5, '5a', 1, 1),
+    ('sva', 10, '8a', 1, 1);
 
 INSERT INTO image(image_base64, boulderID)
 VALUES
