@@ -25,17 +25,13 @@ class BoulderService(
         return boulders
     }
 
-    //fun addBoulder(accessToken: String, boulderInfo: Map<String, String>): Map<String, String> {
-    //    val userID: Int = userService.getUserID(accessToken) ?: return mapOf("status" to "Invalid access token")
-    //    val boulderID: Long = boulderRepository.addBoulder(userID, boulderInfo)
-    //    return mapOf("status" to "OK", "boulderID" to boulderID.toString())
-    //}
-
-    fun updateBoulder(userID: Long, boulderInfo: Map<String, String>): Map<String, String> {
-        val userBoulders = boulderRepository.getBouldersByUser(userID)
-        println(userBoulders.filter { it.id == boulderInfo["id"]?.toLong() })
+    fun updateBoulder(userID: Long, boulderInfo: Map<String, String>): ServiceResult<String> {
+        // Check if user has permission to update boulder
         boulderRepository.updateBoulder(boulderInfo)
-        return mapOf("status" to "OK")
+        if(boulderInfo.containsKey("image")) {
+            imageService.updateImage(boulderInfo["boulderID"]!!.toLong(), boulderInfo["image"]!!)
+        }
+        return ServiceResult(success = true, message = "Boulder updated successfully")
     }
 
     fun deleteBoulder(userID: Long, boulderID: Long) : Map<String, String> {
@@ -62,16 +58,8 @@ class BoulderService(
 
         val name = boulderInfo["name"]
             ?: return ServiceResult(success = false, message = "Missing required field: name")
-        val attemptsString = boulderInfo["attempts"]
-            ?: return ServiceResult(success = false, message = "Missing required field: attempts")
         val grade = boulderInfo["grade"]
             ?: return ServiceResult(success = false, message = "Missing required field: grade")
-
-        val attempts = try {
-            attemptsString.toInt()
-        } catch (e: NumberFormatException) {
-            return ServiceResult(success = false, message = "Invalid attempts format: must be a valid integer")
-        }
 
         if (name.isBlank()) {
             return ServiceResult(success = false, message = "Boulder name cannot be blank")
@@ -79,13 +67,9 @@ class BoulderService(
         if (grade.isBlank()) {
             return ServiceResult(success = false, message = "Boulder grade cannot be blank")
         }
-        if (attempts < 0) {
-            return ServiceResult(success = false, message = "Attempts cannot be negative")
-        }
 
         val boulder = BoulderRequest(
             name = name,
-            attempts = attempts,
             grade = grade,
             place = placeID,
         )

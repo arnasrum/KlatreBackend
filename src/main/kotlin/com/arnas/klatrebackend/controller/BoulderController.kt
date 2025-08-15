@@ -44,9 +44,8 @@ class BoulderController(
 
     @GetMapping("/boulders/place")
     open fun getBouldersByPlace(@RequestParam accessToken: String, @RequestParam placeID: Long): ResponseEntity<out Any> {
-        val user: User = validateUser(accessToken) ?:
-        return ResponseEntity(HttpStatus.UNAUTHORIZED)
-        val userID: Long = userService.getUserID(accessToken)?.toLong() ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
+        val user: User = validateUser(accessToken) ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
+        val userID: Long = userService.getUserID(accessToken)
         if(!userService.usersPlacePermissions(userID, placeID)) {
             return ResponseEntity(HttpStatus.UNAUTHORIZED)
         }
@@ -54,7 +53,7 @@ class BoulderController(
         boulders.data?.forEach {
             it.image = imageService.getImage(it.id)?.image
         }
-        return ResponseEntity(boulders, HttpStatus.OK)
+        return ResponseEntity(boulders.data, HttpStatus.OK)
     }
 
     @PostMapping("/boulders/place")
@@ -75,36 +74,19 @@ class BoulderController(
         return ResponseEntity(HttpStatus.OK)
     }
 
-    //@PostMapping("/boulder")
-    //open fun postBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<List<Boulder>> {
-    //    val user: User = validateUser(accessToken) ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
-    //    val status = boulderService.addBoulder(accessToken, requestBody)
-    //    if (requestBody["image"] != null) {
-    //        println("Image included")
-    //        val boulderID = status["boulderID"]?.toLong() ?: throw Exception("Boulder id not found")
-    //        val image = requestBody["image"]
-    //        if (image != null) {
-    //            imageService.storeImage(boulderID, image)
-    //        }
-    //    } else {
-    //        println("Image not included")
-    //    }
-    //    return ResponseEntity(HttpStatus.OK)
-    //}
-
     @PutMapping("/boulder")
     open fun putBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<Any> {
-        val userID: Int = userService.getUserID(accessToken) ?: return  ResponseEntity(HttpStatus.UNAUTHORIZED)
+        val userID: Long = userService.getUserID(accessToken)
         boulderService.updateBoulder(userID.toLong(), requestBody)
         if(requestBody["image"] != null) {
-            imageService.updateImage(requestBody["id"]!!.toLong(), requestBody["image"]!!)
+            imageService.updateImage(requestBody["boulderID"]!!.toLong(), requestBody["image"]!!)
         }
         return ResponseEntity(HttpStatus.OK)
     }
 
     @DeleteMapping("/boulder")
     open fun deleteBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<Any> {
-        val userID: Int = userService.getUserID(accessToken) ?: return  ResponseEntity(HttpStatus.UNAUTHORIZED)
+        val userID: Long = userService.getUserID(accessToken)
         println("Deleting boulder with id ${requestBody["id"]}")
         boulderService.deleteBoulder(userID.toLong(), requestBody["id"]!!.toLong())
 

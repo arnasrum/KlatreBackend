@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.jdbc.support.KeyHolder
+import kotlin.reflect.full.memberProperties
 
 @Repository
 class BoulderRepository(private var userRepository: UserRepository,
@@ -23,12 +24,12 @@ class BoulderRepository(private var userRepository: UserRepository,
                 do {
                     boulders.add(
                         Boulder(
-                            rs.getLong("id"),
-                            rs.getString("name"),
-                            rs.getInt("attempts"),
-                            rs.getString("grade"),
-                            rs.getLong("place"),
-                            null
+                            id = rs.getLong("id"),
+                            name = rs.getString("name"),
+                            description = rs.getString("description"),
+                            grade = rs.getString("grade"),
+                            place = rs.getLong("place"),
+                            image = null
                         ))
                 } while (rs.next())
             })
@@ -39,11 +40,10 @@ class BoulderRepository(private var userRepository: UserRepository,
         val keyHolder: KeyHolder = GeneratedKeyHolder()
         
         jdbcTemplate.update(
-            "INSERT INTO boulders (name, attempts, grade, userID, place)" +
-            " VALUES (:name, :attempts, :grade, :userID, :place)",
+            "INSERT INTO boulders (name, grade, userID, place)" +
+            " VALUES (:name, :grade, :userID, :place)",
             MapSqlParameterSource()
                 .addValue("name", boulder.name)
-                .addValue("attempts", boulder.attempts)
                 .addValue("grade", boulder.grade)
                 .addValue("userID", userId)
                 .addValue("place", boulder.place),
@@ -54,19 +54,33 @@ class BoulderRepository(private var userRepository: UserRepository,
         return (keys["id"] as Number).toLong()
     }
 
-    fun updateBoulder(boulderInfo: Map<String, String>): Boolean {
-        jdbcTemplate.update(
-            "UPDATE boulders " +
-                    "SET attempts = :attempts, name = :name, grade = :grade" +
-                    " WHERE id = :boulderID",
-            MapSqlParameterSource()
-                .addValue("boulderID", boulderInfo["id"]?.toInt())
-                .addValue("attempts", boulderInfo["attempts"]?.toInt())
-                .addValue("name", boulderInfo["name"])
-                .addValue("grade", boulderInfo["grade"])
-        )
-        return true
+fun updateBoulder(boulderInfo: Map<String, String>): Long {
+
+    val boulderProperties = Boulder::class.memberProperties
+        .filter { it.returnType.classifier == String::class }
+        .map { it.name }
+    println("boulder properties: $boulderProperties")
+
+    val fieldConverters: Map<String, (String) -> Any> = boulderProperties.associateWith {
+        { value: String -> value }
     }
+
+    val (setClauses, parameters) = fieldConverters.entries.fold(
+        mutableListOf<String>() to MapSqlParameterSource().addValue("boulderID", boulderInfo["boulderID"]?.toLong())
+    ) { (clauses, params), (field, converter) ->
+        boulderInfo[field]?.let { value ->
+            clauses += ("$field = :$field")
+            params.addValue(field, converter(value))
+        }
+        clauses to params
+    }
+    
+    if (setClauses.isEmpty()) return 0
+    
+    val sql = "UPDATE boulders SET ${setClauses.joinToString(", ")} WHERE id = :boulderID"
+    jdbcTemplate.update(sql, parameters)
+    return 1
+}
 
     open fun deleteBoulder(boulderID: Long): Boolean {
         jdbcTemplate.update("DELETE FROM boulders WHERE id=:boulderID",
@@ -84,12 +98,12 @@ class BoulderRepository(private var userRepository: UserRepository,
         ) { rs, _ ->
             boulders.add(
                 Boulder(
-                    rs.getLong("id"),
-                    rs.getString("name"),
-                    rs.getInt("attempts"),
-                    rs.getString("grade"),
-                    rs.getLong("place"),
-                    null
+                    id = rs.getLong("id"),
+                    name = rs.getString("name"),
+                    description = rs.getString("description"),
+                    grade = rs.getString("grade"),
+                    place = rs.getLong("place"),
+                    image = null
                 )
             )
         }
