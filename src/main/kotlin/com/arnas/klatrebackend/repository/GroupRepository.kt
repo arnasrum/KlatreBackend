@@ -1,13 +1,15 @@
 package com.arnas.klatrebackend.repository
 
+import com.arnas.klatrebackend.dataclass.AddGroupRequest
 import com.arnas.klatrebackend.dataclass.Group
 import com.arnas.klatrebackend.dataclass.GroupWithPlaces
 import com.arnas.klatrebackend.dataclass.Place
+import com.arnas.klatrebackend.dataclass.PlaceRequest
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import org.springframework.jdbc.core.namedparam.SqlParameterSource
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
-import javax.sql.DataSource
+import kotlin.reflect.full.memberProperties
 
 @Repository
  class GroupRepository(
@@ -47,34 +49,60 @@ import javax.sql.DataSource
         return groupsWithPlaces.toTypedArray()
     }
 
-    open fun addGroup(group: Group): Long {
+    open fun addGroup(group: AddGroupRequest): Long {
         val keyholder = GeneratedKeyHolder()
 
-        val parameters = mutableMapOf<String, Any>("owner" to group.owner)
-        val tableColumns = mutableListOf("owner")
-        val placeholders = mutableListOf(":owner")
+        val parameters = MapSqlParameterSource()
+        val tableColumns: MutableList<String> = mutableListOf()
+        val placeholders: MutableList<String> = mutableListOf()
 
-        group.name.let {
-            parameters["name"] = it
-            tableColumns.add("name")
-            placeholders.add(":name")
+        group::class.memberProperties.forEach { prop ->
+            val value = prop.getter.call(group)
+            if(value != null) {
+                tableColumns.add(prop.name)
+                placeholders.add(":${prop.name}")
+                parameters.addValue(prop.name, value)
+            }
         }
 
-        group.personal.let {
-            parameters["personal"] = it
-            tableColumns.add("personal")
-            placeholders.add(":personal")
-        }
-
-        group.description?.let {
-            parameters["description"] = it
-            tableColumns.add("description")
-            placeholders.add(":description")
-        }
-
-        val sql = "INSERT INTO team_groups (${tableColumns.joinToString(", ")}) VALUES (${placeholders.joinToString(", ")})"
-        jdbcTemplate.update(sql, parameters as SqlParameterSource, keyholder)
-        return keyholder.key?.toLong() ?: -1L
+        val sql = "INSERT INTO klatre_groups (${tableColumns.joinToString(", ")}) VALUES (${placeholders.joinToString(", ")})"
+        jdbcTemplate.update(sql, parameters, keyholder)
+        val keys = keyholder.keys ?: throw RuntimeException("Failed to retrieve generated keys")
+        return (keys["id"] as Number).toLong()
     }
+
+
+    open fun addPlaceToGroup(groupID: Long, placeRequest: PlaceRequest): Long {
+
+        val keyholder = GeneratedKeyHolder()
+
+        val tableColumns = mutableListOf<String>()
+        val placeHolders = mutableListOf<String>()
+        val parameters = MapSqlParameterSource()
+        placeRequest::class.memberProperties.forEach { prop ->
+            val value = prop.getter.call(placeRequest)
+            if(value != null) {
+                parameters.addValue(prop.name, value)
+                tableColumns.add(prop.name)
+                placeHolders.add(":${prop.name}")
+            }
+        }
+        val sql = "INSERT INTO places (${tableColumns.joinToString(", ")}) VALUES (${placeHolders.joinToString(", ")})"
+        jdbcTemplate.update(
+            sql, parameters, keyholder
+        )
+        val keys = keyholder.keys ?: throw RuntimeException("Failed to retrieve generated keys")
+        return (keys["id"] as Number).toLong()
+    }
+
+    open fun addUserToGroup(userID: Long, groupID: Long) {
+        jdbcTemplate.update(
+            "INSERT INTO user_groups (user_id, group_id) VALUES (:userID, :groupID)",
+            mapOf("userID" to userID, "groupID" to groupID)
+        )
+    }
+
+
+
 
 }

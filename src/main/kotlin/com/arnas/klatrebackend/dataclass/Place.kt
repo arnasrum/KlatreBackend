@@ -5,3 +5,9 @@ data class Place(
     val name: String,
     val description: String? = null,
 )
+
+data class PlaceRequest(
+    val group_id: Long,
+    val name: String,
+    val description: String? = null
+)

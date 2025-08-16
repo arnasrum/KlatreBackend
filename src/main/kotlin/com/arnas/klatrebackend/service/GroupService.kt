@@ -1,14 +1,17 @@
 package com.arnas.klatrebackend.service
 
-import com.arnas.klatrebackend.dataclass.Group
+import com.arnas.klatrebackend.dataclass.AddGroupRequest
 import com.arnas.klatrebackend.dataclass.GroupWithPlaces
+import com.arnas.klatrebackend.dataclass.PlaceRequest
 import com.arnas.klatrebackend.dataclass.ServiceResult
 import com.arnas.klatrebackend.repository.GroupRepository
+import com.arnas.klatrebackend.repository.UserRepository
 import org.springframework.stereotype.Service
 
 @Service
 open class GroupService(
     private val groupRepository: GroupRepository,
+    private val userRepository: UserRepository,
 ) {
 
     open fun getGroups(userID: Long): ServiceResult<Array<GroupWithPlaces>> {
@@ -16,17 +19,30 @@ open class GroupService(
         return ServiceResult(data = groups, message = "Groups retrieved successfully", success = true)
     }
 
-    open fun addGroup(userID: Long, body: Map<String, String>): ServiceResult<Long> {
-        val name = body["name"] ?: return ServiceResult(data = null, message = "Name is required", success = false)
-        val personal: Boolean = (body["personal"]?.toBoolean() ?: ServiceResult(data = null, message = "Personal status is required", success = false)) as Boolean
-        val group = Group(owner = userID, name = name, personal = personal)
-        body["name"]?.let { group.name = it }
-        body["description"]?.let { group.description = it }
+    open fun addGroup(userID: Long, request: AddGroupRequest): ServiceResult<Long> {
+        val name = request.name
+        val personal: Boolean = (request.personal ?: ServiceResult(data = null, message = "Personal status is required", success = false)) as Boolean
+        val group = AddGroupRequest(owner = userID, name = name, personal = personal)
+        request.name.let { group.name = it }
+        request.description?.let { group.description = it }
         val groupID = groupRepository.addGroup(group)
+        val userIDs = request.invites?.mapNotNull { email ->
+            userRepository.getUserByEmail(email)?.id
+        } ?: emptyList()
+
+        groupRepository.addUserToGroup(userID, groupID)
+        userIDs.forEach {
+            groupRepository.addUserToGroup(it, groupID)
+        }
         return ServiceResult(data = groupID, message = "Group added successfully", success = true)
     }
 
 
+    open fun addPlaceToGroup(groupID: Long, placeRequest: PlaceRequest) {
+
+        groupRepository.addPlaceToGroup(groupID, placeRequest)
+
+    }
 
 
 }

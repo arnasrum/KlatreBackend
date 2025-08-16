@@ -1,7 +1,8 @@
 package com.arnas.klatrebackend.controller
 
-import com.arnas.klatrebackend.dataclass.Group
+import com.arnas.klatrebackend.dataclass.AddGroupRequest
 import com.arnas.klatrebackend.dataclass.GroupWithPlaces
+import com.arnas.klatrebackend.dataclass.PlaceRequest
 import com.arnas.klatrebackend.service.GroupService
 import com.arnas.klatrebackend.service.UserService
 import org.springframework.http.HttpStatus
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@CrossOrigin(origins = ["http://localhost:5173"])
+@CrossOrigin(origins = arrayOf("http://localhost:5173"))
 class GroupController(
     private val userService: UserService,
     private val groupService: GroupService,
@@ -40,14 +41,33 @@ class GroupController(
     }
 
     @PostMapping("/groups")
-    open fun addGroup(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<String> {
-        val userID: Int = userService.getUserID(accessToken) ?: return  ResponseEntity.badRequest().body("Invalid access token")
+    open fun addGroup(@RequestParam accessToken: String, @RequestBody requestBody: AddGroupRequest): ResponseEntity<String> {
+        requestBody.personal = false
+        val userID: Long = userService.getUserID(accessToken)
         val serviceResult = groupService.addGroup(userID.toLong(), requestBody)
         if (!serviceResult.success) {
             return ResponseEntity.badRequest().body("Something went wrong when adding group")
         }
         return ResponseEntity.ok(serviceResult.message ?: "Group added successfully")
     }
+
+    @PostMapping("/groups/place")
+    open fun addPlaceToGroup(@RequestParam accessToken: String,
+                             @RequestParam groupID: Long,
+                             @RequestBody requestBody: Map<String, String>): ResponseEntity<String> {
+
+        // Check if user has permissions to add place to group
+
+        if(requestBody["name"] == null) {
+            return ResponseEntity.badRequest().body("Name is required")
+        }
+        val placeRequest = PlaceRequest(group_id = groupID, name = requestBody["name"]!!, description = requestBody.getOrDefault("description", null))
+        groupService.addPlaceToGroup(groupID, placeRequest)
+
+        return ResponseEntity.ok("Place added successfully")
+    }
+
+
 
     @PutMapping("/groups")
     open fun updateGroup(): ResponseEntity<String> {
