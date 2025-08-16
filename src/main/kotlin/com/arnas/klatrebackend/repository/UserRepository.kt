@@ -43,4 +43,19 @@ class UserRepository(private val jdbcTemplate: NamedParameterJdbcTemplate) {
         ) { rs, _ -> rs.getInt("id") }
         return userID[0]
     }
+
+    open fun getUserByEmail(email: String): User? {
+        val fetchedUser = jdbcTemplate.query(
+            "SELECT id, email, name FROM USERS WHERE email=:email",
+            MapSqlParameterSource().addValue("email", email)
+        ) { rs, _ ->
+            User(
+                rs.getLong("id"),
+                rs.getString("email"),
+                rs.getString("name")
+            )
+        }
+        return fetchedUser.firstOrNull()
+    }
+
 }

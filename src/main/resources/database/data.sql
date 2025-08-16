@@ -24,10 +24,10 @@ VALUES
     ('Test', 2)
 ;
 
-INSERT INTO boulders (name, attempts, grade, userID, place)
+INSERT INTO boulders (name, grade, userID, place)
 VALUES
-    ('svaberg', 5, '5a', 1, 1),
-    ('sva', 10, '8a', 1, 1);
+    ('svaberg', '5a', 1, 1),
+    ('sva', '8a', 1, 1);
 
 INSERT INTO image(image_base64, boulderID)
 VALUES

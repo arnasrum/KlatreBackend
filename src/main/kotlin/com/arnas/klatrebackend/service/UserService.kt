@@ -13,7 +13,6 @@ import java.net.http.HttpResponse
 @Service
 class UserService(
     var userRepository: UserRepository,
-    private val groupService: GroupService,
     private val groupRepository: GroupRepository
 ) {
 
@@ -42,16 +41,13 @@ class UserService(
 
 
         val userID = userRepository.createUser(email, name)
-
-
         val user = User(userID, email, name)
         return user
     }
 
-    open fun getUserID(accessToken: String): Int? {
-        val user: User = getUserByToken(accessToken) ?: return null
-        val userID: Int = userRepository.getUserIDByObject(user)
-        return userID
+    open fun getUserID(accessToken: String): Long {
+        val user: User = getUserByToken(accessToken) ?: throw RuntimeException("Invalid access token")
+        return user.id
     }
 
     open fun usersPlacePermissions(userID: Long, placeID: Long): Boolean {
@@ -63,6 +59,17 @@ class UserService(
         return hasAccess
     }
 
+    open fun getUserIDByMail(email: String): Long {
+        userRepository.getUserByEmail(email)?.let {
+            return it.id
+        }
+        return -1L
+    }
+
+
+    open fun userPermissionToPlace(userID: Long, placeID: Long): String {
+        return ""
+    }
 
 
 }

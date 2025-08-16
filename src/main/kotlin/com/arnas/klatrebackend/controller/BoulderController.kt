@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.client.UnknownHttpStatusCodeException
 
 @RestController
 @Tag(name = "Boulder", description = "Boulder CRUD operations")
@@ -31,7 +30,6 @@ class BoulderController(
     private fun validateUser(accessToken: String): User? {
         return userService.getUserByToken(accessToken)
     }
-
 
     @GetMapping("/boulders")
     open fun getBoulders(@RequestParam accessToken: String): ResponseEntity<List<Boulder>> {
