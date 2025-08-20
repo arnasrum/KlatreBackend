@@ -29,7 +29,8 @@ class GroupController(
         if(accessToken.isEmpty()) {
             return ResponseEntity.badRequest().body(null)
         }
-        val serviceResult = groupService.getGroups(userService.getUserID(accessToken)!!.toLong())
+        val userID: Long = userService.getUserByToken(accessToken).data?.id ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
+        val serviceResult = groupService.getGroups(userID)
         if (!serviceResult.success) {
             return ResponseEntity.badRequest().body(null)
         }else if(serviceResult.data == null) {
@@ -43,7 +44,7 @@ class GroupController(
     @PostMapping("/groups")
     open fun addGroup(@RequestParam accessToken: String, @RequestBody requestBody: AddGroupRequest): ResponseEntity<String> {
         requestBody.personal = false
-        val userID: Long = userService.getUserID(accessToken)
+        val userID: Long = userService.getUserByToken(accessToken).data?.id ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
         val serviceResult = groupService.addGroup(userID.toLong(), requestBody)
         if (!serviceResult.success) {
             return ResponseEntity.badRequest().body("Something went wrong when adding group")

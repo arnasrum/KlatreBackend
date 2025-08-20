@@ -14,3 +14,8 @@ data class BoulderRequest(
     val grade: String,
     val place: Long,
 )
+
+data class BoulderWithSend(
+    val boulder: Boulder,
+    val send: RouteSend? = null
+)

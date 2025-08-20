@@ -66,10 +66,12 @@ CREATE TABLE IF NOT EXISTS group_invites(
 
 CREATE TABLE IF NOT EXISTS route_sends(
     id BIGSERIAL PRIMARY KEY,
-    boulder BIGSERIAL REFERENCES boulders(id),
+    userID BIGSERIAL REFERENCES users(id),
+    boulderID BIGSERIAL REFERENCES boulders(id),
     date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     attempts INT NOT NULL,
-    perceived_grade TEXT
+    completed BOOL,
+    perceivedGrade TEXT
 );
 
 CREATE UNIQUE INDEX idx_unique_pending_invite ON group_invites (group_id, user_id)

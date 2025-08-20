@@ -2,17 +2,20 @@ package com.arnas.klatrebackend.repository
 
 import com.arnas.klatrebackend.dataclass.Boulder
 import com.arnas.klatrebackend.dataclass.BoulderRequest
+import com.arnas.klatrebackend.dataclass.RouteSend
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.jdbc.support.KeyHolder
+import org.springframework.util.RouteMatcher
 import kotlin.reflect.full.memberProperties
 
 @Repository
-class BoulderRepository(private var userRepository: UserRepository,
-                        private var jdbcTemplate: NamedParameterJdbcTemplate) {
+class BoulderRepository(
+    private var jdbcTemplate: NamedParameterJdbcTemplate
+) {
 
 
     fun getBouldersByUser(userID: Long): List<Boulder> {
@@ -109,4 +112,56 @@ fun updateBoulder(boulderInfo: Map<String, String>): Long {
         }
         return boulders.toTypedArray()
     }
+
+    open fun getBoulderSends(userID: Long, boulderIDs: List<Long>): Array<RouteSend> {
+        val routeSends: ArrayList<RouteSend> = arrayListOf<RouteSend>()
+        jdbcTemplate.query("SELECT * FROM route_sends WHERE userID=:userID AND boulderID IN (:boulderIDs)",
+            MapSqlParameterSource()
+                .addValue("userID", userID)
+                .addValue("boulderIDs", boulderIDs)
+        ) { rs, _ ->
+            routeSends.add(RouteSend(
+                id = rs.getLong("id"),
+                userID = rs.getLong("userid"),
+                boulderID = rs.getLong("boulderID"),
+                attempts = rs.getInt("attempts"),
+                completed = rs.getBoolean("completed"),
+                perceivedGrade = rs.getString("perceivedGrade")
+            ))
+        }
+        return routeSends.toTypedArray()
+    }
+
+    open fun insertRouteSend(userID: Long, boulderID: Long, sendInfo: Map<String, String>): Long {
+        val keyHolder: KeyHolder = GeneratedKeyHolder()
+
+        val columns = mutableListOf<String>("userID", "boulderID")
+        val values = mutableListOf<String>(":userID", ":boulderID")
+        val parameters = MapSqlParameterSource()
+            .addValue("userID", userID)
+            .addValue("boulderID", boulderID)
+
+
+        RouteSend::class.memberProperties.forEach { prop ->
+            if(sendInfo.containsKey(prop.name)) {
+                columns.add(prop.name)
+                values.add(":${prop.name}")
+                val value = sendInfo[prop.name]
+                val convertedValue = when(prop.name) {
+                    "attempts" -> value?.toInt() ?: 0
+                    "completed" -> value?.toBoolean() ?: false
+                    "perceivedGrade" -> value
+                    else -> value
+                }
+                parameters.addValue(prop.name, convertedValue)
+            }
+        }
+
+        val sql = "INSERT INTO route_sends (${columns.joinToString(", ")}) VALUES (${values.joinToString(", ")})"
+        jdbcTemplate.update(sql, parameters ,keyHolder)
+
+        val keys = keyHolder.keys ?: throw RuntimeException("Failed to retrieve generated keys")
+        return (keys["id"] as Number).toLong()
+    }
+
 }

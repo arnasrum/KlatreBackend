@@ -1,5 +1,6 @@
 package com.arnas.klatrebackend.service
 
+import com.arnas.klatrebackend.dataclass.ServiceResult
 import com.arnas.klatrebackend.dataclass.User
 import com.arnas.klatrebackend.repository.GroupRepository
 import com.arnas.klatrebackend.repository.UserRepository
@@ -33,21 +34,14 @@ class UserService(
         )
     }
 
-    open fun getUserByToken(token: String): User? {
+    open fun getUserByToken(token: String): ServiceResult<User> {
         val userInfo = getGoogleUserProfile(token)
-        if (userInfo.isEmpty()) {return null}
-        val email = userInfo["email"] ?: return null
-        val name = userInfo["name"] ?: return null
-
-
+        if (userInfo.isEmpty()) {return ServiceResult(data = null, success = false, message = "Invalid token")}
+        val email = userInfo["email"] ?: return ServiceResult(data = null, success = false, message = "Email is required")
+        val name = userInfo["name"] ?: return ServiceResult(data = null, success = false, message = "Name is required")
         val userID = userRepository.createUser(email, name)
         val user = User(userID, email, name)
-        return user
-    }
-
-    open fun getUserID(accessToken: String): Long {
-        val user: User = getUserByToken(accessToken) ?: throw RuntimeException("Invalid access token")
-        return user.id
+        return ServiceResult(data = user, success = true)
     }
 
     open fun usersPlacePermissions(userID: Long, placeID: Long): Boolean {
@@ -65,11 +59,5 @@ class UserService(
         }
         return -1L
     }
-
-
-    open fun userPermissionToPlace(userID: Long, placeID: Long): String {
-        return ""
-    }
-
 
 }

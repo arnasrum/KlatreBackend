@@ -2,6 +2,8 @@ package com.arnas.klatrebackend.service
 
 import com.arnas.klatrebackend.dataclass.Boulder
 import com.arnas.klatrebackend.dataclass.BoulderRequest
+import com.arnas.klatrebackend.dataclass.BoulderWithSend
+import com.arnas.klatrebackend.dataclass.RouteSend
 import com.arnas.klatrebackend.dataclass.ServiceResult
 import com.arnas.klatrebackend.repository.BoulderRepository
 import org.springframework.jdbc.core.JdbcTemplate
@@ -9,10 +11,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class BoulderService(
-    private val userService: UserService,
     private val boulderRepository: BoulderRepository,
     private val imageService: ImageService,
-    private val jdbcTemplate: JdbcTemplate,
 ) {
 
 
@@ -46,15 +46,7 @@ class BoulderService(
         return mapOf("status" to "200", "message" to "Image deleted successfully")
     }
 
-    open fun getBouldersByPlace(placeID: Long): ServiceResult<Array<Boulder>> {
-        val boulders = boulderRepository.getBouldersByPlace(placeID)
-        boulders.forEach { imageService.getImage(it.id)}
-        return ServiceResult(boulders, true)
-    }
-
     open fun addBoulderToPlace(userID: Long, placeID: Long, boulderInfo: Map<String, String>): ServiceResult<Long> {
-
-        val userBoulders = boulderRepository.getBouldersByUser(userID)
 
         val name = boulderInfo["name"]
             ?: return ServiceResult(success = false, message = "Missing required field: name")
@@ -68,14 +60,49 @@ class BoulderService(
             return ServiceResult(success = false, message = "Boulder grade cannot be blank")
         }
 
-        val boulder = BoulderRequest(
+        val boulderRequest = BoulderRequest(
             name = name,
             grade = grade,
             place = placeID,
         )
-        val boulderID = boulderRepository.addBoulder(userID, boulder)
+        val boulderID = boulderRepository.addBoulder(userID, boulderRequest)
 
         return ServiceResult(success = true, message = "Boulder added successfully", data = boulderID)
+    }
+
+    open fun getUserBoulderSends(userID: Long, boulderIDs: List<Long>): ServiceResult<Array<RouteSend>> {
+        return try {
+            ServiceResult(data = boulderRepository.getBoulderSends(userID, boulderIDs), success = true)
+        } catch (e: Exception) {
+            ServiceResult(success = false, message = "Error getting boulder sends", data = null)
+        }
+    }
+
+    open fun getBouldersWithSendsByPlace(userID: Long, placeID: Long): ServiceResult<List<BoulderWithSend>> {
+        return try {
+            val boulders = boulderRepository.getBouldersByPlace(placeID)
+            val routeSends = boulderRepository.getBoulderSends(userID, boulders.map { it.id })
+            println("routeSends: $routeSends")
+            routeSends.forEach { println("routeSend: $it") }
+
+            val bouldersWithSends = boulders.map { boulder ->
+                val send = routeSends.filter { boulder.id == it.boulderID }
+                println("send: $send")
+                imageService.getImage(boulder.id)?.let {boulder.image = it.image}
+                BoulderWithSend(
+                    boulder = boulder,
+                    send = send.firstOrNull()
+                )
+            }
+            ServiceResult(success = true, data = bouldersWithSends, message = "Boulders retrieved successfully")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ServiceResult(success = false, message = "Error getting boulder sends", data = null)
+        }
+    }
+
+    open fun addUserRouteSend(userID: Long, boulderID: Long, additionalProps: Map<String, String> = emptyMap()) {
+        boulderRepository.insertRouteSend(userID, boulderID, additionalProps)
     }
 
 }
