@@ -18,13 +18,9 @@ import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 
 @Service
-class ImageService {
-
-
-    @Autowired
-    private lateinit var imageRepository: ImageRepository
-    @Autowired
-    private lateinit var userService: UserService
+class ImageService(
+    val imageRepository: ImageRepository,
+) {
 
     fun storeImage(boulderID: Long, image: String) {
         imageRepository.storeImage(image, boulderID)

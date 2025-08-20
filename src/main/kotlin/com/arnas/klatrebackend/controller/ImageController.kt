@@ -14,7 +14,7 @@ import javax.print.attribute.standard.Media
 @RestController
 @CrossOrigin(origins = ["http://localhost:5173"])
 @RequestMapping("/image")
-class ImageController(private val userService: UserService, private val imageService: ImageService) {
+class ImageController(private val imageService: ImageService) {
 
     @GetMapping("")
     fun getImage(@RequestParam("boulderID") boulderID: Long, @RequestParam("accessToken") token: String): ResponseEntity<ByteArray> {
