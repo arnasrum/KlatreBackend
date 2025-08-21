@@ -17,5 +17,5 @@ data class BoulderRequest(
 
 data class BoulderWithSend(
     val boulder: Boulder,
-    val send: RouteSend? = null
+    val routeSend: RouteSend? = null
 )
