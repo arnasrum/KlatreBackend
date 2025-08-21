@@ -81,17 +81,15 @@ class BoulderService(
     open fun getBouldersWithSendsByPlace(userID: Long, placeID: Long): ServiceResult<List<BoulderWithSend>> {
         return try {
             val boulders = boulderRepository.getBouldersByPlace(placeID)
-            val routeSends = boulderRepository.getBoulderSends(userID, boulders.map { it.id })
-            println("routeSends: $routeSends")
-            routeSends.forEach { println("routeSend: $it") }
-
+            val boulderIDs = boulders.map { it.id }
+            if(boulderIDs.isEmpty()) return ServiceResult(success = true, data = emptyList(), message = "No boulders found in this place")
+            val routeSends = boulderRepository.getBoulderSends(userID, boulderIDs)
             val bouldersWithSends = boulders.map { boulder ->
                 val send = routeSends.filter { boulder.id == it.boulderID }
-                println("send: $send")
                 imageService.getImage(boulder.id)?.let {boulder.image = it.image}
                 BoulderWithSend(
                     boulder = boulder,
-                    send = send.firstOrNull()
+                    routeSend = send.firstOrNull()
                 )
             }
             ServiceResult(success = true, data = bouldersWithSends, message = "Boulders retrieved successfully")

@@ -47,8 +47,6 @@ class LoginService(private val restTemplateBuilder: RestTemplateBuilder) {
             .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
             .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofString())
-        println(response)
-        println(response.body())
 
         return ""
     }

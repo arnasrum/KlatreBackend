@@ -100,7 +100,6 @@ class BoulderController(
             .filter { it.name != "boulderID" && it.name != "id" && it.name != "userID" }
             .associate { it.name to requestBody[it.name] }
             .filterValues { it != null } as Map<String, String>
-        println(sendProps)
         boulderService.addUserRouteSend(userID, boulderID, sendProps)
 
 

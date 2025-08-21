@@ -62,7 +62,6 @@ fun updateBoulder(boulderInfo: Map<String, String>): Long {
     val boulderProperties = Boulder::class.memberProperties
         .filter { it.returnType.classifier == String::class }
         .map { it.name }
-    println("boulder properties: $boulderProperties")
 
     val fieldConverters: Map<String, (String) -> Any> = boulderProperties.associateWith {
         { value: String -> value }
@@ -114,7 +113,7 @@ fun updateBoulder(boulderInfo: Map<String, String>): Long {
     }
 
     open fun getBoulderSends(userID: Long, boulderIDs: List<Long>): Array<RouteSend> {
-        val routeSends: ArrayList<RouteSend> = arrayListOf<RouteSend>()
+        val routeSends: ArrayList<RouteSend> = arrayListOf()
         jdbcTemplate.query("SELECT * FROM route_sends WHERE userID=:userID AND boulderID IN (:boulderIDs)",
             MapSqlParameterSource()
                 .addValue("userID", userID)
@@ -122,7 +121,7 @@ fun updateBoulder(boulderInfo: Map<String, String>): Long {
         ) { rs, _ ->
             routeSends.add(RouteSend(
                 id = rs.getLong("id"),
-                userID = rs.getLong("userid"),
+                userID = rs.getLong("userID"),
                 boulderID = rs.getLong("boulderID"),
                 attempts = rs.getInt("attempts"),
                 completed = rs.getBoolean("completed"),
