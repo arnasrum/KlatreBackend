@@ -2,7 +2,6 @@ package com.arnas.klatrebackend.controller
 
 import com.arnas.klatrebackend.dataclass.Boulder
 import com.arnas.klatrebackend.dataclass.RouteSend
-import com.arnas.klatrebackend.dataclass.ServiceResult
 import com.arnas.klatrebackend.dataclass.User
 import com.arnas.klatrebackend.service.BoulderService
 import com.arnas.klatrebackend.service.ImageService
@@ -28,20 +27,19 @@ import kotlin.reflect.full.memberProperties
 class BoulderController(
     private val userService: UserService,
     private val boulderService: BoulderService,
-    private val imageService: ImageService
+    private val imageService: ImageService,
 ) {
 
 
     @GetMapping("")
-    open fun getBoulders(@RequestParam accessToken: String): ResponseEntity<List<Boulder>> {
-        val userID: Long = userService.getUserByToken(accessToken).data?.id ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
-        val boulders = boulderService.getBouldersByUser(userID)
+    open fun getBoulders(user: User): ResponseEntity<List<Boulder>> {
+        val boulders = boulderService.getBouldersByUser(user.id)
         return ResponseEntity(boulders, HttpStatus.OK)
     }
 
     @GetMapping("/place")
-    open fun getBouldersByPlace(@RequestParam accessToken: String, @RequestParam placeID: Long): ResponseEntity<out Any> {
-        val userID: Long = userService.getUserByToken(accessToken).data?.id ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
+    open fun getBouldersByPlace(@RequestParam placeID: Long, user: User): ResponseEntity<out Any> {
+        val userID: Long = user.id
         if(!userService.usersPlacePermissions(userID, placeID)) {
             return ResponseEntity(HttpStatus.UNAUTHORIZED)
         }
@@ -54,8 +52,8 @@ class BoulderController(
     }
 
     @PostMapping("/place")
-    open fun addBoulderToPlace(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<out Any> {
-        val userID: Long = userService.getUserByToken(accessToken).data?.id ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
+    open fun addBoulderToPlace(@RequestBody requestBody: Map<String, String>, user: User): ResponseEntity<out Any> {
+        val userID: Long = user.id
         val placeID: Long = requestBody["placeID"]?.toLong() ?: return ResponseEntity(HttpStatus.BAD_REQUEST)
         if(!userService.usersPlacePermissions(userID, placeID)) {
             return ResponseEntity(HttpStatus.UNAUTHORIZED)
@@ -70,8 +68,8 @@ class BoulderController(
     }
 
     @PutMapping("")
-    open fun putBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<Any> {
-        val userID: Long = userService.getUserByToken(accessToken).data?.id ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
+    open fun putBoulder(@RequestBody requestBody: Map<String, String>, user: User): ResponseEntity<Any> {
+        val userID: Long = user.id
         boulderService.updateBoulder(userID, requestBody)
         if(requestBody["image"] != null) {
             imageService.updateImage(requestBody["boulderID"]!!.toLong(), requestBody["image"]!!)
@@ -80,20 +78,16 @@ class BoulderController(
     }
 
     @DeleteMapping("")
-    open fun deleteBoulder(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<Any> {
-        val userID: Long = userService.getUserByToken(accessToken).data?.id ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
+    open fun deleteBoulder(@RequestBody requestBody: Map<String, String>, user: User): ResponseEntity<Any> {
+        val userID: Long = user.id
         boulderService.deleteBoulder(userID, requestBody["id"]!!.toLong())
 
         return ResponseEntity(HttpStatus.OK)
     }
 
     @PostMapping("/place/sends")
-    open fun getRouteSends(@RequestParam accessToken: String, @RequestBody requestBody: Map<String, String>): ResponseEntity<Any> {
-        val serviceResult: ServiceResult<User> = userService.getUserByToken(accessToken)
-        if(!serviceResult.success) {
-            return ResponseEntity(HttpStatus.UNAUTHORIZED)
-        }
-        val userID = serviceResult.data?.id ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
+    open fun getRouteSends(@RequestBody requestBody: Map<String, String>, user: User): ResponseEntity<Any> {
+        val userID = user.id
         //val placeID = requestBody["placeID"]?.toLong() ?: return ResponseEntity(HttpStatus.BAD_REQUEST)
         val boulderID = requestBody["boulderID"]?.toLong() ?: return ResponseEntity(HttpStatus.BAD_REQUEST)
         val sendProps = RouteSend::class.memberProperties

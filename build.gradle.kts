@@ -12,9 +12,6 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(23)
     }
-    dependencies {
-        implementation("org.json:json:20240303")
-    }
 }
 
 repositories {
@@ -22,6 +19,10 @@ repositories {
 }
 
 dependencies {
+    implementation("io.jsonwebtoken:jjwt-api:0.13.0")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
+    implementation("org.json:json:20240303")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.0")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
@@ -33,7 +34,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     testImplementation("org.springframework.security:spring-security-test")
     developmentOnly("org.springframework.boot:spring-boot-devtools")

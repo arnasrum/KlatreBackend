@@ -13,8 +13,9 @@ import java.net.http.HttpResponse
 
 @Service
 class UserService(
-    var userRepository: UserRepository,
-    private val groupRepository: GroupRepository
+    private var userRepository: UserRepository,
+    private val groupRepository: GroupRepository,
+    private val jwtService: JwtService,
 ) {
 
     open val client: HttpClient = HttpClient.newBuilder().build()
@@ -30,7 +31,8 @@ class UserService(
         val json = JSONObject(response.body())
         return mapOf(
             "name" to json.getString("name"),
-            "email" to json.getString("email")
+            "email" to json.getString("email"),
+            "id" to json.getLong("id").toString()
         )
     }
 
@@ -39,13 +41,13 @@ class UserService(
         if (userInfo.isEmpty()) {return ServiceResult(data = null, success = false, message = "Invalid token")}
         val email = userInfo["email"] ?: return ServiceResult(data = null, success = false, message = "Email is required")
         val name = userInfo["name"] ?: return ServiceResult(data = null, success = false, message = "Name is required")
+        val id = userInfo["id"] ?: return ServiceResult(data = null, success = false, message = "ID is required")
         val userID = userRepository.createUser(email, name)
         val user = User(userID, email, name)
         return ServiceResult(data = user, success = true)
     }
 
     open fun usersPlacePermissions(userID: Long, placeID: Long): Boolean {
-
         val groups = groupRepository.getGroups(userID)
         val hasAccess = groups.any { group ->
             group.places.any{ it.id == placeID }
@@ -53,11 +55,24 @@ class UserService(
         return hasAccess
     }
 
-    open fun getUserIDByMail(email: String): Long {
+    open fun createOrUpdateUser(userInfo: Map<String, String>): Long? {
+        val email = userInfo["email"] ?: return null
+        val name = userInfo["name"] ?: return null
+        val userID = userRepository.createUser(email, name)
+        return userID
+    }
+
+    open fun getUserIDByMail(email: String): Long? {
         userRepository.getUserByEmail(email)?.let {
             return it.id
         }
-        return -1L
+        return null
+    }
+
+    open fun extractUserInfoFromAuthHeader(authHeader: String): Map<String, String> {
+        val token = authHeader.removePrefix("Bearer ").trim()
+        val payload = jwtService.getJwtPayload(jwtService.decodeJwt(token))
+        return payload.filterKeys { it != "exp" && it != "iat" && it != "jti" && it != "sub" }
     }
 
 }

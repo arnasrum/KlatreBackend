@@ -27,7 +27,7 @@ class BoulderService(
 
     fun updateBoulder(userID: Long, boulderInfo: Map<String, String>): ServiceResult<String> {
         // Check if user has permission to update boulder
-        boulderRepository.updateBoulder(boulderInfo)
+        boulderRepository.updateBoulder(boulderInfo.filterKeys { it != "image" })
         if(boulderInfo.containsKey("image")) {
             imageService.updateImage(boulderInfo["boulderID"]!!.toLong(), boulderInfo["image"]!!)
         }
@@ -100,6 +100,8 @@ class BoulderService(
     }
 
     open fun addUserRouteSend(userID: Long, boulderID: Long, additionalProps: Map<String, String> = emptyMap()) {
+
+
         boulderRepository.insertRouteSend(userID, boulderID, additionalProps)
     }
 

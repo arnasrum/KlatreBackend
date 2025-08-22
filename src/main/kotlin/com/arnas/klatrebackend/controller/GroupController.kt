@@ -3,8 +3,11 @@ package com.arnas.klatrebackend.controller
 import com.arnas.klatrebackend.dataclass.AddGroupRequest
 import com.arnas.klatrebackend.dataclass.GroupWithPlaces
 import com.arnas.klatrebackend.dataclass.PlaceRequest
+import com.arnas.klatrebackend.dataclass.User
 import com.arnas.klatrebackend.service.GroupService
+import com.arnas.klatrebackend.service.JwtService
 import com.arnas.klatrebackend.service.UserService
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CrossOrigin
@@ -13,24 +16,20 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @CrossOrigin(origins = arrayOf("http://localhost:5173"))
 class GroupController(
-    private val userService: UserService,
     private val groupService: GroupService,
 ) {
 
-
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/groups")
-    open fun getGroups(@RequestParam accessToken: String): ResponseEntity<Array<GroupWithPlaces>> {
-        if(accessToken.isEmpty()) {
-            return ResponseEntity.badRequest().body(null)
-        }
-        val userID: Long = userService.getUserByToken(accessToken).data?.id ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
-        val serviceResult = groupService.getGroups(userID)
+    open fun getGroups(user: User): ResponseEntity<Array<GroupWithPlaces>> {
+        val serviceResult = groupService.getGroups(user.id)
         if (!serviceResult.success) {
             return ResponseEntity.badRequest().body(null)
         }else if(serviceResult.data == null) {
@@ -42,10 +41,9 @@ class GroupController(
     }
 
     @PostMapping("/groups")
-    open fun addGroup(@RequestParam accessToken: String, @RequestBody requestBody: AddGroupRequest): ResponseEntity<String> {
+    open fun addGroup(@RequestBody requestBody: AddGroupRequest, user: User): ResponseEntity<String> {
         requestBody.personal = false
-        val userID: Long = userService.getUserByToken(accessToken).data?.id ?: return ResponseEntity(HttpStatus.UNAUTHORIZED)
-        val serviceResult = groupService.addGroup(userID.toLong(), requestBody)
+        val serviceResult = groupService.addGroup(user.id, requestBody)
         if (!serviceResult.success) {
             return ResponseEntity.badRequest().body("Something went wrong when adding group")
         }
@@ -53,7 +51,7 @@ class GroupController(
     }
 
     @PostMapping("/groups/place")
-    open fun addPlaceToGroup(@RequestParam accessToken: String,
+    open fun addPlaceToGroup(user: User,
                              @RequestParam groupID: Long,
                              @RequestBody requestBody: Map<String, String>): ResponseEntity<String> {
 
