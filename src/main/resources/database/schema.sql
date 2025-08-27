@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS places(
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT,
-    group_id BIGSERIAL REFERENCES klatre_groups(id)
+    group_id BIGSERIAL REFERENCES klatre_groups(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS boulders(
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS boulders(
     grade TEXT,
     description TEXT,
     userID BIGSERIAL REFERENCES users(id),
-    place BIGSERIAL REFERENCES places(id)
+    place BIGSERIAL REFERENCES places(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS image(
@@ -41,13 +41,13 @@ CREATE TABLE IF NOT EXISTS image(
     image_base64 TEXT,
     boulderID BIGSERIAL UNIQUE,
     PRIMARY KEY(id),
-    FOREIGN KEY (boulderID) REFERENCES boulders(id)
+    FOREIGN KEY (boulderID) REFERENCES boulders(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS user_groups(
     user_id BIGSERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     group_id BIGSERIAL NOT NULL REFERENCES klatre_groups(id) ON DELETE CASCADE,
-    role INT references roles(id) ON DELETE CASCADE, -- OWNER, ADMIN, USER
+    role INT NOT NULL references roles(id) ON DELETE CASCADE, -- OWNER, ADMIN, USER
     joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     PRIMARY KEY(user_id, group_id)
 );
