@@ -10,7 +10,7 @@ import java.util.Date
 
 @Service
 class JwtService(
-    @Value("\${JWT_SECRET}") private val googleSecret: String,
+    @param:Value("\${JWT_SECRET}") private val googleSecret: String,
 ) {
 
     open fun createJwtToken(subject: String, claims: Map<String, String>): String {
