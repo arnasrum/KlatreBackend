@@ -51,18 +51,14 @@ class GroupController(
     }
 
     @PostMapping("/groups/place")
-    open fun addPlaceToGroup(user: User,
-                             @RequestParam groupID: Long,
-                             @RequestBody requestBody: Map<String, String>): ResponseEntity<String> {
-
-        // Check if user has permissions to add place to group
-
-        if(requestBody["name"] == null) {
-            return ResponseEntity.badRequest().body("Name is required")
-        }
-        val placeRequest = PlaceRequest(group_id = groupID, name = requestBody["name"]!!, description = requestBody.getOrDefault("description", null))
+    open fun addPlaceToGroup(
+        user: User,
+        @RequestParam groupID: Long,
+        @RequestParam name: String,
+        @RequestParam(required = false) description: String?
+    ): ResponseEntity<String> {
+        val placeRequest = PlaceRequest(group_id = groupID, name = name, description = description)
         groupService.addPlaceToGroup(groupID, placeRequest)
-
         return ResponseEntity.ok("Place added successfully")
     }
 
@@ -75,8 +71,12 @@ class GroupController(
     }
 
     @DeleteMapping("/groups")
-    open fun deleteGroup(): ResponseEntity<String> {
-
+    open fun deleteGroup(user: User, @RequestBody requestBody: Map<String, String>): ResponseEntity<String> {
+        val groupID = requestBody["groupID"]?.toLong() ?: return ResponseEntity.badRequest().body("GroupID is required")
+        val serviceResult = groupService.deleteGroup(user.id, groupID)
+        if(!serviceResult.success) {
+            return ResponseEntity.internalServerError().body(serviceResult.message)
+        }
         return ResponseEntity.ok("Group deleted successfully")
     }
 }

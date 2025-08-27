@@ -5,6 +5,7 @@ import com.arnas.klatrebackend.dataclass.Group
 import com.arnas.klatrebackend.dataclass.GroupWithPlaces
 import com.arnas.klatrebackend.dataclass.Place
 import com.arnas.klatrebackend.dataclass.PlaceRequest
+import com.arnas.klatrebackend.dataclass.ServiceResult
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
@@ -95,14 +96,39 @@ import kotlin.reflect.full.memberProperties
         return (keys["id"] as Number).toLong()
     }
 
-    open fun addUserToGroup(userID: Long, groupID: Long) {
+    open fun addUserToGroup(userID: Long, groupID: Long, roleID: Int) {
         jdbcTemplate.update(
-            "INSERT INTO user_groups (user_id, group_id) VALUES (:userID, :groupID)",
-            mapOf("userID" to userID, "groupID" to groupID)
+            "INSERT INTO user_groups (user_id, group_id, role) VALUES (:userID, :groupID, :role)",
+            mapOf("userID" to userID, "groupID" to groupID, "role" to roleID)
         )
     }
 
+    open fun getUserGroupRole(userID: Long, groupID: Long): Int? {
 
-
-
+        var userRole: Int? = null
+        jdbcTemplate.query("SELECT role FROM user_groups WHERE user_id = :userID AND group_id = :groupID",
+            mapOf("userID" to userID, "groupID" to groupID)
+        ) { rs -> userRole = rs.getInt("role") }
+        return userRole
+    }
+    
+    
+    open fun deleteGroup(groupID: Long): ServiceResult<Unit> {
+        try {
+            val rowsAffected = jdbcTemplate.update(
+                "DELETE FROM klatre_groups WHERE id = :groupId",
+                mapOf("groupId" to groupID)
+            )
+            println("rowsAffected: $rowsAffected")
+            return if (rowsAffected > 0) {
+                ServiceResult(success = true, message = "Group deleted successfully")
+            } else {
+                ServiceResult(success = false, message = "Group not found")
+            }
+        } catch(e: Exception) {
+            //logger.error("Failed to delete group with ID: $groupID", e)
+            return ServiceResult(success = false, message = "Failed to delete group: ${e.message}")
+        }
+    }
+        
 }

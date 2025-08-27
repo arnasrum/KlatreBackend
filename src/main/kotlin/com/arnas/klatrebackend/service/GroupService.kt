@@ -30,9 +30,9 @@ open class GroupService(
             userRepository.getUserByEmail(email)?.id
         } ?: emptyList()
 
-        groupRepository.addUserToGroup(userID, groupID)
+        groupRepository.addUserToGroup(userID, groupID, 0)
         userIDs.forEach {
-            groupRepository.addUserToGroup(it, groupID)
+            groupRepository.addUserToGroup(it, groupID, 2)
         }
         return ServiceResult(data = groupID, message = "Group added successfully", success = true)
     }
@@ -44,5 +44,18 @@ open class GroupService(
 
     }
 
+    open fun deleteGroup(userID: Long, groupID: Long): ServiceResult<Unit> {
+        val userRole = groupRepository.getUserGroupRole(userID, groupID)
+            ?: return ServiceResult(success = false, message = "User is not a member of group")
 
+        if (userRole != 0) {
+            return ServiceResult(success = false, message = "Only group owners can delete groups")
+        }
+        val result = groupRepository.deleteGroup(groupID)
+        return if (result.success) {
+            ServiceResult(success = true, message = "Group deleted successfully")
+        } else {
+            ServiceResult(success = false, message = result.message, errorCode = "401")
+        }
+    }
 }
