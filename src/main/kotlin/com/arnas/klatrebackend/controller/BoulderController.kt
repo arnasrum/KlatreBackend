@@ -51,29 +51,59 @@ class BoulderController(
 
     }
 
-    @PostMapping("/place")
-    open fun addBoulderToPlace(@RequestBody requestBody: Map<String, String>, user: User): ResponseEntity<out Any> {
+    @PostMapping("/place/add")
+    open fun addBoulderToPlace(
+        @RequestParam placeID: Long,
+        @RequestParam name: String,
+        @RequestParam grade: String,
+        @RequestParam(required = false) description: String?,
+        @RequestParam(required = false) image: String?,
+        user: User
+    ): ResponseEntity<out Any> {
         val userID: Long = user.id
-        val placeID: Long = requestBody["placeID"]?.toLong() ?: return ResponseEntity(HttpStatus.BAD_REQUEST)
+        
         if(!userService.usersPlacePermissions(userID, placeID)) {
             return ResponseEntity(HttpStatus.UNAUTHORIZED)
         }
-        val serviceResult = boulderService.addBoulderToPlace(userID,  placeID, requestBody)
-        requestBody["image"]?.let {
+
+        val requestBody = mutableMapOf<String, String>().apply {
+            put("name", name)
+            put("grade", grade)
+            description?.let { put("description", it) }
+        }
+        val serviceResult = boulderService.addBoulderToPlace(userID, placeID, requestBody)
+        image?.let {
             if(!serviceResult.success) return ResponseEntity(HttpStatus.BAD_REQUEST)
-            imageService.storeImage(serviceResult.data!!, it)
+            imageService.storeImage(serviceResult.data!!, image)
         }
 
         return ResponseEntity(HttpStatus.OK)
     }
 
-    @PutMapping("")
-    open fun putBoulder(@RequestBody requestBody: Map<String, String>, user: User): ResponseEntity<Any> {
+    @PutMapping("/place/update")
+    open fun putBoulder(
+        @RequestParam boulderID: Long,
+        @RequestParam(required = false) name: String?,
+        @RequestParam(required = false) grade: String?,
+        @RequestParam(required = false) description: String?,
+        @RequestParam(required = false) image: String?,
+        user: User
+    ): ResponseEntity<Any> {
         val userID: Long = user.id
-        boulderService.updateBoulder(userID, requestBody)
-        if(requestBody["image"] != null) {
-            imageService.updateImage(requestBody["boulderID"]!!.toLong(), requestBody["image"]!!)
+        
+        val requestBody = mutableMapOf<String, String>().apply {
+            put("boulderID", boulderID.toString())
+            name?.let { put("name", it) }
+            grade?.let { put("grade", it) }
+            description?.let { put("description", it) }
         }
+        
+        boulderService.updateBoulder(userID, requestBody)
+        
+        image?.let {
+            imageService.updateImage(boulderID, image)
+        }
+        
         return ResponseEntity(HttpStatus.OK)
     }
 

@@ -35,10 +35,9 @@ class ImageRepository(private var jdbcTemplate: NamedParameterJdbcTemplate) {
         return result[0]
     }
 
-    fun deleteImage(imageID: Long) {
-        jdbcTemplate.update("DELETE FROM image WHERE id=:imageid",
-            MapSqlParameterSource()
-                .addValue("imageid", imageID)
+    fun deleteImage(boulderID: Long) {
+        jdbcTemplate.update("DELETE FROM image WHERE boulderID=:boulderID",
+            mapOf("boulderID" to boulderID)
         )
     }
 }
