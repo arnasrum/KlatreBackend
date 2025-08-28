@@ -70,7 +70,7 @@ class BoulderService(
         return ServiceResult(success = true, message = "Boulder added successfully", data = boulderID)
     }
 
-    open fun getUserBoulderSends(userID: Long, boulderIDs: List<Long>): ServiceResult<Array<RouteSend>> {
+    open fun getUserBoulderSends(userID: Long, boulderIDs: List<Long>): ServiceResult<List<RouteSend>> {
         return try {
             ServiceResult(data = boulderRepository.getBoulderSends(userID, boulderIDs), success = true)
         } catch (e: Exception) {

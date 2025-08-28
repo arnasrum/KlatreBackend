@@ -75,5 +75,13 @@ CREATE TABLE IF NOT EXISTS route_sends(
     UNIQUE(userID, boulderID)
 );
 
+CREATE TABLE IF NOT EXISTS boulder_equivalence(
+    id BIGSERIAL PRIMARY KEY,
+    boulder_id1 BIGSERIAL REFERENCES boulders(id) NOT NULL, -- Take sends from boulder2 and apply to boulder1
+    boulder_id2 BIGSERIAL REFERENCES boulders(id) NOT NULL,
+    user_id BIGSERIAL REFERENCES users(id) NOT NULL,
+    UNIQUE(boulder_id1, boulder_id2)
+);
+
 CREATE UNIQUE INDEX idx_unique_pending_invite ON group_invites (group_id, user_id)
     WHERE status = 'pending';

@@ -112,8 +112,8 @@ fun updateBoulder(boulderInfo: Map<String, String>): Long {
         return boulders.toTypedArray()
     }
 
-    open fun getBoulderSends(userID: Long, boulderIDs: List<Long>): Array<RouteSend> {
-        val routeSends: ArrayList<RouteSend> = arrayListOf()
+    open fun getBoulderSends(userID: Long, boulderIDs: List<Long>): List<RouteSend> {
+        val routeSends: MutableList<RouteSend> = mutableListOf()
         jdbcTemplate.query("SELECT * FROM route_sends WHERE userID=:userID AND boulderID IN (:boulderIDs)",
             MapSqlParameterSource()
                 .addValue("userID", userID)
@@ -128,18 +128,17 @@ fun updateBoulder(boulderInfo: Map<String, String>): Long {
                 perceivedGrade = rs.getString("perceivedGrade")
             ))
         }
-        return routeSends.toTypedArray()
+        return routeSends.toList()
     }
 
     open fun insertRouteSend(userID: Long, boulderID: Long, sendInfo: Map<String, String>): Long {
         val keyHolder: KeyHolder = GeneratedKeyHolder()
 
-        val columns = mutableListOf<String>("userID", "boulderID")
-        val values = mutableListOf<String>(":userID", ":boulderID")
+        val columns = mutableListOf("userID", "boulderID")
+        val values = mutableListOf(":userID", ":boulderID")
         val parameters = MapSqlParameterSource()
             .addValue("userID", userID)
             .addValue("boulderID", boulderID)
-
 
         RouteSend::class.memberProperties.forEach { prop ->
             if(sendInfo.containsKey(prop.name)) {

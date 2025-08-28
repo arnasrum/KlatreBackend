@@ -116,17 +116,25 @@ class BoulderController(
     }
 
     @PostMapping("/place/sends")
-    open fun getRouteSends(@RequestBody requestBody: Map<String, String>, user: User): ResponseEntity<Any> {
+    open fun updateRouteSend(
+        @RequestParam boulderID: Long,
+        @RequestParam (required = false) attempts: Int?,
+        @RequestParam (required = false) perceivedGrade: String?,
+        @RequestParam (required = false) completed: String?,
+        user: User
+    ): ResponseEntity<Any> {
         val userID = user.id
-        //val placeID = requestBody["placeID"]?.toLong() ?: return ResponseEntity(HttpStatus.BAD_REQUEST)
-        val boulderID = requestBody["boulderID"]?.toLong() ?: return ResponseEntity(HttpStatus.BAD_REQUEST)
-        val sendProps = RouteSend::class.memberProperties
-            .filter { it.name != "boulderID" && it.name != "id" && it.name != "userID" }
-            .associate { it.name to requestBody[it.name] }
-            .filterValues { it != null } as Map<String, String>
-        boulderService.addUserRouteSend(userID, boulderID, sendProps)
 
+        if(!boulderService.getUserBoulderSends(userID, listOf(boulderID)).data.isNullOrEmpty()) {
+            return ResponseEntity.badRequest().body("The user has already sent this route")
+        }
 
+        val additionalProps = mutableMapOf<String, String>()
+        attempts?.let { additionalProps["attempts"] = it.toString() }
+        perceivedGrade?.let { additionalProps["perceivedGrade"] = it }
+        completed?.let { additionalProps["completed"] = it }
+
+        boulderService.addUserRouteSend(userID, boulderID, additionalProps)
 
         return ResponseEntity(HttpStatus.OK)
     }
