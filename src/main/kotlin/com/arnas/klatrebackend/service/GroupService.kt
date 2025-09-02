@@ -58,4 +58,17 @@ open class GroupService(
             ServiceResult(success = false, message = result.message, errorCode = "401")
         }
     }
+
+    open fun getGroupUserRole(userID: Long, groupID: Long): ServiceResult<Int?> {
+        val role = groupRepository.getUserGroupRole(userID, groupID)
+        if(role == null) {
+            return ServiceResult(success = false, message = "User is not a member of group")
+        }
+        return ServiceResult(
+            success = true,
+            message = "User role retrieved successfully",
+            data = role
+        )
+    }
+
 }

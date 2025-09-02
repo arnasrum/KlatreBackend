@@ -20,7 +20,7 @@ import kotlin.reflect.full.memberProperties
     open fun getGroups(userID: Long): Array<GroupWithPlaces> {
         val groups: ArrayList<Group> = arrayListOf()
 
-        jdbcTemplate.query("SELECT kg.id AS klatreID, kg.name AS klatreName, kg.personal AS personal, kg.description AS description, " +
+        jdbcTemplate.query("SELECT kg.id AS klatreID, kg.name AS klatreName, kg.personal AS personal, kg.description AS description, kg.uuid AS uuid, " +
                 "kg.owner AS owner " +
                 "FROM klatre_groups AS kg " +
                 "INNER JOIN user_groups AS ug ON kg.id = ug.group_id " +
@@ -32,7 +32,8 @@ import kotlin.reflect.full.memberProperties
                     owner = rs.getLong("owner"),
                     name = rs.getString("klatreName"),
                     personal = rs.getBoolean("personal"),
-                    description = rs.getString("description")
+                    description = rs.getString("description"),
+                    uuid = rs.getString("uuid")
                 ).let { groups.add(it) }
         }
 
@@ -42,7 +43,12 @@ import kotlin.reflect.full.memberProperties
             jdbcTemplate.query("SELECT * FROM places WHERE group_id = :groupID",
                 mapOf("groupID" to group.id)
             ) { rs, _ ->
-                places.add(Place(rs.getLong("id"), rs.getString("name")))
+                places.add(Place(
+                    id = rs.getLong("id"),
+                    name = rs.getString("name"),
+                    description = rs.getString("description"),
+                    groupID = rs.getLong("group_id")
+                ))
             }
             groupsWithPlaces.add(GroupWithPlaces(group, places.toTypedArray()))
         }
@@ -74,7 +80,6 @@ import kotlin.reflect.full.memberProperties
 
 
     open fun addPlaceToGroup(groupID: Long, placeRequest: PlaceRequest): Long {
-
         val keyholder = GeneratedKeyHolder()
 
         val tableColumns = mutableListOf<String>()
@@ -104,14 +109,12 @@ import kotlin.reflect.full.memberProperties
     }
 
     open fun getUserGroupRole(userID: Long, groupID: Long): Int? {
-
         var userRole: Int? = null
         jdbcTemplate.query("SELECT role FROM user_groups WHERE user_id = :userID AND group_id = :groupID",
             mapOf("userID" to userID, "groupID" to groupID)
         ) { rs -> userRole = rs.getInt("role") }
         return userRole
     }
-    
     
     open fun deleteGroup(groupID: Long): ServiceResult<Unit> {
         try {
@@ -130,5 +133,4 @@ import kotlin.reflect.full.memberProperties
             return ServiceResult(success = false, message = "Failed to delete group: ${e.message}")
         }
     }
-        
 }

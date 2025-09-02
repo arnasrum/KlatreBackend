@@ -5,6 +5,7 @@ data class Group(
     var owner: Long,
     var name: String,
     var personal: Boolean,
+    var uuid: String,
     var description: String? = null,
 )
 

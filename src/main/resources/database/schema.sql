@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS klatre_groups(
     owner BIGSERIAL REFERENCES users(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     personal BOOL NOT NULL,
+    uuid TEXT NOT NULL DEFAULT gen_random_uuid(),
     description TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -29,8 +30,8 @@ CREATE TABLE IF NOT EXISTS places(
 
 CREATE TABLE IF NOT EXISTS boulders(
     id BIGSERIAL PRIMARY KEY,
-    name TEXT,
-    grade TEXT,
+    name TEXT NOT NULL,
+    grade TEXT NOT NULL,
     description TEXT,
     userID BIGSERIAL REFERENCES users(id),
     place BIGSERIAL REFERENCES places(id) ON DELETE CASCADE
