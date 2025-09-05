@@ -3,11 +3,13 @@ package com.arnas.klatrebackend.service
 import com.arnas.klatrebackend.dataclass.Boulder
 import com.arnas.klatrebackend.dataclass.BoulderRequest
 import com.arnas.klatrebackend.dataclass.BoulderWithSend
+import com.arnas.klatrebackend.dataclass.Image
 import com.arnas.klatrebackend.dataclass.RouteSend
 import com.arnas.klatrebackend.dataclass.ServiceResult
 import com.arnas.klatrebackend.repository.BoulderRepository
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 
 @Service
 class BoulderService(
@@ -20,16 +22,18 @@ class BoulderService(
         val boulders = boulderRepository.getBouldersByUser(userID)
         for (boulder in boulders) {
             val image = imageService.getImage(boulder.id)
-            if (image != null) {boulder.image = image.image}
+            if (image != null) {boulder.image = image.getUrl()}
         }
         return boulders
     }
 
-    fun updateBoulder(userID: Long, boulderInfo: Map<String, String>): ServiceResult<String> {
+    fun updateBoulder(boulderID: Long, userID: Long, boulderInfo: Map<String, String>, image: MultipartFile?): ServiceResult<String> {
         // Check if user has permission to update boulder
+        println("Checking if user has permission to update boulder")
         boulderRepository.updateBoulder(boulderInfo.filterKeys { it != "image" })
-        if(boulderInfo.containsKey("image")) {
-            imageService.updateImage(boulderInfo["boulderID"]!!.toLong(), boulderInfo["image"]!!)
+        image?.let {
+            println("image included")
+            imageService.storeImageFile(image, boulderID, "16/9", userID)
         }
         return ServiceResult(success = true, message = "Boulder updated successfully")
     }
@@ -86,7 +90,7 @@ class BoulderService(
             val routeSends = boulderRepository.getBoulderSends(userID, boulderIDs)
             val bouldersWithSends = boulders.map { boulder ->
                 val send = routeSends.filter { boulder.id == it.boulderID }
-                imageService.getImage(boulder.id)?.let {boulder.image = it.image}
+                imageService.getImageMetadataByBoulder(boulder.id).data.let {boulder.image = "http://localhost:8080${it?.getUrl()}"}
                 BoulderWithSend(
                     boulder = boulder,
                     routeSend = send.firstOrNull()

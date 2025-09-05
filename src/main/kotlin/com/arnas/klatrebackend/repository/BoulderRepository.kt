@@ -112,6 +112,29 @@ fun updateBoulder(boulderInfo: Map<String, String>): Long {
         return boulders.toTypedArray()
     }
 
+    open fun getBoulderByPlace(placeID: List<Long>): List<Boulder> {
+        val boulders: MutableList<Boulder> = mutableListOf()
+        jdbcTemplate.query("SELECT * FROM boulders WHERE place IN (:placeID) ORDER BY id",
+            MapSqlParameterSource()
+                .addValue("placeID", placeID)
+        ) { rs, _ ->
+            boulders.add(
+                Boulder(
+                    id = rs.getLong("id"),
+                    name = rs.getString("name"),
+                    grade = rs.getString("grade"),
+                    place = rs.getLong("place"),
+                    description = rs.getString("description"),
+                    image = null,
+                )
+            )
+        }
+        return boulders.toList()
+    }
+
+
+
+
     open fun getBoulderSends(userID: Long, boulderIDs: List<Long>): List<RouteSend> {
         val routeSends: MutableList<RouteSend> = mutableListOf()
         jdbcTemplate.query("SELECT * FROM route_sends WHERE userID=:userID AND boulderID IN (:boulderIDs)",

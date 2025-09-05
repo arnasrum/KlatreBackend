@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import kotlin.reflect.full.memberProperties
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @Tag(name = "Boulder", description = "Boulder CRUD operations")
@@ -57,7 +57,7 @@ class BoulderController(
         @RequestParam name: String,
         @RequestParam grade: String,
         @RequestParam(required = false) description: String?,
-        @RequestParam(required = false) image: String?,
+        @RequestParam(required = false) image: MultipartFile?,
         user: User
     ): ResponseEntity<out Any> {
         val userID: Long = user.id
@@ -72,9 +72,10 @@ class BoulderController(
             description?.let { put("description", it) }
         }
         val serviceResult = boulderService.addBoulderToPlace(userID, placeID, requestBody)
+        serviceResult.data?: return ResponseEntity.internalServerError().body(null)
         image?.let {
             if(!serviceResult.success) return ResponseEntity(HttpStatus.BAD_REQUEST)
-            imageService.storeImage(serviceResult.data!!, image)
+            imageService.storeImageFile(image, serviceResult.data, "16/9", userID)
         }
 
         return ResponseEntity(HttpStatus.OK)
@@ -86,7 +87,7 @@ class BoulderController(
         @RequestParam(required = false) name: String?,
         @RequestParam(required = false) grade: String?,
         @RequestParam(required = false) description: String?,
-        @RequestParam(required = false) image: String?,
+        @RequestParam(required = false) image: MultipartFile?,
         user: User
     ): ResponseEntity<Any> {
         val userID: Long = user.id
@@ -98,13 +99,8 @@ class BoulderController(
             description?.let { put("description", it) }
         }
         
-        boulderService.updateBoulder(userID, requestBody)
-        
-        image?.let {
-            imageService.updateImage(boulderID, image)
-        }
-        
-        return ResponseEntity(HttpStatus.OK)
+        boulderService.updateBoulder(boulderID, userID, requestBody, image)
+        return ResponseEntity.ok("Boulder updated successfully")
     }
 
     @DeleteMapping("")

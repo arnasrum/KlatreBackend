@@ -38,11 +38,14 @@ CREATE TABLE IF NOT EXISTS boulders(
 );
 
 CREATE TABLE IF NOT EXISTS image(
-    id BIGSERIAL,
-    image_base64 TEXT,
-    boulderID BIGSERIAL UNIQUE,
-    PRIMARY KEY(id),
-    FOREIGN KEY (boulderID) REFERENCES boulders(id) ON DELETE CASCADE
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+    content_type TEXT NOT NULL,
+    boulder_id BIGSERIAL UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    file_size BIGINT NOT NULL,
+    aspect_ratio TEXT NOT NULL,
+    user_id BIGSERIAL REFERENCES users(id),
+    FOREIGN KEY (boulder_id) REFERENCES boulders(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS user_groups(
