@@ -1,6 +1,7 @@
 package com.arnas.klatrebackend.service
 
 import com.arnas.klatrebackend.dataclass.AddGroupRequest
+import com.arnas.klatrebackend.dataclass.GradingSystem
 import com.arnas.klatrebackend.dataclass.GroupWithPlaces
 import com.arnas.klatrebackend.dataclass.PlaceRequest
 import com.arnas.klatrebackend.dataclass.ServiceResult
@@ -69,6 +70,10 @@ open class GroupService(
             message = "User role retrieved successfully",
             data = role
         )
+    }
+
+    open fun getGradingSystemsInGroup(groupID: Long): List<GradingSystem> {
+        return groupRepository.getGradingSystems(groupID)
     }
 
 }

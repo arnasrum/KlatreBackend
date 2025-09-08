@@ -5,6 +5,7 @@ data class Place(
     val name: String,
     val description: String? = null,
     val groupID: Long,
+    val gradingSystem: Long
 )
 
 data class PlaceWithBoulders(

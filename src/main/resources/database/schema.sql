@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS group_invites, user_groups, image, boulders, klatre_groups, users, roles, places, route_sends CASCADE;
+DROP TABLE IF EXISTS group_invites, user_groups, image, boulders, klatre_groups, users, roles, places, route_sends, grading_systems, grades CASCADE;
 
 CREATE TABLE IF NOT EXISTS users(
     id BIGSERIAL PRIMARY KEY,
@@ -21,17 +21,37 @@ CREATE TABLE IF NOT EXISTS klatre_groups(
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS grading_systems(
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    climb_type VARCHAR(50) NOT NULL,
+    is_global BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_in_group BIGINT REFERENCES klatre_groups(id) ON DELETE CASCADE
+    --created_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
+);
+
+CREATE TABLE IF NOT EXISTS grades(
+    id BIGSERIAL PRIMARY KEY,
+    system_id BIGSERIAL REFERENCES grading_systems(id) ON DELETE CASCADE,
+    grade_string VARCHAR(50) NOT NULL,
+    numerical_value INT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(system_id, grade_string)
+);
+
 CREATE TABLE IF NOT EXISTS places(
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT,
+    grading_system_id BIGINT REFERENCES grading_systems(id) ON DELETE CASCADE DEFAULT 1,
     group_id BIGSERIAL REFERENCES klatre_groups(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS boulders(
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
-    grade TEXT NOT NULL,
+    grade BIGINT REFERENCES grades(id),
     description TEXT,
     userID BIGSERIAL REFERENCES users(id),
     place BIGSERIAL REFERENCES places(id) ON DELETE CASCADE
@@ -43,7 +63,6 @@ CREATE TABLE IF NOT EXISTS image(
     boulder_id BIGSERIAL UNIQUE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     file_size BIGINT NOT NULL,
-    aspect_ratio TEXT NOT NULL,
     user_id BIGSERIAL REFERENCES users(id),
     FOREIGN KEY (boulder_id) REFERENCES boulders(id) ON DELETE CASCADE
 );

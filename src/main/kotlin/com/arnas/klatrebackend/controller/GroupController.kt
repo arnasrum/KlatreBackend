@@ -1,13 +1,11 @@
 package com.arnas.klatrebackend.controller
 
 import com.arnas.klatrebackend.dataclass.AddGroupRequest
+import com.arnas.klatrebackend.dataclass.GradingSystem
 import com.arnas.klatrebackend.dataclass.GroupWithPlaces
 import com.arnas.klatrebackend.dataclass.PlaceRequest
 import com.arnas.klatrebackend.dataclass.User
 import com.arnas.klatrebackend.service.GroupService
-import com.arnas.klatrebackend.service.JwtService
-import com.arnas.klatrebackend.service.UserService
-import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CrossOrigin
@@ -78,4 +76,12 @@ class GroupController(
         }
         return ResponseEntity.ok("Group deleted successfully")
     }
+
+    @GetMapping("/grading")
+    open fun getGradingSystemsInGroup(@RequestParam groupID: Long, user: User): ResponseEntity<List<GradingSystem>> {
+        val gradingSystems = groupService.getGradingSystemsInGroup(groupID)
+        return ResponseEntity.ok(gradingSystems)
+    }
+
+
 }

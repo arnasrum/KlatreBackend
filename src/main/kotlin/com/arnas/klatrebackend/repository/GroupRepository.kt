@@ -1,6 +1,8 @@
 package com.arnas.klatrebackend.repository
 
 import com.arnas.klatrebackend.dataclass.AddGroupRequest
+import com.arnas.klatrebackend.dataclass.Grade
+import com.arnas.klatrebackend.dataclass.GradingSystem
 import com.arnas.klatrebackend.dataclass.Group
 import com.arnas.klatrebackend.dataclass.GroupWithPlaces
 import com.arnas.klatrebackend.dataclass.Place
@@ -14,7 +16,8 @@ import kotlin.reflect.full.memberProperties
 
 @Repository
  class GroupRepository(
-    private val jdbcTemplate: NamedParameterJdbcTemplate
+    private val jdbcTemplate: NamedParameterJdbcTemplate,
+    private val placeRepository: PlaceRepository
 ) {
 
     open fun getGroups(userID: Long): Array<GroupWithPlaces> {
@@ -37,22 +40,12 @@ import kotlin.reflect.full.memberProperties
                 ).let { groups.add(it) }
         }
 
+        // Do not like this
         val groupsWithPlaces: ArrayList<GroupWithPlaces> = arrayListOf()
         groups.forEach { group ->
-            val places = arrayListOf<Place>()
-            jdbcTemplate.query("SELECT * FROM places WHERE group_id = :groupID",
-                mapOf("groupID" to group.id)
-            ) { rs, _ ->
-                places.add(Place(
-                    id = rs.getLong("id"),
-                    name = rs.getString("name"),
-                    description = rs.getString("description"),
-                    groupID = rs.getLong("group_id")
-                ))
-            }
+            val places = placeRepository.getPlacesByGroupId(group.id)
             groupsWithPlaces.add(GroupWithPlaces(group, places.toTypedArray()))
         }
-
         return groupsWithPlaces.toTypedArray()
     }
 
@@ -133,4 +126,41 @@ import kotlin.reflect.full.memberProperties
             return ServiceResult(success = false, message = "Failed to delete group: ${e.message}")
         }
     }
+    open fun getGradingSystems(groupID: Long): List<GradingSystem> {
+        val gradingSystems: MutableList<GradingSystem> = mutableListOf()
+        val sql = "SELECT * FROM grading_systems WHERE created_in_group = :groupID OR is_global = true"
+        jdbcTemplate.query(sql,
+            MapSqlParameterSource()
+                .addValue("groupID", groupID)
+        ) { rs ->
+            gradingSystems.add(GradingSystem(
+                id = rs.getLong("id"),
+                name = rs.getString("name"),
+                climbType = rs.getString("climb_type"),
+                grades = getGradesBySystemId(rs.getLong("id"))
+            ))
+
+        }
+        return gradingSystems.toList()
+    }
+
+    private fun getGradesBySystemId(systemId: Long): List<Grade> {
+        val grades: MutableList<Grade> = mutableListOf()
+        val sql = "SELECT * FROM grades WHERE system_id = :systemId ORDER BY numerical_value"
+        jdbcTemplate.query(sql,
+            MapSqlParameterSource().addValue("systemId", systemId)
+        ) { rs ->
+            grades.add(
+                Grade(
+                    id = rs.getLong("id"),
+                    gradeString = rs.getString("grade_string"),
+                    numericalValue = rs.getInt("numerical_value")
+                )
+            )
+        }
+        return grades.toList()
+    }
+
+    
+
 }
