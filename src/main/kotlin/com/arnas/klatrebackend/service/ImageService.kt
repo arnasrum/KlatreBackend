@@ -45,27 +45,25 @@ class ImageService(
     open fun storeImageMetadata(boulderID: Long,
                                 contentType: String,
                                 size: Long,
-                                userID: Long,
-                                aspectRatio: String
+                                userID: Long
     ): ServiceResult<String> {
-        val id = imageRepository.storeImageMetaData(boulderID, contentType, size, userID, aspectRatio)
+        val id = imageRepository.storeImageMetaData(boulderID, contentType, size, userID)
         return ServiceResult(data = id, message = "Image metadata stored successfully", success = true)
     }
 
-    open fun getImageMetadata(imageID: String): ServiceResult<Image> {
+    open fun getImageMetadata(imageID: String): ServiceResult<Image?> {
         val image = imageRepository.getImageMetaData(imageID)
         image?: return ServiceResult(data = null, message = "Image not found", success = false)
         return ServiceResult(data = image, message = "Image metadata retrieved successfully", success = true)
     }
 
-    open fun getImageMetadataByBoulder(boulderID: Long): ServiceResult<Image> {
-        val image = imageRepository.getImageMetaDataByBoulder(boulderID)
-        image?: return ServiceResult(data = null, message = "Image not found", success = false)
+    open fun getImageMetadataByBoulder(boulderID: Long): ServiceResult<Image?> {
+        val image = imageRepository.getImageMetaDataByBoulder(boulderID) ?: return ServiceResult(data = null, message = "Image not found", success = false)
         return ServiceResult(data = image, message = "Image metadata retrieved successfully", success = true)
     }
 
 
-    open fun storeImageFile(file: MultipartFile, boulderID: Long, aspectRatio: String, userID: Long): ServiceResult<String> {
+    open fun storeImageFile(file: MultipartFile, boulderID: Long, userID: Long): ServiceResult<String> {
         try {
             init()
             if (file.isEmpty) {
@@ -81,8 +79,7 @@ class ImageService(
                 boulderID = boulderID,
                 contentType = file.contentType!!,
                 size = file.size,
-                userID = userID,
-                aspectRatio = aspectRatio).data
+                userID = userID).data
 
             imageID?: throw Exception("Error storing image metadata")
             val filePath = File("$uploadDir/$imageID")

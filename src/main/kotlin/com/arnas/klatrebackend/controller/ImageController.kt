@@ -65,7 +65,6 @@ class ImageController(
             contentType =file.contentType!!,
             size = file.size,
             userID = user.id,
-            aspectRatio = aspectRatio
         )
 
         if(!imageID.success) return ResponseEntity.badRequest().body(mapOf("error" to "Something went wrong when storing meta data"))

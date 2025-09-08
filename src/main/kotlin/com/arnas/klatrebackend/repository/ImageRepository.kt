@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile
 class ImageRepository(private var jdbcTemplate: NamedParameterJdbcTemplate) {
 
     fun getImageByID(boulderID: Long): Image? {
-        val result = jdbcTemplate.query("SELECT * FROM image WHERE boulderid=:boulderID",
+        val result = jdbcTemplate.query("SELECT * FROM image WHERE boulder_id=:boulderID",
             MapSqlParameterSource()
                 .addValue("boulderID", boulderID),
             ) { rs, _ ->
@@ -22,7 +22,6 @@ class ImageRepository(private var jdbcTemplate: NamedParameterJdbcTemplate) {
                     id = rs.getString("id"),
                     contentType = rs.getString("content_type"),
                     boulder = rs.getLong("boulder_id"),
-                    aspectRatio = rs.getString("aspect_ratio"),
                     fileSize = rs.getLong("file_size"),
                 )
             }
@@ -49,17 +48,15 @@ class ImageRepository(private var jdbcTemplate: NamedParameterJdbcTemplate) {
         contentType: String,
         size: Long,
         userID: Long,
-        aspectRatio: String
     ): String {
         val keyHolder: KeyHolder = GeneratedKeyHolder()
-        jdbcTemplate.update("INSERT INTO image(boulder_id, content_type, file_size, user_id, aspect_ratio) VALUES " +
-                "(:boulder_id, :content_type, :size, :user_id, :aspect_ratio)",
+        jdbcTemplate.update("INSERT INTO image(boulder_id, content_type, file_size, user_id) VALUES " +
+                "(:boulder_id, :content_type, :size, :user_id)",
             MapSqlParameterSource()
                 .addValue("boulder_id", boulderID)
                 .addValue("content_type", contentType)
                 .addValue("size", size)
-                .addValue("user_id", userID)
-                .addValue("aspect_ratio", aspectRatio),
+                .addValue("user_id", userID),
             keyHolder)
         return keyHolder.keys!!["id"].toString()
     }
@@ -73,7 +70,6 @@ class ImageRepository(private var jdbcTemplate: NamedParameterJdbcTemplate) {
                     id = rs.getString("id"),
                     contentType = rs.getString("content_type"),
                     boulder = rs.getLong("boulder_id"),
-                    aspectRatio = rs.getString("aspect_ratio"),
                     fileSize = rs.getLong("file_size"),
                 )
             }
@@ -89,7 +85,6 @@ class ImageRepository(private var jdbcTemplate: NamedParameterJdbcTemplate) {
                 id = rs.getString("id"),
                 contentType = rs.getString("content_type"),
                 boulder = rs.getLong("boulder_id"),
-                aspectRatio = rs.getString("aspect_ratio"),
                 fileSize = rs.getLong("file_size"),
             )
         }
