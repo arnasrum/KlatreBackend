@@ -30,13 +30,6 @@ class BoulderController(
     private val imageService: ImageService,
 ) {
 
-
-    @GetMapping("")
-    open fun getBoulders(user: User): ResponseEntity<List<Boulder>> {
-        val boulders = boulderService.getBouldersByUser(user.id)
-        return ResponseEntity(boulders, HttpStatus.OK)
-    }
-
     @GetMapping("/place")
     open fun getBouldersByPlace(@RequestParam placeID: Long, user: User): ResponseEntity<out Any> {
         val userID: Long = user.id
@@ -75,7 +68,7 @@ class BoulderController(
         serviceResult.data?: return ResponseEntity.internalServerError().body(null)
         image?.let {
             if(!serviceResult.success) return ResponseEntity(HttpStatus.BAD_REQUEST)
-            imageService.storeImageFile(image, serviceResult.data, "16/9", userID)
+            imageService.storeImageFile(image, serviceResult.data, userID)
         }
 
         return ResponseEntity(HttpStatus.OK)
@@ -106,7 +99,7 @@ class BoulderController(
     @DeleteMapping("")
     open fun deleteBoulder(@RequestBody requestBody: Map<String, String>, user: User): ResponseEntity<Any> {
         val userID: Long = user.id
-        boulderService.deleteBoulder(userID, requestBody["id"]!!.toLong())
+        boulderService.deleteBoulder(userID)
 
         return ResponseEntity(HttpStatus.OK)
     }

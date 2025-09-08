@@ -18,33 +18,17 @@ class BoulderService(
 ) {
 
 
-    fun getBouldersByUser(userID: Long): List<Boulder> {
-        val boulders = boulderRepository.getBouldersByUser(userID)
-        for (boulder in boulders) {
-            val image = imageService.getImage(boulder.id)
-            if (image != null) {boulder.image = image.getUrl()}
-        }
-        return boulders
-    }
-
     fun updateBoulder(boulderID: Long, userID: Long, boulderInfo: Map<String, String>, image: MultipartFile?): ServiceResult<String> {
         // Check if user has permission to update boulder
-        println("Checking if user has permission to update boulder")
         boulderRepository.updateBoulder(boulderInfo.filterKeys { it != "image" })
         image?.let {
-            println("image included")
-            imageService.storeImageFile(image, boulderID, "16/9", userID)
+            imageService.storeImageFile(image, boulderID, userID)
         }
         return ServiceResult(success = true, message = "Boulder updated successfully")
     }
 
-    fun deleteBoulder(userID: Long, boulderID: Long) : Map<String, String> {
-        val usersBoulders = getBouldersByUser(userID)
-        usersBoulders.any { it.id == boulderID } || return mapOf("status" to "401", "message" to "Unauthorized")
-        val image = imageService.getImage(boulderID)
-        if(image != null) {
-            imageService.deleteImage(image)
-        }
+    fun deleteBoulder(boulderID: Long) : Map<String, String> {
+        imageService.getImage(boulderID)?.let { imageService.deleteImage(it) }
         boulderRepository.deleteBoulder(boulderID)
 
         return mapOf("status" to "200", "message" to "Image deleted successfully")
@@ -90,7 +74,7 @@ class BoulderService(
             val routeSends = boulderRepository.getBoulderSends(userID, boulderIDs)
             val bouldersWithSends = boulders.map { boulder ->
                 val send = routeSends.filter { boulder.id == it.boulderID }
-                imageService.getImageMetadataByBoulder(boulder.id).data.let {boulder.image = "http://localhost:8080${it?.getUrl()}"}
+                boulder.image = imageService.getImageMetadataByBoulder(boulder.id).data?.let { "http://localhost:8080${it.getUrl()}" }
                 BoulderWithSend(
                     boulder = boulder,
                     routeSend = send.firstOrNull()

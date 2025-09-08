@@ -1,10 +1,7 @@
 package com.arnas.klatrebackend.service
 
-import com.arnas.klatrebackend.dataclass.Boulder
 import com.arnas.klatrebackend.dataclass.Place
-import com.arnas.klatrebackend.dataclass.PlaceWithBoulders
 import com.arnas.klatrebackend.dataclass.ServiceResult
-import com.arnas.klatrebackend.repository.BoulderRepository
 import com.arnas.klatrebackend.repository.PlaceRepository
 import org.springframework.stereotype.Service
 
