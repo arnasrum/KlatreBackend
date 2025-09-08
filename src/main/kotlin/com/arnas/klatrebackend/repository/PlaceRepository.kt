@@ -1,6 +1,5 @@
 package com.arnas.klatrebackend.repository
 
-import com.arnas.klatrebackend.dataclass.Group
 import com.arnas.klatrebackend.dataclass.Place
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -20,6 +19,7 @@ class PlaceRepository(
                 name = rs.getString("name"),
                 description = rs.getString("description"),
                 groupID = rs.getLong("group_id"),
+                gradingSystem = rs.getLong("grading_system_id")
             )
         }
         val places =  jdbcTemplate.query("SELECT * FROM places WHERE group_id = :groupId",

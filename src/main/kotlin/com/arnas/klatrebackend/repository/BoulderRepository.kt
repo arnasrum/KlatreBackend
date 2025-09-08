@@ -18,27 +18,6 @@ class BoulderRepository(
 ) {
 
 
-    fun getBouldersByUser(userID: Long): List<Boulder> {
-        val boulders: MutableList<Boulder> = mutableListOf()
-        jdbcTemplate.query("SELECT * FROM boulders WHERE userID=:userID ORDER BY id",
-            MapSqlParameterSource()
-                .addValue("userID", userID),
-            RowMapper { rs, _ ->
-                do {
-                    boulders.add(
-                        Boulder(
-                            id = rs.getLong("id"),
-                            name = rs.getString("name"),
-                            description = rs.getString("description"),
-                            grade = rs.getString("grade"),
-                            place = rs.getLong("place"),
-                            image = null
-                        ))
-                } while (rs.next())
-            })
-            return boulders.toList()
-    }
-
     fun addBoulder(userId: Long, boulder: BoulderRequest): Long {
         val keyHolder: KeyHolder = GeneratedKeyHolder()
         
@@ -94,7 +73,13 @@ fun updateBoulder(boulderInfo: Map<String, String>): Long {
 
     open fun getBouldersByPlace(placeID: Long): Array<Boulder> {
         val boulders: MutableList<Boulder> = mutableListOf()
-        jdbcTemplate.query("SELECT * FROM boulders WHERE place=:placeID ORDER BY id",
+        val sql = "SELECT b.id, b.name, b.description, g.grade_string, b.place " +
+                "FROM boulders AS b INNER JOIN places AS p ON b.place = p.id " +
+                "INNER JOIN grades AS g ON g.system_id = p.grading_system_id " +
+                "WHERE b.place=:placeID AND g.id = b.grade " +
+                "ORDER BY b.id"
+        jdbcTemplate.query(
+            sql,
             MapSqlParameterSource()
                 .addValue("placeID", placeID)
         ) { rs, _ ->
@@ -103,7 +88,7 @@ fun updateBoulder(boulderInfo: Map<String, String>): Long {
                     id = rs.getLong("id"),
                     name = rs.getString("name"),
                     description = rs.getString("description"),
-                    grade = rs.getString("grade"),
+                    grade = rs.getString("grade_string"),
                     place = rs.getLong("place"),
                     image = null
                 )
