@@ -1,7 +1,5 @@
 package com.arnas.klatrebackend.service
 
-import com.arnas.klatrebackend.dataclass.ServiceResult
-import com.arnas.klatrebackend.dataclass.User
 import com.arnas.klatrebackend.repository.GroupRepository
 import com.arnas.klatrebackend.repository.UserRepository
 import org.json.JSONObject
@@ -34,17 +32,6 @@ class UserService(
             "email" to json.getString("email"),
             "id" to json.getLong("id").toString()
         )
-    }
-
-    open fun getUserByToken(token: String): ServiceResult<User> {
-        val userInfo = getGoogleUserProfile(token)
-        if (userInfo.isEmpty()) {return ServiceResult(data = null, success = false, message = "Invalid token")}
-        val email = userInfo["email"] ?: return ServiceResult(data = null, success = false, message = "Email is required")
-        val name = userInfo["name"] ?: return ServiceResult(data = null, success = false, message = "Name is required")
-        val id = userInfo["id"] ?: return ServiceResult(data = null, success = false, message = "ID is required")
-        val userID = userRepository.createUser(email, name)
-        val user = User(userID, email, name)
-        return ServiceResult(data = user, success = true)
     }
 
     open fun usersPlacePermissions(userID: Long, placeID: Long): Boolean {
