@@ -137,7 +137,8 @@ import kotlin.reflect.full.memberProperties
                 id = rs.getLong("id"),
                 name = rs.getString("name"),
                 climbType = rs.getString("climb_type"),
-                grades = getGradesBySystemId(rs.getLong("id"))
+                grades = getGradesBySystemId(rs.getLong("id")),
+                isGlobal = rs.getBoolean("is_global"),
             ))
 
         }

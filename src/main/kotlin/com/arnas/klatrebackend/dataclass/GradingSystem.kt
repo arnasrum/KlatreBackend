@@ -10,5 +10,6 @@ data class GradingSystem (
     val id: Long,
     val name: String,
     val climbType: String,
+    val isGlobal: Boolean = false,
     val grades: List<Grade>
 )
