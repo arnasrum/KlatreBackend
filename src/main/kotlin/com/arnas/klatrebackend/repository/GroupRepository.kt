@@ -2,6 +2,7 @@ package com.arnas.klatrebackend.repository
 
 import com.arnas.klatrebackend.dataclass.AddGroupRequest
 import com.arnas.klatrebackend.dataclass.Grade
+import com.arnas.klatrebackend.dataclass.GradeToCreate
 import com.arnas.klatrebackend.dataclass.GradingSystem
 import com.arnas.klatrebackend.dataclass.Group
 import com.arnas.klatrebackend.dataclass.GroupWithPlaces
@@ -10,6 +11,8 @@ import com.arnas.klatrebackend.dataclass.PlaceRequest
 import com.arnas.klatrebackend.dataclass.ServiceResult
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.jdbc.core.namedparam.SqlParameterSource
+import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
 import kotlin.reflect.full.memberProperties
@@ -145,7 +148,7 @@ import kotlin.reflect.full.memberProperties
         return gradingSystems.toList()
     }
 
-    private fun getGradesBySystemId(systemId: Long): List<Grade> {
+    fun getGradesBySystemId(systemId: Long): List<Grade> {
         val grades: MutableList<Grade> = mutableListOf()
         val sql = "SELECT * FROM grades WHERE system_id = :systemId ORDER BY numerical_value"
         jdbcTemplate.query(sql,
@@ -162,6 +165,36 @@ import kotlin.reflect.full.memberProperties
         return grades.toList()
     }
 
+    open fun makeNewGradingSystem(
+        groupID: Long,
+        gradingSystemName: String,
+        grades: List<GradeToCreate>)
+    : Long {
+        val keyholder = GeneratedKeyHolder()
+        val sql = "INSERT INTO grading_systems (name, created_in_group, climb_type) VALUES (:name, :groupID, :climbType)"
+        jdbcTemplate.update(
+            sql,
+            MapSqlParameterSource()
+                .addValue("name", gradingSystemName)
+                .addValue("groupID", groupID)
+                .addValue("climbType", "boulder"),
+            keyholder
+        )
+        val keys = keyholder.keys ?: throw RuntimeException("Failed to retrieve generated keys")
+        val systemId = (keys["id"] as Number).toLong()
+
+        val gradeSql = "INSERT INTO grades (grade_string, numerical_value, system_id) VALUES (:gradeString, :numericalValue, :systemId)"
+        val gradeParameters = SqlParameterSourceUtils.createBatch(grades.map {
+            mapOf(
+                "gradeString" to it.gradeString,
+                "numericalValue" to it.numericalValue,
+                "systemId" to systemId
+            ) }.toTypedArray()
+        )
+        jdbcTemplate.batchUpdate(gradeSql, gradeParameters, keyholder)
+        //keyholder.keys?: throw RuntimeException("Failed to retrieve generated keys for grades")
+        return systemId
+    }
     
 
 }

@@ -143,3 +143,6 @@ INSERT INTO boulders (name, grade, userID, place)
 VALUES
     ('svaberg', 6, 1, 1),
     ('sva', 7, 1, 1);
+
+SELECT MAX(id) FROM grading_systems;
+SELECT setval('grading_systems_id_seq', (SELECT MAX(id) FROM grading_systems));

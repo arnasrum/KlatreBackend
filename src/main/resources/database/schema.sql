@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS grading_systems(
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     climb_type VARCHAR(50) NOT NULL,
-    is_global BOOLEAN NOT NULL DEFAULT FALSE,
+    is_global BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     created_in_group BIGINT REFERENCES klatre_groups(id) ON DELETE CASCADE
     --created_by BIGINT REFERENCES users(id) ON DELETE SET NULL,

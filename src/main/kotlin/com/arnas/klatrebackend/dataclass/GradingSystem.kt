@@ -1,5 +1,11 @@
 package com.arnas.klatrebackend.dataclass
 
+
+data class GradeToCreate(
+    val gradeString: String,
+    val numericalValue: Int,
+)
+
 data class Grade(
     val id: Long,
     val gradeString: String,
