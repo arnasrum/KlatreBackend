@@ -2,6 +2,7 @@ package com.arnas.klatrebackend.service
 
 import com.arnas.klatrebackend.dataclass.AddGroupRequest
 import com.arnas.klatrebackend.dataclass.GradingSystem
+import com.arnas.klatrebackend.dataclass.GroupUser
 import com.arnas.klatrebackend.dataclass.GroupWithPlaces
 import com.arnas.klatrebackend.dataclass.PlaceRequest
 import com.arnas.klatrebackend.dataclass.ServiceResult
@@ -74,6 +75,16 @@ open class GroupService(
 
     open fun getGradingSystemsInGroup(groupID: Long): List<GradingSystem> {
         return groupRepository.getGradingSystems(groupID)
+    }
+
+    open fun getUsersInGroup(groupID: Long): ServiceResult<List<GroupUser>> {
+        try {
+            val result = groupRepository.getGroupUsers(groupID)
+            return ServiceResult(success = true, data = result, message = "Users retrieved successfully")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return ServiceResult(success = false, message = "Error getting users in group", data = null)
+        }
     }
 
 }

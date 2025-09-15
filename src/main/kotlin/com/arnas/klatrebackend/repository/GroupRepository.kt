@@ -5,6 +5,7 @@ import com.arnas.klatrebackend.dataclass.Grade
 import com.arnas.klatrebackend.dataclass.GradeToCreate
 import com.arnas.klatrebackend.dataclass.GradingSystem
 import com.arnas.klatrebackend.dataclass.Group
+import com.arnas.klatrebackend.dataclass.GroupUser
 import com.arnas.klatrebackend.dataclass.GroupWithPlaces
 import com.arnas.klatrebackend.dataclass.Place
 import com.arnas.klatrebackend.dataclass.PlaceRequest
@@ -192,8 +193,24 @@ import kotlin.reflect.full.memberProperties
             ) }.toTypedArray()
         )
         jdbcTemplate.batchUpdate(gradeSql, gradeParameters, keyholder)
-        //keyholder.keys?: throw RuntimeException("Failed to retrieve generated keys for grades")
         return systemId
+    }
+
+    open fun getGroupUsers(groupID: Long): List<GroupUser> {
+        val users: MutableList<GroupUser> = mutableListOf()
+        jdbcTemplate.query("SELECT * FROM user_groups AS ug INNER JOIN users AS u ON ug.user_id = u.id WHERE group_id = :groupID",
+            MapSqlParameterSource()
+                .addValue("groupID", groupID)
+        ) { rs -> users.add(
+            GroupUser(
+                id = rs.getLong("user_id"),
+                isAdmin = rs.getString("role") == "1" || rs.getString("role") == "0",
+                isOwner = rs.getString("role") == "0",
+                groupID = groupID,
+                email = rs.getString("email"),
+                name = rs.getString("name")
+            )) }
+        return users.toList()
     }
     
 

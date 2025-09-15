@@ -5,6 +5,7 @@ import com.arnas.klatrebackend.dataclass.GradingSystem
 import com.arnas.klatrebackend.dataclass.GroupWithPlaces
 import com.arnas.klatrebackend.dataclass.PlaceRequest
 import com.arnas.klatrebackend.dataclass.User
+import com.arnas.klatrebackend.repository.GroupRepository
 import com.arnas.klatrebackend.service.GroupService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -83,5 +84,16 @@ class GroupController(
         return ResponseEntity.ok(gradingSystems)
     }
 
+    @PutMapping("/settings")
+    open fun updateSettings(): ResponseEntity<String> {
+        return ResponseEntity.ok("Settings updated successfully")
+    }
 
+    @GetMapping("/users")
+    open fun getUsersInGroup(@RequestParam("groupID") groupID: Long, user: User): ResponseEntity<Any> {
+        if(groupService.getGroupUserRole(user.id, groupID).data == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not a member of group")
+        val result = groupService.getUsersInGroup(groupID)
+        if(!result.success) return ResponseEntity.badRequest().body(result.message)
+        return ResponseEntity.ok(result.data)
+    }
 }

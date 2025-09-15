@@ -19,6 +19,7 @@ VALUES
 INSERT INTO user_groups(user_id, group_id, role)
 VALUES
     (1, 1, 0),
+    (2, 1, 1),
     (2, 2, 0),
     (1, 2, 1)
 ;
