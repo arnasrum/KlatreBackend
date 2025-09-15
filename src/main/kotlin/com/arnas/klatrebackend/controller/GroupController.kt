@@ -4,9 +4,10 @@ import com.arnas.klatrebackend.dataclass.AddGroupRequest
 import com.arnas.klatrebackend.dataclass.GradingSystem
 import com.arnas.klatrebackend.dataclass.GroupWithPlaces
 import com.arnas.klatrebackend.dataclass.PlaceRequest
+import com.arnas.klatrebackend.dataclass.Role
 import com.arnas.klatrebackend.dataclass.User
-import com.arnas.klatrebackend.repository.GroupRepository
 import com.arnas.klatrebackend.service.GroupService
+import com.arnas.klatrebackend.service.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CrossOrigin
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/groups")
 class GroupController(
     private val groupService: GroupService,
+    private val userService: UserService,
 ) {
 
     @GetMapping("")
@@ -95,5 +96,33 @@ class GroupController(
         val result = groupService.getUsersInGroup(groupID)
         if(!result.success) return ResponseEntity.badRequest().body(result.message)
         return ResponseEntity.ok(result.data)
+    }
+
+    @PutMapping("/users/permissions")
+    open fun changeUserPermissions(@RequestParam(required = true) userID: Long,
+                                   @RequestParam(required = true) groupID: Long,
+                                   @RequestParam(required = true) role: Int,
+                                   user: User): ResponseEntity<Any>
+    {
+        val userRole = groupService.getGroupUserRole(user.id, groupID).data?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("errorMessage" to "You are not a member of this group"))
+        if(!(userRole == Role.ADMIN.id || userRole == Role.OWNER.id)) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("errorMessage" to "User is not an admin of group"))
+        val originalUserRole = groupService.getGroupUserRole(userID, groupID).data?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body({"errorMessage" to "User is not a member of group"})
+        if(userRole >= originalUserRole) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mapOf("errorMessage" to "User has already the same or higher role"))
+        groupService.changeGroupUserRole(userID, role, groupID)
+        return ResponseEntity.ok().body( mapOf("success" to true, "message" to "User role updated successfully") )
+    }
+
+    @DeleteMapping("/users/kick")
+    open fun kickUserFromGroup(@RequestParam(required = true) userID: Long,
+                               @RequestParam(required = true) groupID: Long,
+                               user: User): ResponseEntity<Any> {
+
+        val userRole = groupService.getGroupUserRole(user.id, groupID).data?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("errorMessage" to "You are not a member of this group"))
+        if(!(userRole == Role.ADMIN.id || userRole == Role.OWNER.id)) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("errorMessage" to "User is not an admin of group"))
+        val originalUserRole = groupService.getGroupUserRole(userID, groupID).data?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body({"errorMessage" to "User is not a member of group"})
+        if(userRole >= originalUserRole) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mapOf("errorMessage" to "User has already the same or higher role"))
+        val result = groupService.removeUserFromGroup(userID, groupID)
+        if(!result.success) return ResponseEntity.badRequest().body(result.message)
+        return ResponseEntity.ok().body( mapOf("success" to true, "message" to result.message) )
     }
 }

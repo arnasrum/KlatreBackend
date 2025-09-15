@@ -212,6 +212,19 @@ import kotlin.reflect.full.memberProperties
             )) }
         return users.toList()
     }
-    
 
+    open fun updateUserGroupRole(userID: Long, groupID: Long, roleID: Int): Int {
+        val rowsAffected = jdbcTemplate.update(
+            "UPDATE user_groups SET role = :role WHERE user_id = :userID AND group_id = :groupID",
+            mapOf("userID" to userID, "groupID" to groupID, "role" to roleID)
+        )
+        return rowsAffected
+    }
+
+    open fun deleteUserFromGroup(userID: Long, groupID: Long) {
+        jdbcTemplate.update(
+            "DELETE FROM user_groups WHERE user_id = :userID AND group_id = :groupID",
+            mapOf("userID" to userID, "groupID" to groupID)
+        )
+    }
 }

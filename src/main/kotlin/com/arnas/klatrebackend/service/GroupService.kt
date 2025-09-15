@@ -61,17 +61,43 @@ open class GroupService(
         }
     }
 
-    open fun getGroupUserRole(userID: Long, groupID: Long): ServiceResult<Int?> {
-        val role = groupRepository.getUserGroupRole(userID, groupID)
-        if(role == null) {
-            return ServiceResult(success = false, message = "User is not a member of group")
+    open fun getGroupUserRole(userId: Long, groupId: Long): ServiceResult<Int?> {
+        try {
+            val role = groupRepository.getUserGroupRole(userId, groupId)
+            if(role == null) {
+                return ServiceResult(success = false, message = "User is not a member of group")
+            }
+            return ServiceResult(
+                success = true,
+                message = "User role retrieved successfully",
+                data = role
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return ServiceResult(success = false, message = "Error getting user role", data = null)
         }
-        return ServiceResult(
-            success = true,
-            message = "User role retrieved successfully",
-            data = role
-        )
     }
+
+    open fun changeGroupUserRole(userId: Long, newRoleId: Int, groupId: Long): ServiceResult<Unit> {
+        try {
+            require(groupRepository.updateUserGroupRole(userId, groupId, newRoleId) > 0) { "User is not a member of group" }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return ServiceResult(success = false, message = "Error changing user role", data = null)
+        }
+        return ServiceResult(success = true, message = "User role changed successfully")
+    }
+
+    open fun removeUserFromGroup(userId: Long, groupId: Long): ServiceResult<Unit> {
+        try {
+            groupRepository.deleteUserFromGroup(userId, groupId)
+            return ServiceResult(success = true, message = "User removed successfully")
+        } catch (e: Exception) {
+            return ServiceResult(success = false, message = "Error removing user from group", data = null)
+        }
+    }
+
+
 
     open fun getGradingSystemsInGroup(groupID: Long): List<GradingSystem> {
         return groupRepository.getGradingSystems(groupID)
