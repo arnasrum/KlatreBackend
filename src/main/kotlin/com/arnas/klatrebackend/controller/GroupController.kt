@@ -25,11 +25,10 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/groups")
 class GroupController(
     private val groupService: GroupService,
-    private val userService: UserService,
 ) {
 
     @GetMapping("")
-    open fun getGroups(user: User): ResponseEntity<Array<GroupWithPlaces>> {
+    fun getGroups(user: User): ResponseEntity<Array<GroupWithPlaces>> {
         val serviceResult = groupService.getGroups(user.id)
         if (!serviceResult.success) {
             return ResponseEntity.badRequest().body(null)
@@ -42,7 +41,7 @@ class GroupController(
     }
 
     @PostMapping("")
-    open fun addGroup(@RequestBody requestBody: AddGroupRequest, user: User): ResponseEntity<String> {
+    fun addGroup(@RequestBody requestBody: AddGroupRequest, user: User): ResponseEntity<String> {
         requestBody.personal = false
         val serviceResult = groupService.addGroup(user.id, requestBody)
         if (!serviceResult.success) {
@@ -52,7 +51,7 @@ class GroupController(
     }
 
     @PostMapping("/place")
-    open fun addPlaceToGroup(
+    fun addPlaceToGroup(
         user: User,
         @RequestParam groupID: Long,
         @RequestParam name: String,
@@ -64,13 +63,13 @@ class GroupController(
     }
 
     @PutMapping("")
-    open fun updateGroup(): ResponseEntity<String> {
+    fun updateGroup(): ResponseEntity<String> {
 
         return ResponseEntity.ok("Group updated successfully")
     }
 
     @DeleteMapping("")
-    open fun deleteGroup(user: User, @RequestBody requestBody: Map<String, String>): ResponseEntity<String> {
+    fun deleteGroup(user: User, @RequestBody requestBody: Map<String, String>): ResponseEntity<String> {
         val groupID = requestBody["groupID"]?.toLong() ?: return ResponseEntity.badRequest().body("GroupID is required")
         val serviceResult = groupService.deleteGroup(user.id, groupID)
         if(!serviceResult.success) {
@@ -80,18 +79,18 @@ class GroupController(
     }
 
     @GetMapping("/grading")
-    open fun getGradingSystemsInGroup(@RequestParam groupID: Long, user: User): ResponseEntity<List<GradingSystem>> {
+    fun getGradingSystemsInGroup(@RequestParam groupID: Long, user: User): ResponseEntity<List<GradingSystem>> {
         val gradingSystems = groupService.getGradingSystemsInGroup(groupID)
         return ResponseEntity.ok(gradingSystems)
     }
 
     @PutMapping("/settings")
-    open fun updateSettings(): ResponseEntity<String> {
+    fun updateSettings(): ResponseEntity<String> {
         return ResponseEntity.ok("Settings updated successfully")
     }
 
     @GetMapping("/users")
-    open fun getUsersInGroup(@RequestParam("groupID") groupID: Long, user: User): ResponseEntity<Any> {
+    fun getUsersInGroup(@RequestParam("groupID") groupID: Long, user: User): ResponseEntity<Any> {
         if(groupService.getGroupUserRole(user.id, groupID).data == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not a member of group")
         val result = groupService.getUsersInGroup(groupID)
         if(!result.success) return ResponseEntity.badRequest().body(result.message)
@@ -99,10 +98,10 @@ class GroupController(
     }
 
     @PutMapping("/users/permissions")
-    open fun changeUserPermissions(@RequestParam(required = true) userID: Long,
-                                   @RequestParam(required = true) groupID: Long,
-                                   @RequestParam(required = true) role: Int,
-                                   user: User): ResponseEntity<Any>
+    fun changeUserPermissions(@RequestParam(required = true) userID: Long,
+                              @RequestParam(required = true) groupID: Long,
+                              @RequestParam(required = true) role: Int,
+                              user: User): ResponseEntity<Any>
     {
         val userRole = groupService.getGroupUserRole(user.id, groupID).data?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("errorMessage" to "You are not a member of this group"))
         if(!(userRole == Role.ADMIN.id || userRole == Role.OWNER.id)) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("errorMessage" to "User is not an admin of group"))
@@ -113,9 +112,9 @@ class GroupController(
     }
 
     @DeleteMapping("/users/kick")
-    open fun kickUserFromGroup(@RequestParam(required = true) userID: Long,
-                               @RequestParam(required = true) groupID: Long,
-                               user: User): ResponseEntity<Any> {
+    fun kickUserFromGroup(@RequestParam(required = true) userID: Long,
+                          @RequestParam(required = true) groupID: Long,
+                          user: User): ResponseEntity<Any> {
 
         val userRole = groupService.getGroupUserRole(user.id, groupID).data?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("errorMessage" to "You are not a member of this group"))
         if(!(userRole == Role.ADMIN.id || userRole == Role.OWNER.id)) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("errorMessage" to "User is not an admin of group"))
