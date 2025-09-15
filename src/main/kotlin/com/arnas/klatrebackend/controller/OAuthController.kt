@@ -1,17 +1,9 @@
 package com.arnas.klatrebackend.controller
 
-import com.arnas.klatrebackend.dataclass.ServiceResult
-import com.arnas.klatrebackend.service.JwtService
 import com.arnas.klatrebackend.service.LoginService
-import com.arnas.klatrebackend.service.UserService
-import com.nimbusds.jose.shaded.gson.JsonObject
-import com.nimbusds.jose.shaded.gson.JsonParser
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
-import kotlin.math.log
 import org.springframework.http.ResponseEntity
 
-@CrossOrigin(origins = ["http://localhost:5173"])
 @RestController
 class OAuthController(
     private val loginService: LoginService,
@@ -53,6 +45,7 @@ class OAuthController(
                 ResponseEntity.badRequest().body(mapOf("error" to "Authentication failed"))
             }
         } catch (e: Exception) {
+            e.printStackTrace()
             return ResponseEntity.internalServerError().body(mapOf("error" to "Internal server error"))
         }
     }

@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.core.io.Resource
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.MediaType
-import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import java.io.File
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 
 @RestController
-@CrossOrigin(origins = arrayOf("http://localhost:5173"))
 @Tag(name = "Image", description = "Image CRUD operations")
 @RequestMapping("/api/images")
 class ImageController(
@@ -49,7 +47,6 @@ class ImageController(
     fun uploadImage(
         @RequestParam("file") file: MultipartFile,
         @RequestParam("boulderID") boulderID: Long,
-        @RequestParam("aspectRatio") aspectRatio: String,
         user: User
     ): ResponseEntity<Map<String, Any>> {
         if (file.isEmpty) {

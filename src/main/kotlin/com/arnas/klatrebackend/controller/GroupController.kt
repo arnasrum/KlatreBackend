@@ -7,10 +7,8 @@ import com.arnas.klatrebackend.dataclass.PlaceRequest
 import com.arnas.klatrebackend.dataclass.Role
 import com.arnas.klatrebackend.dataclass.User
 import com.arnas.klatrebackend.service.GroupService
-import com.arnas.klatrebackend.service.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -21,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@CrossOrigin(origins = arrayOf("http://localhost:5173"))
 @RequestMapping("/api/groups")
 class GroupController(
     private val groupService: GroupService,

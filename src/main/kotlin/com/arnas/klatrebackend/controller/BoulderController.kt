@@ -1,7 +1,5 @@
 package com.arnas.klatrebackend.controller
 
-import com.arnas.klatrebackend.dataclass.Boulder
-import com.arnas.klatrebackend.dataclass.RouteSend
 import com.arnas.klatrebackend.dataclass.User
 import com.arnas.klatrebackend.service.BoulderService
 import com.arnas.klatrebackend.service.ImageService
@@ -9,12 +7,9 @@ import com.arnas.klatrebackend.service.UserService
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.CrossOrigin
-import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -23,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @Tag(name = "Boulder", description = "Boulder CRUD operations")
 @RequestMapping("/boulders")
-@CrossOrigin(origins = arrayOf("http://localhost:5173"))
 class BoulderController(
     private val userService: UserService,
     private val boulderService: BoulderService,
@@ -31,7 +25,7 @@ class BoulderController(
 ) {
 
     @GetMapping("/place")
-    open fun getBouldersByPlace(@RequestParam placeID: Long, user: User): ResponseEntity<out Any> {
+    fun getBouldersByPlace(@RequestParam placeID: Long, user: User): ResponseEntity<out Any> {
         val userID: Long = user.id
         if(!userService.usersPlacePermissions(userID, placeID)) {
             return ResponseEntity(HttpStatus.UNAUTHORIZED)
@@ -45,7 +39,7 @@ class BoulderController(
     }
 
     @PostMapping("/place/add")
-    open fun addBoulderToPlace(
+    fun addBoulderToPlace(
         @RequestParam placeID: Long,
         @RequestParam name: String,
         @RequestParam grade: String,
@@ -75,7 +69,7 @@ class BoulderController(
     }
 
     @PutMapping("/place/update")
-    open fun putBoulder(
+    fun putBoulder(
         @RequestParam boulderID: Long,
         @RequestParam(required = false) name: String?,
         @RequestParam(required = false) grade: String?,
@@ -96,16 +90,8 @@ class BoulderController(
         return ResponseEntity.ok("Boulder updated successfully")
     }
 
-    @DeleteMapping("")
-    open fun deleteBoulder(@RequestBody requestBody: Map<String, String>, user: User): ResponseEntity<Any> {
-        val userID: Long = user.id
-        boulderService.deleteBoulder(userID)
-
-        return ResponseEntity(HttpStatus.OK)
-    }
-
     @PostMapping("/place/sends")
-    open fun updateRouteSend(
+    fun updateRouteSend(
         @RequestParam boulderID: Long,
         @RequestParam (required = false) attempts: Int?,
         @RequestParam (required = false) perceivedGrade: String?,
