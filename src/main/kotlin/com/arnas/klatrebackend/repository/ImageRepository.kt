@@ -1,22 +1,22 @@
 package com.arnas.klatrebackend.repository
 
 import com.arnas.klatrebackend.dataclass.Image
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.jdbc.core.RowMapper
+import com.arnas.klatrebackend.interfaces.repositories.ImageRepositoryInterface
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.jdbc.support.KeyHolder
 import org.springframework.stereotype.Repository
-import org.springframework.web.multipart.MultipartFile
 
 @Repository
-class ImageRepository(private var jdbcTemplate: NamedParameterJdbcTemplate) {
+class ImageRepository(
+    private var jdbcTemplate: NamedParameterJdbcTemplate
+): ImageRepositoryInterface {
 
-    fun getImageByID(boulderID: Long): Image? {
+    override fun getImageByBoulderId(boulderId: Long): Image? {
         val result = jdbcTemplate.query("SELECT * FROM image WHERE boulder_id=:boulderID",
             MapSqlParameterSource()
-                .addValue("boulderID", boulderID),
+                .addValue("boulderID", boulderId),
             ) { rs, _ ->
                 Image(
                     id = rs.getString("id"),
@@ -31,40 +31,35 @@ class ImageRepository(private var jdbcTemplate: NamedParameterJdbcTemplate) {
         return result[0]
     }
 
-    fun deleteImage(imageID: String) {
-        jdbcTemplate.update("DELETE FROM image WHERE id = :imageID",
+    override fun deleteImage(imageID: String): Int {
+        val rowsAffected = jdbcTemplate.update("DELETE FROM image WHERE id = :imageID",
             mapOf("imageID" to imageID)
         )
+        return rowsAffected
     }
 
-    fun deleteBoulderImage(boulderID: Long) {
-        jdbcTemplate.update("DELETE FROM image WHERE boulder_id = :boulderID",
-            mapOf("boulderID" to boulderID)
-        )
-    }
-
-    open fun storeImageMetaData(
-        boulderID: Long,
+    override fun storeImageMetaData(
+        boulderId: Long,
         contentType: String,
         size: Long,
-        userID: Long,
+        userId: Long,
     ): String {
         val keyHolder: KeyHolder = GeneratedKeyHolder()
         jdbcTemplate.update("INSERT INTO image(boulder_id, content_type, file_size, user_id) VALUES " +
                 "(:boulder_id, :content_type, :size, :user_id)",
             MapSqlParameterSource()
-                .addValue("boulder_id", boulderID)
+                .addValue("boulder_id", boulderId)
                 .addValue("content_type", contentType)
                 .addValue("size", size)
-                .addValue("user_id", userID),
+                .addValue("user_id", userId),
             keyHolder)
         return keyHolder.keys!!["id"].toString()
     }
     
-    open fun getImageMetaData(imageID: String): Image? {
+    override fun getImageMetadata(imageId: String): Image? {
         val result = jdbcTemplate.query("SELECT * FROM image WHERE id=:imageID",
             MapSqlParameterSource()
-                .addValue("imageID", imageID),
+                .addValue("imageID", imageId),
             ) { rs, _ ->
                 Image(
                     id = rs.getString("id"),
@@ -75,11 +70,12 @@ class ImageRepository(private var jdbcTemplate: NamedParameterJdbcTemplate) {
             }
         return result.firstOrNull()
     }
-    open fun getImageMetaDataByBoulder(boulderID: Long): Image? {
+
+    override fun getImageMetadataByBoulder(boulderId: Long): Image? {
         val result = jdbcTemplate.query(
             "SELECT * FROM image WHERE boulder_id=:boulderID",
             MapSqlParameterSource()
-                .addValue("boulderID", boulderID),
+                .addValue("boulderID", boulderId),
         ) { rs, _ ->
             Image(
                 id = rs.getString("id"),

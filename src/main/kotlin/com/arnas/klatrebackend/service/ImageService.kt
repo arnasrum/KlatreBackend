@@ -51,41 +51,40 @@ class ImageService(
         return ServiceResult(data = id, message = "Image metadata stored successfully", success = true)
     }
 
-    open fun getImageMetadata(imageID: String): ServiceResult<Image?> {
-        val image = imageRepository.getImageMetaData(imageID)
+    open fun getImageMetadata(imageId: String): ServiceResult<Image?> {
+        val image = imageRepository.getImageMetadata(imageId)
         image?: return ServiceResult(data = null, message = "Image not found", success = false)
         return ServiceResult(data = image, message = "Image metadata retrieved successfully", success = true)
     }
 
-    open fun getImageMetadataByBoulder(boulderID: Long): ServiceResult<Image?> {
-        val image = imageRepository.getImageMetaDataByBoulder(boulderID) ?: return ServiceResult(data = null, message = "Image not found", success = false)
+    open fun getImageMetadataByBoulder(boulderId: Long): ServiceResult<Image?> {
+        val image = imageRepository.getImageMetadataByBoulder(boulderId) ?: return ServiceResult(data = null, message = "Image not found", success = false)
         return ServiceResult(data = image, message = "Image metadata retrieved successfully", success = true)
     }
 
 
-    open fun storeImageFile(file: MultipartFile, boulderID: Long, userID: Long): ServiceResult<String> {
+    open fun storeImageFile(file: MultipartFile, boulderId: Long, userId: Long): ServiceResult<String> {
         try {
             init()
             if (file.isEmpty) {
                 return ServiceResult(data = null, message = "File is empty", success = false)
             }
-
-            imageRepository.getImageMetaDataByBoulder(boulderID)?.let {
+            imageRepository.getImageMetadataByBoulder(boulderId)?.let {
                 File("$uploadDir/${it.id}").delete()
                 deleteImage(it)
             }
 
-            val imageID = storeImageMetadata(
-                boulderID = boulderID,
+            val imageId = storeImageMetadata(
+                boulderID = boulderId,
                 contentType = file.contentType!!,
                 size = file.size,
-                userID = userID).data
+                userID = userId).data
 
-            imageID?: throw Exception("Error storing image metadata")
-            val filePath = File("$uploadDir/$imageID")
+            imageId?: throw Exception("Error storing image metadata")
+            val filePath = File("$uploadDir/$imageId")
             file.transferTo(filePath)
 
-            return ServiceResult(data = imageID, message = "Image stored successfully", success = true)
+            return ServiceResult(data = imageId, message = "Image stored successfully", success = true)
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -95,8 +94,8 @@ class ImageService(
     }
 
 
-    fun getImage(boulderID: Long): Image? {
-       return imageRepository.getImageByID(boulderID)
+    fun getImage(boulderId: Long): Image? {
+       return imageRepository.getImageByBoulderId(boulderId)
     }
 
     open fun deleteImage(image: Image) {
