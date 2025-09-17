@@ -7,6 +7,7 @@ import com.arnas.klatrebackend.dataclass.Image
 import com.arnas.klatrebackend.dataclass.RouteSend
 import com.arnas.klatrebackend.dataclass.ServiceResult
 import com.arnas.klatrebackend.repository.BoulderRepository
+import com.arnas.klatrebackend.repository.RouteSendRepository
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -15,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile
 class BoulderService(
     private val boulderRepository: BoulderRepository,
     private val imageService: ImageService,
+    private val routeSendRepository: RouteSendRepository,
 ) {
 
 
@@ -60,7 +62,7 @@ class BoulderService(
 
     open fun getUserBoulderSends(userID: Long, boulderIDs: List<Long>): ServiceResult<List<RouteSend>> {
         return try {
-            ServiceResult(data = boulderRepository.getBoulderSends(userID, boulderIDs), success = true)
+            ServiceResult(data = routeSendRepository.getBoulderSends(userID, boulderIDs), success = true)
         } catch (e: Exception) {
             ServiceResult(success = false, message = "Error getting boulder sends", data = null)
         }
@@ -71,7 +73,7 @@ class BoulderService(
             val boulders = boulderRepository.getBouldersByPlace(placeID)
             val boulderIDs = boulders.map { it.id }
             if(boulderIDs.isEmpty()) return ServiceResult(success = true, data = emptyList(), message = "No boulders found in this place")
-            val routeSends = boulderRepository.getBoulderSends(userID, boulderIDs)
+            val routeSends = routeSendRepository.getBoulderSends(userID, boulderIDs)
             val bouldersWithSends = boulders.map { boulder ->
                 val send = routeSends.filter { boulder.id == it.boulderID }
                 boulder.image = imageService.getImageMetadataByBoulder(boulder.id).data?.let { "http://localhost:8080${it.getUrl()}" }
@@ -89,8 +91,7 @@ class BoulderService(
 
     open fun addUserRouteSend(userID: Long, boulderID: Long, additionalProps: Map<String, String> = emptyMap()) {
 
-
-        boulderRepository.insertRouteSend(userID, boulderID, additionalProps)
+        routeSendRepository.insertRouteSend(userID, boulderID, additionalProps)
     }
 
 }
