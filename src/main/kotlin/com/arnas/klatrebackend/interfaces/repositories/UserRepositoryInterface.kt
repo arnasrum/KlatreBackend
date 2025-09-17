@@ -1,6 +1,6 @@
 package com.arnas.klatrebackend.interfaces.repositories
 
-import com.arnas.klatrebackend.dataclass.User
+import com.arnas.klatrebackend.dataclasses.User
 
 interface UserRepositoryInterface {
     fun insertUser(email: String, name: String): Long

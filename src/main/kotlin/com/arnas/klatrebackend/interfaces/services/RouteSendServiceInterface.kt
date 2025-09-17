@@ -1,8 +1,8 @@
 package com.arnas.klatrebackend.interfaces.services
 
-import com.arnas.klatrebackend.dataclass.BoulderWithSend
-import com.arnas.klatrebackend.dataclass.RouteSend
-import com.arnas.klatrebackend.dataclass.ServiceResult
+import com.arnas.klatrebackend.dataclasses.BoulderWithSend
+import com.arnas.klatrebackend.dataclasses.RouteSend
+import com.arnas.klatrebackend.dataclasses.ServiceResult
 
 interface RouteSendServiceInterface {
     fun getUserBoulderSends(userID: Long, boulderIDs: List<Long>): ServiceResult<List<RouteSend>>

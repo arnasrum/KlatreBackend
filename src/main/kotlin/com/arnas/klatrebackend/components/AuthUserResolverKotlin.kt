@@ -1,7 +1,7 @@
 package com.arnas.klatrebackend.components
 
-import com.arnas.klatrebackend.dataclass.User
-import com.arnas.klatrebackend.service.JwtService
+import com.arnas.klatrebackend.dataclasses.User
+import com.arnas.klatrebackend.services.JwtService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.core.MethodParameter
 import org.springframework.http.HttpStatus

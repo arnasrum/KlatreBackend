@@ -1,8 +1,8 @@
 package com.arnas.klatrebackend.interfaces.repositories
 
-import com.arnas.klatrebackend.dataclass.Grade
-import com.arnas.klatrebackend.dataclass.GradeToCreate
-import com.arnas.klatrebackend.dataclass.GradingSystem
+import com.arnas.klatrebackend.dataclasses.Grade
+import com.arnas.klatrebackend.dataclasses.GradeToCreate
+import com.arnas.klatrebackend.dataclasses.GradingSystem
 
 interface GradingSystemRepositoryInterface {
     fun getGradesBySystemId(systemId: Long): List<Grade>

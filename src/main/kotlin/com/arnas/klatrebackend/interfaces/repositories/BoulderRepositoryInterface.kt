@@ -1,7 +1,7 @@
 package com.arnas.klatrebackend.interfaces.repositories
 
-import com.arnas.klatrebackend.dataclass.Boulder
-import com.arnas.klatrebackend.dataclass.BoulderRequest
+import com.arnas.klatrebackend.dataclasses.Boulder
+import com.arnas.klatrebackend.dataclasses.BoulderRequest
 
 interface BoulderRepositoryInterface {
     fun addBoulder(userId: Long, boulder: BoulderRequest): Long

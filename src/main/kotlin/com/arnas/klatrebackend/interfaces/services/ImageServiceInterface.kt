@@ -1,7 +1,7 @@
 package com.arnas.klatrebackend.interfaces.services
 
-import com.arnas.klatrebackend.dataclass.Image
-import com.arnas.klatrebackend.dataclass.ServiceResult
+import com.arnas.klatrebackend.dataclasses.Image
+import com.arnas.klatrebackend.dataclasses.ServiceResult
 import org.springframework.web.multipart.MultipartFile
 
 interface ImageServiceInterface {

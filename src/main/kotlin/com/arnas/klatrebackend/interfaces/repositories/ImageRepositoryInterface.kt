@@ -1,6 +1,6 @@
 package com.arnas.klatrebackend.interfaces.repositories
 
-import com.arnas.klatrebackend.dataclass.Image
+import com.arnas.klatrebackend.dataclasses.Image
 
 interface ImageRepositoryInterface {
     fun getImageByBoulderId(boulderId: Long): Image?

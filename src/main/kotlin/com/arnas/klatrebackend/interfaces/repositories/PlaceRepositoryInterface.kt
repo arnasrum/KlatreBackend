@@ -1,7 +1,7 @@
 package com.arnas.klatrebackend.interfaces.repositories
 
-import com.arnas.klatrebackend.dataclass.Place
-import com.arnas.klatrebackend.dataclass.PlaceRequest
+import com.arnas.klatrebackend.dataclasses.Place
+import com.arnas.klatrebackend.dataclasses.PlaceRequest
 
 interface PlaceRepositoryInterface {
     fun getPlacesByGroupId(groupId: Long): List<Place>

@@ -1,12 +1,11 @@
 package com.arnas.klatrebackend.interfaces.services
 
-import com.arnas.klatrebackend.dataclass.AddGroupRequest
-import com.arnas.klatrebackend.dataclass.GradingSystem
-import com.arnas.klatrebackend.dataclass.Group
-import com.arnas.klatrebackend.dataclass.GroupUser
-import com.arnas.klatrebackend.dataclass.GroupWithPlaces
-import com.arnas.klatrebackend.dataclass.PlaceRequest
-import com.arnas.klatrebackend.dataclass.ServiceResult
+import com.arnas.klatrebackend.dataclasses.AddGroupRequest
+import com.arnas.klatrebackend.dataclasses.GradingSystem
+import com.arnas.klatrebackend.dataclasses.GroupUser
+import com.arnas.klatrebackend.dataclasses.GroupWithPlaces
+import com.arnas.klatrebackend.dataclasses.PlaceRequest
+import com.arnas.klatrebackend.dataclasses.ServiceResult
 
 interface GroupServiceInterface {
     fun getGroups(userId: Long): ServiceResult<List<GroupWithPlaces>>
