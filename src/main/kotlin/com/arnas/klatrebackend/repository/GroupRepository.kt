@@ -59,27 +59,7 @@ import kotlin.reflect.full.memberProperties
         return (keys["id"] as Number).toLong()
     }
 
-    override fun addPlaceToGroup(groupID: Long, placeRequest: PlaceRequest): Long {
-        val keyholder = GeneratedKeyHolder()
 
-        val tableColumns = mutableListOf<String>()
-        val placeHolders = mutableListOf<String>()
-        val parameters = MapSqlParameterSource()
-        placeRequest::class.memberProperties.forEach { prop ->
-            val value = prop.getter.call(placeRequest)
-            if(value != null) {
-                parameters.addValue(prop.name, value)
-                tableColumns.add(prop.name)
-                placeHolders.add(":${prop.name}")
-            }
-        }
-        val sql = "INSERT INTO places (${tableColumns.joinToString(", ")}) VALUES (${placeHolders.joinToString(", ")})"
-        jdbcTemplate.update(
-            sql, parameters, keyholder
-        )
-        val keys = keyholder.keys ?: throw RuntimeException("Failed to retrieve generated keys")
-        return (keys["id"] as Number).toLong()
-    }
 
     override fun addUserToGroup(userId: Long, groupId: Long, role: Int) {
         jdbcTemplate.update(

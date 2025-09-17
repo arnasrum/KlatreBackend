@@ -10,7 +10,6 @@ interface GroupRepositoryInterface {
 
     fun getGroups(userID: Long): List<Group>
     fun addGroup(group: AddGroupRequest): Long
-    fun addPlaceToGroup(groupID: Long, placeRequest: PlaceRequest): Long
     fun deleteGroup(groupId: Long): Int
     fun getGroupUsers(groupId: Long): List<GroupUser>
     fun addUserToGroup(userId: Long, groupId: Long, role: Int)

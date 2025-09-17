@@ -47,8 +47,9 @@ open class GroupService(
     }
 
 
-    open fun addPlaceToGroup(groupID: Long, placeRequest: PlaceRequest) {
-        groupRepository.addPlaceToGroup(groupID, placeRequest)
+    open fun addPlaceToGroup(groupID: Long, placeRequest: PlaceRequest): ServiceResult<Long> {
+        val id = placeRepository.addPlaceToGroup(groupID, placeRequest)
+        return ServiceResult(data = id, message = "Place added successfully", success = true)
     }
 
     open fun deleteGroup(userID: Long, groupID: Long): ServiceResult<Unit> {
