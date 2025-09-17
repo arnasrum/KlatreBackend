@@ -79,4 +79,14 @@ class GradingSystemRepository(
         jdbcTemplate.batchUpdate(gradeSql, gradeParameters, keyholder)
         return systemId
     }
+
+    override fun deleteGradingSystem(gradingSystemId: Long): Int {
+
+        val rowsAffected = jdbcTemplate.update("DELETE FROM grading_systems WHERE id = :gradingSystemId",
+            MapSqlParameterSource().addValue("gradingSystemId", gradingSystemId)
+        )
+        return rowsAffected
+    }
+
+
 }

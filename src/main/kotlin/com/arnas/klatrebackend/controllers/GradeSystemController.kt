@@ -1,17 +1,18 @@
 package com.arnas.klatrebackend.controllers
 
 import com.arnas.klatrebackend.dataclasses.User
-import com.arnas.klatrebackend.interfaces.services.GradeSystemServiceInterface
+import com.arnas.klatrebackend.interfaces.services.GradingSystemServiceInterface
 import com.nimbusds.jose.shaded.gson.Gson
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/gradesystems")
-class GradeSystemController(private val gradeSystemService: GradeSystemServiceInterface) {
+@RequestMapping("/api/gradingSystems")
+class GradeSystemController(private val gradeSystemService: GradingSystemServiceInterface) {
 
     data class GradeEntry(
         val name: String,
@@ -32,6 +33,13 @@ class GradeSystemController(private val gradeSystemService: GradeSystemServiceIn
         val result = gradeSystemService.makeGradingSystem(groupId, referenceGradeSystemID, name, newGrades)
         if(!result.success) return ResponseEntity.badRequest().body(result.message)
         return ResponseEntity.ok().body(result.message)
+    }
+
+    @DeleteMapping("")
+    fun deleteGradeSystem(@RequestParam gradingSystemId: Long, @RequestParam groupId: Long, user: User): ResponseEntity<Any> {
+        val result = gradeSystemService.deleteGradeSystem(gradingSystemId, groupId, user.id)
+        if(!result.success) return ResponseEntity.badRequest().body(result.message)
+        return ResponseEntity.ok(mapOf("message" to "Grade system deleted successfully"))
     }
         
 }
