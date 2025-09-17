@@ -58,7 +58,7 @@ class BoulderController(
             put("grade", grade)
             description?.let { put("description", it) }
         }
-        val serviceResult = boulderService.addBoulderToPlace(userID, placeID, requestBody)
+        val serviceResult = boulderService.addBoulder(userID, placeID, requestBody)
         serviceResult.data?: return ResponseEntity.internalServerError().body(null)
         image?.let {
             if(!serviceResult.success) return ResponseEntity(HttpStatus.BAD_REQUEST)
