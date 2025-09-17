@@ -58,10 +58,10 @@ class ImageController(
 
 
         val imageID = imageService.storeImageMetadata(
-            boulderID = boulderID,
+            boulderId = boulderID,
             contentType =file.contentType!!,
             size = file.size,
-            userID = user.id,
+            userId = user.id,
         )
 
         if(!imageID.success) return ResponseEntity.badRequest().body(mapOf("error" to "Something went wrong when storing meta data"))
