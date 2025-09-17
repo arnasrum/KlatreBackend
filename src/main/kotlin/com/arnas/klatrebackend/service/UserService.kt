@@ -12,7 +12,6 @@ import java.net.http.HttpResponse
 @Service
 class UserService(
     private var userRepository: UserRepository,
-    private val jwtService: JwtService,
     private val groupService: GroupService,
 ) {
 
@@ -45,21 +44,10 @@ class UserService(
     open fun createOrUpdateUser(userInfo: Map<String, String>): Long? {
         val email = userInfo["email"] ?: return null
         val name = userInfo["name"] ?: return null
-        val userID = userRepository.createUser(email, name)
-        return userID
-    }
-
-    open fun getUserIDByMail(email: String): Long? {
         userRepository.getUserByEmail(email)?.let {
             return it.id
         }
-        return null
+        val userId = userRepository.insertUser(email, name)
+        return userId
     }
-
-    open fun extractUserInfoFromAuthHeader(authHeader: String): Map<String, String> {
-        val token = authHeader.removePrefix("Bearer ").trim()
-        val payload = jwtService.getJwtPayload(jwtService.decodeJwt(token))
-        return payload.filterKeys { it != "exp" && it != "iat" && it != "jti" && it != "sub" }
-    }
-
 }
