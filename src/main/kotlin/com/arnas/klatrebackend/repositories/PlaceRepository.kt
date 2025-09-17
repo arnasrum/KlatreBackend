@@ -55,4 +55,55 @@ class PlaceRepository(
         val keys = keyholder.keys ?: throw RuntimeException("Failed to retrieve generated keys")
         return (keys["id"] as Number).toLong()
     }
+
+    override fun getPlaceById(placeId: Long): Place?  {
+        val results = jdbcTemplate.query("SELECT * FROM places WHERE id = :placeId",
+            MapSqlParameterSource().addValue("placeId", placeId)
+        ) { rs, _ ->
+            Place(
+                id = rs.getLong("id"),
+                name = rs.getString("name"),
+                description = rs.getString("description"),
+                groupID = rs.getLong("group_id"),
+                gradingSystem = rs.getLong("grading_system_id")
+            )
+        }
+        return results.firstOrNull()
+    }
+
+    override fun updatePlace(placeId: Long, name: String?, description: String?, groupId: Long?, gradingSystem: Long?): Int {
+
+        val updates = mutableListOf<String>()
+        val parameters = MapSqlParameterSource().addValue("placeId", placeId)
+
+        if (!name.isNullOrEmpty()) {
+            updates.add("name = :name")
+            parameters.addValue("name", name)
+        }
+        if (!description.isNullOrEmpty()) {
+            updates.add("description = :description")
+            parameters.addValue("description", description)
+        }
+        if (groupId != null) {
+            updates.add("group_id = :groupId")
+            parameters.addValue("groupId", groupId)
+        }
+        if (gradingSystem != null) {
+            updates.add("grading_system_id = :gradingSystem")
+            parameters.addValue("gradingSystem", gradingSystem)
+        }
+
+        val sql = "UPDATE places SET ${updates.joinToString(", ")} WHERE id = :placeId"
+        val rowAffected = jdbcTemplate.update(sql, parameters)
+        return rowAffected
+    }
+
+    override fun deletePlace(placeId: Long): Int {
+        val rowAffected = jdbcTemplate.update("DELETE FROM places WHERE id=:placeId",
+            MapSqlParameterSource()
+                .addValue("placeId", placeId)
+        )
+        return rowAffected
+    }
+
 }

@@ -16,49 +16,62 @@ class BoulderRepository(
 
     override fun addBoulder(userId: Long, boulder: BoulderRequest): Long {
         val keyHolder: KeyHolder = GeneratedKeyHolder()
-        
-        jdbcTemplate.update(
-            "INSERT INTO boulders (name, grade, userID, place)" +
-            " VALUES (:name, :grade, :userID, :place)",
-            MapSqlParameterSource()
-                .addValue("name", boulder.name)
-                .addValue("grade", boulder.grade)
-                .addValue("userID", userId)
-                .addValue("place", boulder.place),
-            keyHolder
-        )
-        
+
+        val updates = mutableListOf<String>()
+        val values = mutableListOf<String>()
+        val parameters = MapSqlParameterSource()
+
+        updates.add("name")
+        values.add(":name")
+        parameters.addValue("name", boulder.name)
+
+        updates.add("grade")
+        values.add(":grade")
+        parameters.addValue("grade", boulder.grade)
+
+        updates.add("place")
+        values.add(":place")
+        parameters.addValue("place", boulder.place)
+
+        if(boulder.description != null) {
+            updates.add("description")
+            values.add(":description")
+            parameters.addValue("description", boulder.description)
+        }
+
+        val sql = "INSERT INTO boulders (${updates.joinToString(", ")}) VALUES (${values.joinToString(", ")})"
+
+        jdbcTemplate.update(sql, parameters, keyHolder)
         val keys = keyHolder.keys ?: throw RuntimeException("Failed to retrieve generated keys")
         return (keys["id"] as Number).toLong()
     }
 
-override fun updateBoulder(boulderInfo: Map<String, String>): Int {
-    val boulderId = boulderInfo["boulderID"]?.toLong() ?: return 0
+override fun updateBoulder(boulderId: Long, name: String?, grade: Long?, place: Long?, description: String?): Int {
 
     val updates = mutableListOf<String>()
     val parameters = mutableMapOf<String, Any>("boulderID" to boulderId)
 
-    if (boulderInfo.containsKey("name")) {
+    if (!name.isNullOrEmpty()) {
         updates.add("name = :name")
-        parameters["name"] = boulderInfo["name"]!!
+        parameters["name"] = name
     }
-    if (boulderInfo.containsKey("grade") && !boulderInfo["grade"].isNullOrEmpty()) {
+    if (grade != null) {
         updates.add("grade = :grade")
-        parameters["grade"] = boulderInfo["grade"]!!.toString()
+        parameters["grade"] = grade
     }
-    if (boulderInfo.containsKey("place")) {
+    if (place != null) {
         updates.add("place = :place")
-        parameters["place"] = boulderInfo["place"]!!.toLong() // Example of type conversion
+        parameters["place"] = place
     }
 
-    if (boulderInfo.containsKey("description") && !boulderInfo["description"].isNullOrEmpty()) {
-        val descriptionValue = boulderInfo["description"]!!
+    if (!description.isNullOrEmpty()) {
         updates.add("description = :description")
-        parameters["description"] = descriptionValue
+        parameters["description"] = description
     }
     if (updates.isEmpty()) {
         return 0
     }
+
     val sql = "UPDATE boulders SET ${updates.joinToString(", ")} WHERE id = :boulderID"
     val rowsAffected = jdbcTemplate.update(sql, parameters)
     return rowsAffected
@@ -74,7 +87,7 @@ override fun updateBoulder(boulderInfo: Map<String, String>): Int {
 
     override fun getBouldersByPlace(placeId: Long): List<Boulder> {
         val boulders: MutableList<Boulder> = mutableListOf()
-        val sql = "SELECT b.id, b.name, b.description, g.grade_string, b.place " +
+        val sql = "SELECT b.id, b.name, b.description, g.id AS gId, b.place " +
                 "FROM boulders AS b INNER JOIN places AS p ON b.place = p.id " +
                 "INNER JOIN grades AS g ON g.system_id = p.grading_system_id " +
                 "WHERE b.place=:placeID AND g.id = b.grade " +
@@ -89,7 +102,7 @@ override fun updateBoulder(boulderInfo: Map<String, String>): Int {
                     id = rs.getLong("id"),
                     name = rs.getString("name"),
                     description = rs.getString("description"),
-                    grade = rs.getString("grade_string"),
+                    grade = rs.getLong("gId"),
                     place = rs.getLong("place"),
                     image = null
                 )

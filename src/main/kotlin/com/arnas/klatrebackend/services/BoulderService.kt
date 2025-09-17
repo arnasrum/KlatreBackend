@@ -16,24 +16,12 @@ class BoulderService(
 ): BoulderServiceInterface {
 
 
-    override fun addBoulder(userId: Long, placeId: Long, boulderInfo: Map<String, String>): ServiceResult<Long> {
-
-        val name = boulderInfo["name"]
-            ?: return ServiceResult(success = false, message = "Missing required field: name")
-        val grade = boulderInfo["grade"]
-            ?: return ServiceResult(success = false, message = "Missing required field: grade")
-
-        if (name.isBlank()) {
-            return ServiceResult(success = false, message = "Boulder name cannot be blank")
-        }
-        if (grade.isBlank()) {
-            return ServiceResult(success = false, message = "Boulder grade cannot be blank")
-        }
-
+    override fun addBoulder(userId: Long, placeId: Long, name: String, grade: Long, description: String?): ServiceResult<Long> {
         val boulderRequest = BoulderRequest(
             name = name,
             grade = grade,
             place = placeId,
+            description = description,
         )
         val boulderID = boulderRepository.addBoulder(userId, boulderRequest)
 
@@ -41,15 +29,20 @@ class BoulderService(
     }
 
    override fun updateBoulder(boulderId: Long, userId: Long, boulderInfo: Map<String, String>, image: MultipartFile?): ServiceResult<String> {
-        // Check if user has permission to update boulder
-        boulderRepository.updateBoulder(boulderInfo.filterKeys { it != "image" })
-        image?.let {
-            imageService.storeImageFile(image, boulderId, userId)
-        }
-        return ServiceResult(success = true, message = "Boulder updated successfully")
-    }
+       // Check if user has permission to update boulder
+       val name = boulderInfo["name"]
+       val place = boulderInfo["place"]?.toLong()
+       val description = boulderInfo["description"]
+       val groupId = boulderInfo["groupID"]
+       val grade = boulderInfo["grade"]?.toLong()
+       boulderRepository.updateBoulder(boulderId, name, grade, place, description)
+       image?.let {
+           imageService.storeImageFile(image, boulderId, userId)
+       }
+       return ServiceResult(success = true, message = "Boulder updated successfully")
+   }
 
-    override fun deleteBoulder(boulderId: Long): ServiceResult<Unit> {
+   override fun deleteBoulder(boulderId: Long): ServiceResult<Unit> {
         try {
             imageService.getImage(boulderId)?.let { imageService.deleteImage(it) }
             boulderRepository.deleteBoulder(boulderId)

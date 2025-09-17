@@ -3,7 +3,7 @@ package com.arnas.klatrebackend.dataclasses
 data class Boulder (
     val id: Long,
     val name: String,
-    val grade: String,
+    val grade: Long,
     val place: Long,
     var image: String?,
     var description: String?,
@@ -11,8 +11,9 @@ data class Boulder (
 
 data class BoulderRequest(
     val name: String,
-    val grade: String,
+    val grade: Long,
     val place: Long,
+    val description: String?
 )
 
 data class BoulderWithSend(

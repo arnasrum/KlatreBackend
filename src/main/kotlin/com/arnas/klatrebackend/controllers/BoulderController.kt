@@ -44,7 +44,7 @@ class BoulderController(
     fun addBoulderToPlace(
         @RequestParam placeID: Long,
         @RequestParam name: String,
-        @RequestParam grade: String,
+        @RequestParam grade: Long,
         @RequestParam(required = false) description: String?,
         @RequestParam(required = false) image: MultipartFile?,
         user: User
@@ -55,12 +55,7 @@ class BoulderController(
             return ResponseEntity(mapOf("message" to "User is not allowed to add boulder to this place"), HttpStatus.UNAUTHORIZED)
         }
 
-        val requestBody = mutableMapOf<String, String>().apply {
-            put("name", name)
-            put("grade", grade)
-            description?.let { put("description", it) }
-        }
-        val serviceResult = boulderService.addBoulder(userID, placeID, requestBody)
+        val serviceResult = boulderService.addBoulder(userID, placeID, name, grade, description)
         serviceResult.data?: return ResponseEntity.internalServerError().body(null)
         image?.let {
             if(!serviceResult.success) return ResponseEntity(HttpStatus.BAD_REQUEST)

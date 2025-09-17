@@ -5,6 +5,7 @@ import com.arnas.klatrebackend.interfaces.services.GroupServiceInterface
 import com.arnas.klatrebackend.interfaces.services.PlaceServiceInterface
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -26,4 +27,9 @@ class PlaceController(
         return ResponseEntity.ok(result.data)
     }
 
+    @PutMapping("/gradingSystem")
+    fun updateGradingSystem(@RequestParam placeId: Long, @RequestParam gradingSystemId: Long, user: User): ResponseEntity<out Any> {
+        placeService.updatePlaceGradingSystem(user.id, placeId, gradingSystemId)
+        return ResponseEntity.ok(mapOf("message" to "Grading system updated successfully"))
+    }
 }

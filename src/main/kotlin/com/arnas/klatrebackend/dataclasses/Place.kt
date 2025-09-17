@@ -8,6 +8,19 @@ data class Place(
     val gradingSystem: Long
 )
 
+data class Test(
+    val id: Long,
+    val grades: List<Grade>
+)
+
+data class PlaceWithGrades(
+    val id: Long,
+    val name: String,
+    val description: String? = null,
+    val groupID: Long,
+    val gradingSystem: Test
+)
+
 data class PlaceWithBoulders(
     val place: Place,
     val boulders: Array<Boulder>

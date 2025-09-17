@@ -23,6 +23,8 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
     implementation("org.json:json:20240303")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("org.apache.logging.log4j:log4j-bom:2.25.1")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.0")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
