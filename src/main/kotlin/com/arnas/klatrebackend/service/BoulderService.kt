@@ -1,14 +1,12 @@
 package com.arnas.klatrebackend.service
 
-import com.arnas.klatrebackend.dataclass.Boulder
 import com.arnas.klatrebackend.dataclass.BoulderRequest
 import com.arnas.klatrebackend.dataclass.BoulderWithSend
-import com.arnas.klatrebackend.dataclass.Image
 import com.arnas.klatrebackend.dataclass.RouteSend
 import com.arnas.klatrebackend.dataclass.ServiceResult
+import com.arnas.klatrebackend.interfaces.services.BoulderServiceInterface
 import com.arnas.klatrebackend.repository.BoulderRepository
 import com.arnas.klatrebackend.repository.RouteSendRepository
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
@@ -17,26 +15,10 @@ class BoulderService(
     private val boulderRepository: BoulderRepository,
     private val imageService: ImageService,
     private val routeSendRepository: RouteSendRepository,
-) {
+): BoulderServiceInterface {
 
 
-    fun updateBoulder(boulderID: Long, userID: Long, boulderInfo: Map<String, String>, image: MultipartFile?): ServiceResult<String> {
-        // Check if user has permission to update boulder
-        boulderRepository.updateBoulder(boulderInfo.filterKeys { it != "image" })
-        image?.let {
-            imageService.storeImageFile(image, boulderID, userID)
-        }
-        return ServiceResult(success = true, message = "Boulder updated successfully")
-    }
-
-    fun deleteBoulder(boulderID: Long) : Map<String, String> {
-        imageService.getImage(boulderID)?.let { imageService.deleteImage(it) }
-        boulderRepository.deleteBoulder(boulderID)
-
-        return mapOf("status" to "200", "message" to "Image deleted successfully")
-    }
-
-    open fun addBoulderToPlace(userID: Long, placeID: Long, boulderInfo: Map<String, String>): ServiceResult<Long> {
+    override fun addBoulder(userId: Long, placeId: Long, boulderInfo: Map<String, String>): ServiceResult<Long> {
 
         val name = boulderInfo["name"]
             ?: return ServiceResult(success = false, message = "Missing required field: name")
@@ -53,11 +35,30 @@ class BoulderService(
         val boulderRequest = BoulderRequest(
             name = name,
             grade = grade,
-            place = placeID,
+            place = placeId,
         )
-        val boulderID = boulderRepository.addBoulder(userID, boulderRequest)
+        val boulderID = boulderRepository.addBoulder(userId, boulderRequest)
 
         return ServiceResult(success = true, message = "Boulder added successfully", data = boulderID)
+    }
+
+   override fun updateBoulder(boulderId: Long, userId: Long, boulderInfo: Map<String, String>, image: MultipartFile?): ServiceResult<String> {
+        // Check if user has permission to update boulder
+        boulderRepository.updateBoulder(boulderInfo.filterKeys { it != "image" })
+        image?.let {
+            imageService.storeImageFile(image, boulderId, userId)
+        }
+        return ServiceResult(success = true, message = "Boulder updated successfully")
+    }
+
+    override fun deleteBoulder(boulderId: Long): ServiceResult<Unit> {
+        try {
+            imageService.getImage(boulderId)?.let { imageService.deleteImage(it) }
+            boulderRepository.deleteBoulder(boulderId)
+            return ServiceResult(success = true, message = "Boulder deleted successfully")
+        } catch (e: Exception) {
+            return ServiceResult(success = false, message = "Error deleting boulder", data = null)
+        }
     }
 
     open fun getUserBoulderSends(userID: Long, boulderIDs: List<Long>): ServiceResult<List<RouteSend>> {
@@ -90,7 +91,6 @@ class BoulderService(
     }
 
     open fun addUserRouteSend(userID: Long, boulderID: Long, additionalProps: Map<String, String> = emptyMap()) {
-
         routeSendRepository.insertRouteSend(userID, boulderID, additionalProps)
     }
 
