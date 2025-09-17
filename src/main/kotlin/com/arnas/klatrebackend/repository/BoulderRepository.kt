@@ -3,13 +3,11 @@ package com.arnas.klatrebackend.repository
 import com.arnas.klatrebackend.dataclass.Boulder
 import com.arnas.klatrebackend.dataclass.BoulderRequest
 import com.arnas.klatrebackend.dataclass.RouteSend
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.jdbc.support.KeyHolder
-import org.springframework.util.RouteMatcher
 import kotlin.reflect.full.memberProperties
 
 @Repository
@@ -37,29 +35,35 @@ class BoulderRepository(
     }
 
 fun updateBoulder(boulderInfo: Map<String, String>): Long {
+    val boulderId = boulderInfo["boulderID"]?.toLong() ?: return 0
 
-    val boulderProperties = Boulder::class.memberProperties
-        .filter { it.returnType.classifier == String::class }
-        .map { it.name }
+    val updates = mutableListOf<String>()
+    val parameters = mutableMapOf<String, Any>("boulderID" to boulderId)
 
-    val fieldConverters: Map<String, (String) -> Any> = boulderProperties.associateWith {
-        { value: String -> value }
+    if (boulderInfo.containsKey("name")) {
+        updates.add("name = :name")
+        parameters["name"] = boulderInfo["name"]!!
+    }
+    if (boulderInfo.containsKey("grade") && !boulderInfo["grade"].isNullOrEmpty()) {
+        updates.add("grade = :grade")
+        parameters["grade"] = boulderInfo["grade"]!!.toString()
+    }
+    if (boulderInfo.containsKey("place")) {
+        updates.add("place = :place")
+        parameters["place"] = boulderInfo["place"]!!.toLong() // Example of type conversion
     }
 
-    val (setClauses, parameters) = fieldConverters.entries.fold(
-        mutableListOf<String>() to MapSqlParameterSource().addValue("boulderID", boulderInfo["boulderID"]?.toLong())
-    ) { (clauses, params), (field, converter) ->
-        boulderInfo[field]?.let { value ->
-            clauses += ("$field = :$field")
-            params.addValue(field, converter(value))
-        }
-        clauses to params
+    if (boulderInfo.containsKey("description") && !boulderInfo["description"].isNullOrEmpty()) {
+        val descriptionValue = boulderInfo["description"]!!
+        updates.add("description = :description")
+        parameters["description"] = descriptionValue
     }
-    
-    if (setClauses.isEmpty()) return 0
-    
-    val sql = "UPDATE boulders SET ${setClauses.joinToString(", ")} WHERE id = :boulderID"
+    if (updates.isEmpty()) {
+        return 0
+    }
+    val sql = "UPDATE boulders SET ${updates.joinToString(", ")} WHERE id = :boulderID"
     jdbcTemplate.update(sql, parameters)
+
     return 1
 }
 
