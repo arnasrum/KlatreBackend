@@ -12,8 +12,8 @@ import java.net.http.HttpResponse
 @Service
 class UserService(
     private var userRepository: UserRepository,
-    private val groupRepository: GroupRepository,
     private val jwtService: JwtService,
+    private val groupService: GroupService,
 ) {
 
     open val client: HttpClient = HttpClient.newBuilder().build()
@@ -35,7 +35,7 @@ class UserService(
     }
 
     open fun usersPlacePermissions(userID: Long, placeID: Long): Boolean {
-        val groups = groupRepository.getGroups(userID)
+        val groups = groupService.getGroups(userID).data ?: return false
         val hasAccess = groups.any { group ->
             group.places.any{ it.id == placeID }
         }

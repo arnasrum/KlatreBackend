@@ -1,19 +1,13 @@
 package com.arnas.klatrebackend.repository
 
 import com.arnas.klatrebackend.dataclass.AddGroupRequest
-import com.arnas.klatrebackend.dataclass.Grade
-import com.arnas.klatrebackend.dataclass.GradeToCreate
-import com.arnas.klatrebackend.dataclass.GradingSystem
 import com.arnas.klatrebackend.dataclass.Group
 import com.arnas.klatrebackend.dataclass.GroupUser
-import com.arnas.klatrebackend.dataclass.GroupWithPlaces
-import com.arnas.klatrebackend.dataclass.Place
 import com.arnas.klatrebackend.dataclass.PlaceRequest
 import com.arnas.klatrebackend.dataclass.ServiceResult
+import com.arnas.klatrebackend.interfaces.repositories.GroupRepositoryInterface
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import org.springframework.jdbc.core.namedparam.SqlParameterSource
-import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
 import kotlin.reflect.full.memberProperties
@@ -21,13 +15,10 @@ import kotlin.reflect.full.memberProperties
 @Repository
  class GroupRepository(
     private val jdbcTemplate: NamedParameterJdbcTemplate,
-    private val placeRepository: PlaceRepository
-) {
+): GroupRepositoryInterface {
 
-    open fun getGroups(userID: Long): Array<GroupWithPlaces> {
-        val groups: ArrayList<Group> = arrayListOf()
-
-        jdbcTemplate.query("SELECT kg.id AS klatreID, kg.name AS klatreName, kg.personal AS personal, kg.description AS description, kg.uuid AS uuid, " +
+    override fun getGroups(userID: Long): List<Group> {
+        val groups = jdbcTemplate.query("SELECT kg.id AS klatreID, kg.name AS klatreName, kg.personal AS personal, kg.description AS description, kg.uuid AS uuid, " +
                 "kg.owner AS owner " +
                 "FROM klatre_groups AS kg " +
                 "INNER JOIN user_groups AS ug ON kg.id = ug.group_id " +
@@ -41,19 +32,12 @@ import kotlin.reflect.full.memberProperties
                     personal = rs.getBoolean("personal"),
                     description = rs.getString("description"),
                     uuid = rs.getString("uuid")
-                ).let { groups.add(it) }
+                )
         }
-
-        // Do not like this
-        val groupsWithPlaces: ArrayList<GroupWithPlaces> = arrayListOf()
-        groups.forEach { group ->
-            val places = placeRepository.getPlacesByGroupId(group.id)
-            groupsWithPlaces.add(GroupWithPlaces(group, places.toTypedArray()))
-        }
-        return groupsWithPlaces.toTypedArray()
+        return groups.toList()
     }
 
-    open fun addGroup(group: AddGroupRequest): Long {
+    override fun addGroup(group: AddGroupRequest): Long {
         val keyholder = GeneratedKeyHolder()
 
         val parameters = MapSqlParameterSource()
@@ -75,8 +59,7 @@ import kotlin.reflect.full.memberProperties
         return (keys["id"] as Number).toLong()
     }
 
-
-    open fun addPlaceToGroup(groupID: Long, placeRequest: PlaceRequest): Long {
+    override fun addPlaceToGroup(groupID: Long, placeRequest: PlaceRequest): Long {
         val keyholder = GeneratedKeyHolder()
 
         val tableColumns = mutableListOf<String>()
@@ -98,133 +81,59 @@ import kotlin.reflect.full.memberProperties
         return (keys["id"] as Number).toLong()
     }
 
-    open fun addUserToGroup(userID: Long, groupID: Long, roleID: Int) {
+    override fun addUserToGroup(userId: Long, groupId: Long, role: Int) {
         jdbcTemplate.update(
             "INSERT INTO user_groups (user_id, group_id, role) VALUES (:userID, :groupID, :role)",
-            mapOf("userID" to userID, "groupID" to groupID, "role" to roleID)
+            mapOf("userID" to userId, "groupID" to groupId, "role" to role)
         )
     }
 
-    open fun getUserGroupRole(userID: Long, groupID: Long): Int? {
+    override fun getUserGroupRole(userId: Long, groupId: Long): Int? {
         var userRole: Int? = null
         jdbcTemplate.query("SELECT role FROM user_groups WHERE user_id = :userID AND group_id = :groupID",
-            mapOf("userID" to userID, "groupID" to groupID)
+            mapOf("userID" to userId, "groupID" to groupId)
         ) { rs -> userRole = rs.getInt("role") }
         return userRole
     }
     
-    open fun deleteGroup(groupID: Long): ServiceResult<Unit> {
-        try {
-            val rowsAffected = jdbcTemplate.update(
-                "DELETE FROM klatre_groups WHERE id = :groupId",
-                mapOf("groupId" to groupID)
-            )
-            println("rowsAffected: $rowsAffected")
-            return if (rowsAffected > 0) {
-                ServiceResult(success = true, message = "Group deleted successfully")
-            } else {
-                ServiceResult(success = false, message = "Group not found")
-            }
-        } catch(e: Exception) {
-            //logger.error("Failed to delete group with ID: $groupID", e)
-            return ServiceResult(success = false, message = "Failed to delete group: ${e.message}")
-        }
-    }
-    open fun getGradingSystems(groupID: Long): List<GradingSystem> {
-        val gradingSystems: MutableList<GradingSystem> = mutableListOf()
-        val sql = "SELECT * FROM grading_systems WHERE created_in_group = :groupID OR is_global = true"
-        jdbcTemplate.query(sql,
-            MapSqlParameterSource()
-                .addValue("groupID", groupID)
-        ) { rs ->
-            gradingSystems.add(GradingSystem(
-                id = rs.getLong("id"),
-                name = rs.getString("name"),
-                climbType = rs.getString("climb_type"),
-                grades = getGradesBySystemId(rs.getLong("id")),
-                isGlobal = rs.getBoolean("is_global"),
-            ))
-
-        }
-        return gradingSystems.toList()
-    }
-
-    fun getGradesBySystemId(systemId: Long): List<Grade> {
-        val grades: MutableList<Grade> = mutableListOf()
-        val sql = "SELECT * FROM grades WHERE system_id = :systemId ORDER BY numerical_value"
-        jdbcTemplate.query(sql,
-            MapSqlParameterSource().addValue("systemId", systemId)
-        ) { rs ->
-            grades.add(
-                Grade(
-                    id = rs.getLong("id"),
-                    gradeString = rs.getString("grade_string"),
-                    numericalValue = rs.getInt("numerical_value")
-                )
-            )
-        }
-        return grades.toList()
-    }
-
-    open fun makeNewGradingSystem(
-        groupID: Long,
-        gradingSystemName: String,
-        grades: List<GradeToCreate>)
-    : Long {
-        val keyholder = GeneratedKeyHolder()
-        val sql = "INSERT INTO grading_systems (name, created_in_group, climb_type) VALUES (:name, :groupID, :climbType)"
-        jdbcTemplate.update(
-            sql,
-            MapSqlParameterSource()
-                .addValue("name", gradingSystemName)
-                .addValue("groupID", groupID)
-                .addValue("climbType", "boulder"),
-            keyholder
+    override fun deleteGroup(groupId: Long): Int {
+        val rowsAffected = jdbcTemplate.update(
+            "DELETE FROM klatre_groups WHERE id = :groupId",
+            mapOf("groupId" to groupId)
         )
-        val keys = keyholder.keys ?: throw RuntimeException("Failed to retrieve generated keys")
-        val systemId = (keys["id"] as Number).toLong()
-
-        val gradeSql = "INSERT INTO grades (grade_string, numerical_value, system_id) VALUES (:gradeString, :numericalValue, :systemId)"
-        val gradeParameters = SqlParameterSourceUtils.createBatch(grades.map {
-            mapOf(
-                "gradeString" to it.gradeString,
-                "numericalValue" to it.numericalValue,
-                "systemId" to systemId
-            ) }.toTypedArray()
-        )
-        jdbcTemplate.batchUpdate(gradeSql, gradeParameters, keyholder)
-        return systemId
+        return rowsAffected
     }
 
-    open fun getGroupUsers(groupID: Long): List<GroupUser> {
+    override fun getGroupUsers(groupId: Long): List<GroupUser> {
         val users: MutableList<GroupUser> = mutableListOf()
         jdbcTemplate.query("SELECT * FROM user_groups AS ug INNER JOIN users AS u ON ug.user_id = u.id WHERE group_id = :groupID",
             MapSqlParameterSource()
-                .addValue("groupID", groupID)
+                .addValue("groupID", groupId)
         ) { rs -> users.add(
             GroupUser(
                 id = rs.getLong("user_id"),
                 isAdmin = rs.getString("role") == "1" || rs.getString("role") == "0",
                 isOwner = rs.getString("role") == "0",
-                groupID = groupID,
+                groupID = groupId,
                 email = rs.getString("email"),
                 name = rs.getString("name")
             )) }
         return users.toList()
     }
 
-    open fun updateUserGroupRole(userID: Long, groupID: Long, roleID: Int): Int {
+    override fun updateUserGroupRole(userId: Long, groupId: Long, newRoleId: Int): Int {
         val rowsAffected = jdbcTemplate.update(
             "UPDATE user_groups SET role = :role WHERE user_id = :userID AND group_id = :groupID",
-            mapOf("userID" to userID, "groupID" to groupID, "role" to roleID)
+            mapOf("userID" to userId, "groupID" to groupId, "role" to newRoleId)
         )
         return rowsAffected
     }
 
-    open fun deleteUserFromGroup(userID: Long, groupID: Long) {
-        jdbcTemplate.update(
+    override fun deleteUserFromGroup(userId: Long, groupId: Long): Int {
+        val rowAffected = jdbcTemplate.update(
             "DELETE FROM user_groups WHERE user_id = :userID AND group_id = :groupID",
-            mapOf("userID" to userID, "groupID" to groupID)
+            mapOf("userID" to userId, "groupID" to groupId)
         )
+        return rowAffected
     }
 }

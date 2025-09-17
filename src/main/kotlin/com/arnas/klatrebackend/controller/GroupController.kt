@@ -25,7 +25,7 @@ class GroupController(
 ) {
 
     @GetMapping("")
-    fun getGroups(user: User): ResponseEntity<Array<GroupWithPlaces>> {
+    fun getGroups(user: User): ResponseEntity<List<GroupWithPlaces>> {
         val serviceResult = groupService.getGroups(user.id)
         if (!serviceResult.success) {
             return ResponseEntity.badRequest().body(null)

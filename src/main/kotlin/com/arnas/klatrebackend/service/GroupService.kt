@@ -5,8 +5,11 @@ import com.arnas.klatrebackend.dataclass.GradingSystem
 import com.arnas.klatrebackend.dataclass.GroupUser
 import com.arnas.klatrebackend.dataclass.GroupWithPlaces
 import com.arnas.klatrebackend.dataclass.PlaceRequest
+import com.arnas.klatrebackend.dataclass.Role
 import com.arnas.klatrebackend.dataclass.ServiceResult
+import com.arnas.klatrebackend.repository.GradingSystemRepository
 import com.arnas.klatrebackend.repository.GroupRepository
+import com.arnas.klatrebackend.repository.PlaceRepository
 import com.arnas.klatrebackend.repository.UserRepository
 import org.springframework.stereotype.Service
 
@@ -14,11 +17,15 @@ import org.springframework.stereotype.Service
 open class GroupService(
     private val groupRepository: GroupRepository,
     private val userRepository: UserRepository,
+    private val placeRepository: PlaceRepository,
+    private val gradingSystemRepository: GradingSystemRepository,
 ) {
 
-    open fun getGroups(userID: Long): ServiceResult<Array<GroupWithPlaces>> {
-        val groups: Array<GroupWithPlaces> = groupRepository.getGroups(userID)
-        return ServiceResult(data = groups, message = "Groups retrieved successfully", success = true)
+    open fun getGroups(userID: Long): ServiceResult<List<GroupWithPlaces>> {
+        val groups = groupRepository.getGroups(userID)
+        val groupWithPlaces = groups.map { GroupWithPlaces(it, placeRepository.getPlacesByGroupId(it.id))}
+
+        return ServiceResult(data = groupWithPlaces, message = "Groups retrieved successfully", success = true)
     }
 
     open fun addGroup(userID: Long, request: AddGroupRequest): ServiceResult<Long> {
@@ -41,23 +48,21 @@ open class GroupService(
 
 
     open fun addPlaceToGroup(groupID: Long, placeRequest: PlaceRequest) {
-
         groupRepository.addPlaceToGroup(groupID, placeRequest)
-
     }
 
     open fun deleteGroup(userID: Long, groupID: Long): ServiceResult<Unit> {
         val userRole = groupRepository.getUserGroupRole(userID, groupID)
             ?: return ServiceResult(success = false, message = "User is not a member of group")
 
-        if (userRole != 0) {
+        if (userRole != Role.OWNER.id) {
             return ServiceResult(success = false, message = "Only group owners can delete groups")
         }
-        val result = groupRepository.deleteGroup(groupID)
-        return if (result.success) {
+        val rowsAffected = groupRepository.deleteGroup(groupID)
+        return if (rowsAffected > 0) {
             ServiceResult(success = true, message = "Group deleted successfully")
         } else {
-            ServiceResult(success = false, message = result.message, errorCode = "401")
+            ServiceResult(success = false, message = "Something went wrong when deleting group", errorCode = "401")
         }
     }
 
@@ -100,7 +105,7 @@ open class GroupService(
 
 
     open fun getGradingSystemsInGroup(groupID: Long): List<GradingSystem> {
-        return groupRepository.getGradingSystems(groupID)
+        return gradingSystemRepository.getGradingSystemsInGroup(groupID)
     }
 
     open fun getUsersInGroup(groupID: Long): ServiceResult<List<GroupUser>> {
