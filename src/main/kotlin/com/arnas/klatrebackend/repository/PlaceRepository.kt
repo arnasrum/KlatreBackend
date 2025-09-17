@@ -1,6 +1,7 @@
 package com.arnas.klatrebackend.repository
 
 import com.arnas.klatrebackend.dataclass.Place
+import com.arnas.klatrebackend.interfaces.repositories.PlaceRepositoryInterface
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
@@ -8,10 +9,10 @@ import java.sql.ResultSet
 
 @Repository
 class PlaceRepository(
-    private var jdbcTemplate: NamedParameterJdbcTemplate,
-) {
+    private var jdbcTemplate: NamedParameterJdbcTemplate
+): PlaceRepositoryInterface {
 
-    open fun getPlacesByGroupId(groupId: Long): List<Place> {
+    override fun getPlacesByGroupId(groupId: Long): List<Place> {
 
         val rowMapper = RowMapper<Place> { rs: ResultSet, _: Int ->
             Place(
