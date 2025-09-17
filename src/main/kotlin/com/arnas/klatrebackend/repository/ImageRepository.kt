@@ -31,9 +31,9 @@ class ImageRepository(
         return result[0]
     }
 
-    override fun deleteImage(imageID: String): Int {
+    override fun deleteImage(imageId: String): Int {
         val rowsAffected = jdbcTemplate.update("DELETE FROM image WHERE id = :imageID",
-            mapOf("imageID" to imageID)
+            mapOf("imageID" to imageId)
         )
         return rowsAffected
     }

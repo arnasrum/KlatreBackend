@@ -1,6 +1,7 @@
 package com.arnas.klatrebackend.controller
 
 import com.arnas.klatrebackend.dataclass.User
+import com.arnas.klatrebackend.interfaces.services.GradeSystemServiceInterface
 import com.arnas.klatrebackend.service.GradeSystemService
 import com.nimbusds.jose.shaded.gson.Gson
 import org.springframework.http.ResponseEntity
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/gradesystems")
-class GradeSystemController(private val gradeSystemService: GradeSystemService) {
+class GradeSystemController(private val gradeSystemService: GradeSystemServiceInterface) {
 
     data class GradeEntry(
         val name: String,

@@ -14,12 +14,12 @@ class RouteSendRepository(
     private var jdbcTemplate: NamedParameterJdbcTemplate
 ): RouteSendRepositoryInterface {
 
-    override fun getBoulderSends(userID: Long, boulderIDs: List<Long>): List<RouteSend> {
+    override fun getBoulderSends(userId: Long, boulderIds: List<Long>): List<RouteSend> {
         val routeSends: MutableList<RouteSend> = mutableListOf()
         jdbcTemplate.query("SELECT * FROM route_sends WHERE userID=:userID AND boulderID IN (:boulderIDs)",
             MapSqlParameterSource()
-                .addValue("userID", userID)
-                .addValue("boulderIDs", boulderIDs)
+                .addValue("userID", userId)
+                .addValue("boulderIDs", boulderIds)
         ) { rs, _ ->
             routeSends.add(RouteSend(
                 id = rs.getLong("id"),

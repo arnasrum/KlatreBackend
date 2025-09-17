@@ -1,6 +1,7 @@
 package com.arnas.klatrebackend.controller
 
 import com.arnas.klatrebackend.dataclass.User
+import com.arnas.klatrebackend.interfaces.services.ImageServiceInterface
 import com.arnas.klatrebackend.service.ImageService
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.RestController
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam
 @Tag(name = "Image", description = "Image CRUD operations")
 @RequestMapping("/api/images")
 class ImageController(
-    private val imageService: ImageService,
+    private val imageService: ImageServiceInterface,
 ) {
     
     @Value("\${app.image.upload.dir}")

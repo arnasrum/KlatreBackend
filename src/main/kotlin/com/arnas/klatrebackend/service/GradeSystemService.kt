@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service
 class GradeSystemService(
     private val gradeSystemRepository: GradingSystemRepository
 ): GradeSystemServiceInterface {
+
     override fun makeGradingSystem(
         groupId: Long,
         referenceGradeSystemId: Long,

@@ -1,5 +1,6 @@
 package com.arnas.klatrebackend.service
 
+import com.arnas.klatrebackend.interfaces.services.JwtServiceInterface
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jws
 import org.springframework.stereotype.Service
@@ -11,9 +12,9 @@ import java.util.Date
 @Service
 class JwtService(
     @param:Value("\${JWT_SECRET}") private val googleSecret: String,
-) {
+): JwtServiceInterface {
 
-    open fun createJwtToken(subject: String, claims: Map<String, String>): String {
+    override fun createJwtToken(subject: String, claims: Map<String, String>): String {
         val jwtBuilder = Jwts.builder()
         claims.forEach { (name, value) -> jwtBuilder.claim(name, value) }
         val jwt = jwtBuilder
@@ -25,7 +26,7 @@ class JwtService(
         return jwt
     }
 
-    open fun decodeJwt(jwt: String): Jws<Claims> {
+    override fun decodeJwt(jwt: String): Jws<Claims> {
         val jwtParser = Jwts.parser()
             .verifyWith(Keys.hmacShaKeyFor(googleSecret.toByteArray()))
             .build()
@@ -33,12 +34,11 @@ class JwtService(
         return claims
     }
 
-    open fun getJwtPayload(claims: Jws<Claims>): Map<String, String> {
+    override fun getJwtPayload(claims: Jws<Claims>): Map<String, String> {
         val payload = mutableMapOf<String, String>()
         claims.payload.forEach { (name: String, value: Any) ->
             payload[name] = value.toString()
         }
         return payload
     }
-
 }

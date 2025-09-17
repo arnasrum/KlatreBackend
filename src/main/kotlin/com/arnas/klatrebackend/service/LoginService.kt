@@ -1,5 +1,6 @@
 package com.arnas.klatrebackend.service
 
+import com.arnas.klatrebackend.interfaces.services.LoginServiceInterface
 import com.nimbusds.jose.shaded.gson.JsonObject
 import com.nimbusds.jose.shaded.gson.JsonParser
 import org.springframework.beans.factory.annotation.Value
@@ -15,13 +16,9 @@ class LoginService(
     private val userService: UserService,
     private val jwtService: JwtService,
     @Value("\${GOOGLE_CLIENT_SECRET}") private val googleClientSecret: String
-) {
+): LoginServiceInterface {
 
-    fun login(token: String) {
-        val jwt = getJWTToken(token)
-    }
-
-    open fun getJWTToken(code: String): String? {
+    override fun getJWTToken(code: String): String? {
         val GOOGLE_CLIENT_ID = "733167968471-7runi5g0s0gahprbah0lj1460ua2jjv3.apps.googleusercontent.com"
 
         try {

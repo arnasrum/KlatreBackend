@@ -1,6 +1,8 @@
 package com.arnas.klatrebackend.controller
 
 import com.arnas.klatrebackend.dataclass.User
+import com.arnas.klatrebackend.interfaces.services.GroupServiceInterface
+import com.arnas.klatrebackend.interfaces.services.PlaceServiceInterface
 import com.arnas.klatrebackend.service.GroupService
 import com.arnas.klatrebackend.service.PlaceService
 import org.springframework.http.ResponseEntity
@@ -12,8 +14,8 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/places")
 @RestController
 class PlaceController(
-    private val groupService: GroupService,
-    private val placeService: PlaceService,
+    private val groupService: GroupServiceInterface,
+    private val placeService: PlaceServiceInterface,
 ) {
 
 

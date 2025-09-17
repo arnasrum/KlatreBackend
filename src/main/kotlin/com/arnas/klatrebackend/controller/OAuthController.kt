@@ -1,12 +1,13 @@
 package com.arnas.klatrebackend.controller
 
+import com.arnas.klatrebackend.interfaces.services.LoginServiceInterface
 import com.arnas.klatrebackend.service.LoginService
 import org.springframework.web.bind.annotation.*
 import org.springframework.http.ResponseEntity
 
 @RestController
 class OAuthController(
-    private val loginService: LoginService,
+    private val loginService: LoginServiceInterface,
 ) {
 
     @PostMapping("/old")
@@ -15,7 +16,6 @@ class OAuthController(
         if (token.isNullOrBlank()) {
             return "invalid token"
         }
-        loginService.login(token)
         return "success"
     }
 

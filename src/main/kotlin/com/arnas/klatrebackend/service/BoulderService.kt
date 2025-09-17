@@ -61,37 +61,5 @@ class BoulderService(
         }
     }
 
-    open fun getUserBoulderSends(userID: Long, boulderIDs: List<Long>): ServiceResult<List<RouteSend>> {
-        return try {
-            ServiceResult(data = routeSendRepository.getBoulderSends(userID, boulderIDs), success = true)
-        } catch (e: Exception) {
-            ServiceResult(success = false, message = "Error getting boulder sends", data = null)
-        }
-    }
-
-    open fun getBouldersWithSendsByPlace(userID: Long, placeID: Long): ServiceResult<List<BoulderWithSend>> {
-        return try {
-            val boulders = boulderRepository.getBouldersByPlace(placeID)
-            val boulderIDs = boulders.map { it.id }
-            if(boulderIDs.isEmpty()) return ServiceResult(success = true, data = emptyList(), message = "No boulders found in this place")
-            val routeSends = routeSendRepository.getBoulderSends(userID, boulderIDs)
-            val bouldersWithSends = boulders.map { boulder ->
-                val send = routeSends.filter { boulder.id == it.boulderID }
-                boulder.image = imageService.getImageMetadataByBoulder(boulder.id).data?.let { "http://localhost:8080${it.getUrl()}" }
-                BoulderWithSend(
-                    boulder = boulder,
-                    routeSend = send.firstOrNull()
-                )
-            }
-            ServiceResult(success = true, data = bouldersWithSends, message = "Boulders retrieved successfully")
-        } catch (e: Exception) {
-            e.printStackTrace()
-            ServiceResult(success = false, message = "Error getting boulder sends", data = null)
-        }
-    }
-
-    open fun addUserRouteSend(userID: Long, boulderID: Long, additionalProps: Map<String, String> = emptyMap()) {
-        routeSendRepository.insertRouteSend(userID, boulderID, additionalProps)
-    }
 
 }

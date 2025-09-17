@@ -1,6 +1,6 @@
 package com.arnas.klatrebackend.service
 
-import com.arnas.klatrebackend.repository.GroupRepository
+import com.arnas.klatrebackend.interfaces.services.UserServiceInterface
 import com.arnas.klatrebackend.repository.UserRepository
 import org.json.JSONObject
 import org.springframework.stereotype.Service
@@ -13,11 +13,11 @@ import java.net.http.HttpResponse
 class UserService(
     private var userRepository: UserRepository,
     private val groupService: GroupService,
-) {
+): UserServiceInterface {
 
-    open val client: HttpClient = HttpClient.newBuilder().build()
+    private val client: HttpClient = HttpClient.newBuilder().build()
 
-    open fun getGoogleUserProfile(token: String): Map<String, String> {
+     override fun getGoogleUserProfile(token: String): Map<String, String> {
         val request = HttpRequest.newBuilder()
             .uri(URI.create("https://www.googleapis.com/oauth2/v1/userinfo?access_token=${token}"))
             .header("Authorization", "Bearer $token")
@@ -33,7 +33,7 @@ class UserService(
         )
     }
 
-    open fun usersPlacePermissions(userID: Long, placeID: Long): Boolean {
+    override fun usersPlacePermissions(userID: Long, placeID: Long): Boolean {
         val groups = groupService.getGroups(userID).data ?: return false
         val hasAccess = groups.any { group ->
             group.places.any{ it.id == placeID }
@@ -41,7 +41,7 @@ class UserService(
         return hasAccess
     }
 
-    open fun createOrUpdateUser(userInfo: Map<String, String>): Long? {
+    override fun createOrUpdateUser(userInfo: Map<String, String>): Long? {
         val email = userInfo["email"] ?: return null
         val name = userInfo["name"] ?: return null
         userRepository.getUserByEmail(email)?.let {

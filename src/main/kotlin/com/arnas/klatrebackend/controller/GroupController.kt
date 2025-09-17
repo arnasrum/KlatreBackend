@@ -6,6 +6,7 @@ import com.arnas.klatrebackend.dataclass.GroupWithPlaces
 import com.arnas.klatrebackend.dataclass.PlaceRequest
 import com.arnas.klatrebackend.dataclass.Role
 import com.arnas.klatrebackend.dataclass.User
+import com.arnas.klatrebackend.interfaces.services.GroupServiceInterface
 import com.arnas.klatrebackend.service.GroupService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/groups")
 class GroupController(
-    private val groupService: GroupService,
+    private val groupService: GroupServiceInterface,
 ) {
 
     @GetMapping("")

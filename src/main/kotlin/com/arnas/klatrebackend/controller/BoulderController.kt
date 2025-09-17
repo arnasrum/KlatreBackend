@@ -1,9 +1,12 @@
 package com.arnas.klatrebackend.controller
 
 import com.arnas.klatrebackend.dataclass.User
+import com.arnas.klatrebackend.interfaces.services.BoulderServiceInterface
 import com.arnas.klatrebackend.service.BoulderService
-import com.arnas.klatrebackend.service.ImageService
 import com.arnas.klatrebackend.service.UserService
+import com.arnas.klatrebackend.interfaces.services.ImageServiceInterface
+import com.arnas.klatrebackend.interfaces.services.RouteSendServiceInterface
+import com.arnas.klatrebackend.interfaces.services.UserServiceInterface
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -19,9 +22,10 @@ import org.springframework.web.multipart.MultipartFile
 @Tag(name = "Boulder", description = "Boulder CRUD operations")
 @RequestMapping("/boulders")
 class BoulderController(
-    private val userService: UserService,
-    private val boulderService: BoulderService,
-    private val imageService: ImageService,
+    private val userService: UserServiceInterface,
+    private val boulderService: BoulderServiceInterface,
+    private val imageService: ImageServiceInterface,
+    private val routeSendService: RouteSendServiceInterface,
 ) {
 
     @GetMapping("/place")
@@ -30,7 +34,7 @@ class BoulderController(
         if(!userService.usersPlacePermissions(userID, placeID)) {
             return ResponseEntity(HttpStatus.UNAUTHORIZED)
         }
-        val serviceResult = boulderService.getBouldersWithSendsByPlace(userID, placeID)
+        val serviceResult = routeSendService.getBouldersWithSendsByPlace(userID, placeID)
         if (!serviceResult.success) {
             return ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
         }
@@ -50,7 +54,7 @@ class BoulderController(
         val userID: Long = user.id
         
         if(!userService.usersPlacePermissions(userID, placeID)) {
-            return ResponseEntity(HttpStatus.UNAUTHORIZED)
+            return ResponseEntity(mapOf("message" to "User is not allowed to add boulder to this place"), HttpStatus.UNAUTHORIZED)
         }
 
         val requestBody = mutableMapOf<String, String>().apply {
@@ -100,7 +104,7 @@ class BoulderController(
     ): ResponseEntity<Any> {
         val userID = user.id
 
-        if(!boulderService.getUserBoulderSends(userID, listOf(boulderID)).data.isNullOrEmpty()) {
+        if(!routeSendService.getUserBoulderSends(userID, listOf(boulderID)).data.isNullOrEmpty()) {
             return ResponseEntity.badRequest().body("The user has already sent this route")
         }
 
@@ -109,7 +113,7 @@ class BoulderController(
         perceivedGrade?.let { additionalProps["perceivedGrade"] = it }
         completed?.let { additionalProps["completed"] = it }
 
-        boulderService.addUserRouteSend(userID, boulderID, additionalProps)
+        routeSendService.addUserRouteSend(userID, boulderID, additionalProps)
 
         return ResponseEntity(HttpStatus.OK)
     }
