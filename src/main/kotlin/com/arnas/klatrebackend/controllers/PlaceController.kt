@@ -1,5 +1,6 @@
 package com.arnas.klatrebackend.controllers
 
+import com.arnas.klatrebackend.dataclasses.PlaceUpdateDTO
 import com.arnas.klatrebackend.dataclasses.User
 import com.arnas.klatrebackend.interfaces.services.GroupServiceInterface
 import com.arnas.klatrebackend.interfaces.services.PlaceServiceInterface
@@ -26,6 +27,23 @@ class PlaceController(
         if(!result.success) return ResponseEntity.badRequest().body(result.message)
         return ResponseEntity.ok(result.data)
     }
+
+    @PutMapping("")
+    fun updatePlace(
+        @RequestParam placeId: Long,
+        @RequestParam(required = false) name: String?,
+        @RequestParam(required = false) description: String?,
+        @RequestParam(required = false) gradingSystemId: Long?,
+        user: User
+    ): ResponseEntity<out Any> {
+        //println("placeId: $placeId, name: $name, description: $description, gradingSystemId: $gradingSystemId")
+        val updateObject = PlaceUpdateDTO(placeId, name, description, gradingSystemId)
+        val result = placeService.updatePlace(user.id, updateObject)
+        if(!result.success) return ResponseEntity.badRequest().body(mapOf("message" to result.message))
+        return ResponseEntity.ok(mapOf("message" to result.message))
+    }
+
+
 
     @PutMapping("/gradingSystem")
     fun updateGradingSystem(@RequestParam placeId: Long, @RequestParam gradingSystemId: Long, user: User): ResponseEntity<out Any> {

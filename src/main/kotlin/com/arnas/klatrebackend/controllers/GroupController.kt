@@ -54,7 +54,7 @@ class GroupController(
         @RequestParam name: String,
         @RequestParam(required = false) description: String?
     ): ResponseEntity<String> {
-        val placeRequest = PlaceRequest(group_id = groupID, name = name, description = description)
+        val placeRequest = PlaceRequest(groupId = groupID, name = name, description = description)
         groupService.addPlaceToGroup(groupID, placeRequest)
         return ResponseEntity.ok("Place added successfully")
     }

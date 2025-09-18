@@ -1,13 +1,13 @@
 package com.arnas.klatrebackend.dataclasses
 
 
-data class GradeToCreate(
+data class Grade(
+    val id: Long,
     val gradeString: String,
     val numericalValue: Int,
 )
 
-data class Grade(
-    val id: Long,
+data class GradeToCreate(
     val gradeString: String,
     val numericalValue: Int,
 )
@@ -19,3 +19,9 @@ data class GradingSystem (
     val isGlobal: Boolean = false,
     val grades: List<Grade>
 )
+
+data class GradingSystemWithGrades(
+    val id: Long,
+    val grades: List<Grade>
+)
+

@@ -1,18 +1,14 @@
 package com.arnas.klatrebackend.services
 
-import com.arnas.klatrebackend.dataclasses.Place
+import com.arnas.klatrebackend.dataclasses.GradingSystemWithGrades
+import com.arnas.klatrebackend.dataclasses.PlaceUpdateDTO
 import com.arnas.klatrebackend.dataclasses.PlaceWithGrades
 import com.arnas.klatrebackend.dataclasses.ServiceResult
-import com.arnas.klatrebackend.dataclasses.Test
 import com.arnas.klatrebackend.interfaces.repositories.BoulderRepositoryInterface
 import com.arnas.klatrebackend.interfaces.repositories.GradingSystemRepositoryInterface
 import com.arnas.klatrebackend.interfaces.repositories.PlaceRepositoryInterface
-import com.arnas.klatrebackend.interfaces.services.BoulderServiceInterface
 import com.arnas.klatrebackend.interfaces.services.GroupServiceInterface
 import com.arnas.klatrebackend.interfaces.services.PlaceServiceInterface
-import com.arnas.klatrebackend.repositories.BoulderRepository
-import com.arnas.klatrebackend.repositories.GradingSystemRepository
-import com.arnas.klatrebackend.repositories.PlaceRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import kotlin.math.abs
@@ -30,12 +26,39 @@ class PlaceService(
         return try {
             groupService.getGroupUserRole(userId, groupId).data ?: return ServiceResult(success = false, message = "User is not a member of group", data = null)
             val places = placeRepository.getPlacesByGroupId(groupId)
-            val test = places.map { PlaceWithGrades(it.id, it.name, it.description, it.groupID, Test(it.gradingSystem, gradingSystemRepository.getGradesBySystemId(it.gradingSystem))) }
+            val test = places.map { PlaceWithGrades(it.id, it.name, it.description, it.groupID, GradingSystemWithGrades(it.gradingSystem, gradingSystemRepository.getGradesBySystemId(it.gradingSystem))) }
             ServiceResult(success = true, message = "Places retrieved successfully", data = test)
         } catch (e: Exception) {
             ServiceResult(success = false, message = "Error retrieving places: ${e.message}", data = null)
         }
     }
+
+    override fun updatePlace(userId: Long, placeUpdateDTO: PlaceUpdateDTO): ServiceResult<Unit> {
+        println("Updating place")
+        try {
+            val place = placeRepository.getPlaceById(placeUpdateDTO.placeId)
+            if (place == null) {
+                throw RuntimeException("Place not found")
+            }
+            println("place found")
+            val rowAffected = placeRepository.updatePlace(placeUpdateDTO)
+            println("Row affected: $rowAffected")
+            if(rowAffected <= 0 && placeUpdateDTO.gradingSystem == null) {
+                throw RuntimeException("Failed to update place")
+            }
+            println(placeUpdateDTO)
+            placeUpdateDTO.gradingSystem?.let {
+                println("Updating place grading system")
+                updatePlaceGradingSystem(userId, placeUpdateDTO.placeId, it)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            println("Error updating place: ${e.message}")
+            return ServiceResult(success = false, message = "Error updating place: ${e.message}", data = null)
+        }
+        return ServiceResult(success = true, message = "Place updated successfully")
+    }
+
 
     @Transactional
     override fun updatePlaceGradingSystem(userId: Long, placeId: Long, newGradingSystemId: Long): ServiceResult<Unit> {

@@ -2,6 +2,7 @@ package com.arnas.klatrebackend.repositories
 
 import com.arnas.klatrebackend.dataclasses.Place
 import com.arnas.klatrebackend.dataclasses.PlaceRequest
+import com.arnas.klatrebackend.dataclasses.PlaceUpdateDTO
 import com.arnas.klatrebackend.interfaces.repositories.PlaceRepositoryInterface
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
@@ -70,6 +71,27 @@ class PlaceRepository(
         }
         return results.firstOrNull()
     }
+
+    override fun updatePlace(placeUpdateDTO: PlaceUpdateDTO): Int {
+        val updates = mutableListOf<String>()
+        val parameters = MapSqlParameterSource().addValue("placeId", placeUpdateDTO.placeId)
+
+        placeUpdateDTO.name?.let {
+            updates.add("name = :name")
+            parameters.addValue("name", it)
+        }
+        placeUpdateDTO.description?.let {
+            updates.add("description = :description")
+            parameters.addValue("description", it)
+        }
+        if(updates.isEmpty()) {return 0}
+        val sql = "UPDATE places SET ${updates.joinToString(", ")} WHERE id = :placeId"
+        val rowAffected = jdbcTemplate.update(sql, parameters)
+
+        return rowAffected
+    }
+
+
 
     override fun updatePlace(placeId: Long, name: String?, description: String?, groupId: Long?, gradingSystem: Long?): Int {
 

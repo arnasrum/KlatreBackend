@@ -8,9 +8,12 @@ data class Place(
     val gradingSystem: Long
 )
 
-data class Test(
-    val id: Long,
-    val grades: List<Grade>
+data class PlaceUpdateDTO(
+    val placeId: Long,
+    val name: String? = null,
+    val description: String? = null,
+    val gradingSystem: Long? = null,
+    val groupID: Long? = null,
 )
 
 data class PlaceWithGrades(
@@ -18,35 +21,16 @@ data class PlaceWithGrades(
     val name: String,
     val description: String? = null,
     val groupID: Long,
-    val gradingSystem: Test
+    val gradingSystem: GradingSystemWithGrades
 )
 
 data class PlaceWithBoulders(
     val place: Place,
-    val boulders: Array<Boulder>
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as PlaceWithBoulders
-
-        if (place != other.place) return false
-        if (!boulders.contentEquals(other.boulders)) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = place.hashCode()
-        result = 31 * result + boulders.contentHashCode()
-        return result
-    }
-}
-
+    val boulders: List<Boulder>
+)
 
 data class PlaceRequest(
-    val group_id: Long,
+    val groupId: Long,
     val name: String,
     val description: String? = null
 )
