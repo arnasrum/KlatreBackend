@@ -57,8 +57,7 @@ class GradingSystemRepository(
             : Long {
         val keyholder = GeneratedKeyHolder()
         val sql = "INSERT INTO grading_systems (name, created_in_group, climb_type) VALUES (:name, :groupID, :climbType)"
-        jdbcTemplate.update(
-            sql,
+        jdbcTemplate.update(sql,
             MapSqlParameterSource()
                 .addValue("name", gradingSystemName)
                 .addValue("groupID", groupId)
@@ -81,7 +80,6 @@ class GradingSystemRepository(
     }
 
     override fun deleteGradingSystem(gradingSystemId: Long): Int {
-
         val rowsAffected = jdbcTemplate.update("DELETE FROM grading_systems WHERE id = :gradingSystemId",
             MapSqlParameterSource().addValue("gradingSystemId", gradingSystemId)
         )

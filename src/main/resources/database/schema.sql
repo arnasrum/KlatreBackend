@@ -53,14 +53,15 @@ CREATE TABLE IF NOT EXISTS boulders(
     name TEXT NOT NULL,
     grade BIGINT REFERENCES grades(id),
     description TEXT,
-    userID BIGSERIAL REFERENCES users(id),
+    userID BIGINT REFERENCES users(id),
+    date_added TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     place BIGSERIAL REFERENCES places(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS image(
     id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
     content_type TEXT NOT NULL,
-    boulder_id BIGSERIAL UNIQUE NOT NULL,
+    boulder_id BIGINT UNIQUE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     file_size BIGINT NOT NULL,
     user_id BIGSERIAL REFERENCES users(id),
@@ -68,8 +69,8 @@ CREATE TABLE IF NOT EXISTS image(
 );
 
 CREATE TABLE IF NOT EXISTS user_groups(
-    user_id BIGSERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    group_id BIGSERIAL NOT NULL REFERENCES klatre_groups(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    group_id BIGINT NOT NULL REFERENCES klatre_groups(id) ON DELETE CASCADE,
     role INT NOT NULL references roles(id) ON DELETE CASCADE, -- OWNER, ADMIN, USER
     joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     PRIMARY KEY(user_id, group_id)
@@ -89,11 +90,11 @@ CREATE TABLE IF NOT EXISTS group_invites(
 
 CREATE TABLE IF NOT EXISTS route_sends(
     id BIGSERIAL PRIMARY KEY,
-    userID BIGSERIAL REFERENCES users(id) NOT NULL,
-    boulderID BIGSERIAL REFERENCES boulders(id) NOT NULL,
+    userID BIGINT REFERENCES users(id) NOT NULL,
+    boulderID BIGINT REFERENCES boulders(id) NOT NULL,
     date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    attempts INT NOT NULL,
-    completed BOOL,
+    attempts INT NOT NULL DEFAULT 0,
+    completed BOOL DEFAULT false,
     perceivedGrade TEXT,
     UNIQUE(userID, boulderID)
 );

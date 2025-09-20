@@ -6,5 +6,13 @@ data class RouteSend(
     val boulderID: Long,
     val attempts: Int,
     val completed: Boolean = false,
-    val perceivedGrade: String?
+    val perceivedGrade: Long?
+)
+
+data class RouteSendDTOUpdate(
+    val userId: Long,
+    val boulderId: Long,
+    val attempts: Int?,
+    val completed: Boolean?,
+    val perceivedGrade: Long?
 )
