@@ -70,6 +70,7 @@ class RouteSendService(
             if(rowAffected <= 0) return ServiceResult(success = false, message = "Error updating route send", data = null)
             return ServiceResult(success = true, message = "Route send updated successfully", data = routeSend)
         } catch (e: Exception) {
+            e.printStackTrace()
             return ServiceResult(success = false, message = "Error updating route send: ${e.message}", data = null)
         }
     }

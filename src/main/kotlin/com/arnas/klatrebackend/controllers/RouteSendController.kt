@@ -30,7 +30,7 @@ class RouteSendController(private val routeSendService: RouteSendServiceInterfac
 
 
     data class RouteSendUpdateRequest(
-        val routeId: Long,
+        val boulderID: Long,
         val attempts: Int?,
         val completed: Boolean?,
         val perceivedGrade: Long?
@@ -44,10 +44,12 @@ class RouteSendController(private val routeSendService: RouteSendServiceInterfac
 
         val routeSendDTOUpdate = RouteSendDTOUpdate(
             user.id,
-            updateRequest.routeId,
+            updateRequest.boulderID,
             updateRequest.attempts,
             updateRequest.completed,
-            updateRequest.perceivedGrade)
+            updateRequest.perceivedGrade
+        )
+        println(routeSendDTOUpdate)
         val result = routeSendService.updateRouteSend(routeSendDTOUpdate)
         if(!result.success) return ResponseEntity.badRequest().body(mapOf("message" to result.message))
         return ResponseEntity.ok(mapOf("message" to result.message, "data" to listOf(result.data)))

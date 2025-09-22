@@ -119,13 +119,15 @@ class RouteSendRepository(
             "SET attempts = :attempts, completed = :completed, perceivedGrade = :perceivedGrade " +
             "WHERE boulderid = :boulderId AND userid = :userId"
 
-        val rowAffected = jdbcTemplate.update(sql, MapSqlParameterSource()
-            .addValue("attempts", routeSendDTO.attempts)
-            .addValue("completed", routeSendDTO.completed)
-            .addValue("perceivedGrade", routeSendDTO.perceivedGrade)
-            .addValue("boulderId", routeSendDTO.boulderId)
-            .addValue("userId", routeSendDTO.userId)
+        val rowAffected = jdbcTemplate.update(sql,
+            MapSqlParameterSource()
+                .addValue("attempts", routeSendDTO.attempts)
+                .addValue("completed", routeSendDTO.completed)
+                .addValue("perceivedGrade", routeSendDTO.perceivedGrade)
+                .addValue("boulderId", routeSendDTO.boulderId)
+                .addValue("userId", routeSendDTO.userId)
         )
+        println("Row affected: $rowAffected")
         return rowAffected
     }
 }

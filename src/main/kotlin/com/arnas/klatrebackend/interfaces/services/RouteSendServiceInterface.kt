@@ -11,7 +11,7 @@ interface RouteSendServiceInterface {
     fun addUserRouteSend(userID: Long, boulderID: Long, additionalProps: Map<String, String> = emptyMap())
 
     fun getRouteSendByRoute(routeId: Long, userId: Long): ServiceResult<RouteSend?>
-    fun updateRouteSend(routeSend: RouteSendDTOUpdate): ServiceResult<RouteSend>
+    fun updateRouteSend(routeSendDTO: RouteSendDTOUpdate): ServiceResult<RouteSend>
 
 
 }
