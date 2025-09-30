@@ -160,4 +160,33 @@ class StatRepository(
         }
         return hardestSend.firstOrNull()
     }
+
+    fun groupActivityOverTime(groupId: Long, timeAggregate: String) {
+        val sql = """
+            SELECT
+            DATE_TRUNC(:timeAggregate, rs.date) AS activity_period,
+            COUNT(rs.id) AS completed_sends
+            FROM
+            klatre_groups kg
+                    JOIN
+            user_groups ug ON kg.id = ug.group_id
+                    JOIN
+            route_sends rs ON ug.user_id = rs.userID
+                    WHERE
+            kg.id = :groupId AND rs.completed = TRUE 
+            GROUP BY
+                    activity_period
+            ORDER BY
+                    activity_period;
+        """
+        val timeData = jdbcTemplate.query(sql,
+            mapOf("groupId" to groupId, "timeAggregate" to timeAggregate)) { rs, _ ->
+            rs.getString("activity_period")
+        }
+        println("timeData: $timeData")
+    }
+
+
+
+
 }

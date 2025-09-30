@@ -3,15 +3,15 @@ package com.arnas.klatrebackend.services
 import com.arnas.klatrebackend.dataclasses.GroupRouteStats
 import com.arnas.klatrebackend.dataclasses.UserRouteStats
 import com.arnas.klatrebackend.repositories.StatRepository
+import org.springframework.stereotype.Service
 
+@Service
 class StatService(
     private val statRepository: StatRepository
 ) {
 
 
     fun getRouteStats(routeId: Long) {
-
-
 
     }
 
@@ -28,9 +28,15 @@ class StatService(
         val totalAttempts = statRepository.getGroupTotalAttempts(groupId)?: 0
         val totalCompleted = statRepository.getGroupTotalCompletedRoutes(groupId)?: 0
         val hardestRouteSend = statRepository.getGroupHardestRouteCompleted(groupId)?: 0
-
         val groupStats = GroupRouteStats(groupId, totalAttempts, totalCompleted, hardestRouteSend)
     }
+
+    fun getGroupActivityStats(groupId: Long, timeAggregate: String) {
+        statRepository.groupActivityOverTime(groupId, timeAggregate)
+    }
+
+
+
 
 
 

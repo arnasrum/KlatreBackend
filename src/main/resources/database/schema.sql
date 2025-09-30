@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS group_invites, user_groups, image, boulders, klatre_groups, users, roles, places, route_sends, grading_systems, grades CASCADE;
+DROP TABLE IF EXISTS group_invites, user_groups, image, boulders, klatre_groups, users, roles, places, route_sends, grading_systems, grades, climbing_sessions CASCADE;
 
 CREATE TABLE IF NOT EXISTS users(
     id BIGSERIAL PRIMARY KEY,
@@ -105,6 +105,14 @@ CREATE TABLE IF NOT EXISTS boulder_equivalence(
     boulder_id2 BIGSERIAL REFERENCES boulders(id) NOT NULL,
     user_id BIGSERIAL REFERENCES users(id) NOT NULL,
     UNIQUE(boulder_id1, boulder_id2)
+);
+
+CREATE TABLE IF NOT EXISTS climbing_sessions(
+    id BIGSERIAL PRIMARY KEY,
+    userID BIGINT REFERENCES users(id) NOT NULL,
+    date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    name TEXT,
+    place BIGINT REFERENCES places(id) ON DELETE SET NULL
 );
 
 CREATE UNIQUE INDEX idx_unique_pending_invite ON group_invites (group_id, user_id)
