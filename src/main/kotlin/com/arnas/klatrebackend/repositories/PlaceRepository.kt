@@ -35,21 +35,21 @@ class PlaceRepository(
         return places.toList()
     }
 
-    override fun addPlaceToGroup(groupID: Long, placeRequest: PlaceRequest): Long {
+    override fun addPlaceToGroup(groupID: Long, name: String, description: String?): Long {
         val keyholder = GeneratedKeyHolder()
-
-        val tableColumns = mutableListOf<String>()
-        val placeHolders = mutableListOf<String>()
+        val tableColumns = mutableListOf<String>("name", "group_id")
+        val placeHolders = mutableListOf<String>(":name", ":groupID")
         val parameters = MapSqlParameterSource()
-        placeRequest::class.memberProperties.forEach { prop ->
-            val value = prop.getter.call(placeRequest)
-            if(value != null) {
-                parameters.addValue(prop.name, value)
-                tableColumns.add(prop.name)
-                placeHolders.add(":${prop.name}")
-            }
+        parameters.addValue("name", name)
+        parameters.addValue("groupID", groupID)
+        description?.let {
+            tableColumns.add("description")
+            placeHolders.add(":description")
+            parameters.addValue("description", it)
         }
+
         val sql = "INSERT INTO places (${tableColumns.joinToString(", ")}) VALUES (${placeHolders.joinToString(", ")})"
+        println(sql)
         jdbcTemplate.update(
             sql, parameters, keyholder
         )

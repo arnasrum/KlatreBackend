@@ -2,6 +2,7 @@ package com.arnas.klatrebackend.interfaces.services
 
 import com.arnas.klatrebackend.dataclasses.AddGroupRequest
 import com.arnas.klatrebackend.dataclasses.GradingSystem
+import com.arnas.klatrebackend.dataclasses.Group
 import com.arnas.klatrebackend.dataclasses.GroupUser
 import com.arnas.klatrebackend.dataclasses.GroupWithPlaces
 import com.arnas.klatrebackend.dataclasses.PlaceRequest
@@ -17,4 +18,5 @@ interface GroupServiceInterface {
     fun removeUserFromGroup(userId: Long, groupId: Long): ServiceResult<Unit>
     fun getGradingSystemsInGroup(groupId: Long): List<GradingSystem>
     fun getUsersInGroup(groupId: Long): ServiceResult<List<GroupUser>>
+    fun getGroupByUuid(groupUuid: String): ServiceResult<Group>
 }

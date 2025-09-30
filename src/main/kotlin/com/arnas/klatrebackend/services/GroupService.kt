@@ -2,6 +2,7 @@ package com.arnas.klatrebackend.services
 
 import com.arnas.klatrebackend.dataclasses.AddGroupRequest
 import com.arnas.klatrebackend.dataclasses.GradingSystem
+import com.arnas.klatrebackend.dataclasses.Group
 import com.arnas.klatrebackend.dataclasses.GroupUser
 import com.arnas.klatrebackend.dataclasses.GroupWithPlaces
 import com.arnas.klatrebackend.dataclasses.PlaceRequest
@@ -49,7 +50,7 @@ open class GroupService(
 
 
     override fun addPlaceToGroup(groupId: Long, placeRequest: PlaceRequest): ServiceResult<Long> {
-        val id = placeRepository.addPlaceToGroup(groupId, placeRequest)
+        val id = placeRepository.addPlaceToGroup(groupId, placeRequest.name, placeRequest.description)
         return ServiceResult(data = id, message = "Place added successfully", success = true)
     }
 
@@ -70,10 +71,10 @@ open class GroupService(
 
     override fun getGroupUserRole(userId: Long, groupId: Long): ServiceResult<Int?> {
         try {
-            val role = groupRepository.getUserGroupRole(userId, groupId)
-            if(role == null) {
-                return ServiceResult(success = false, message = "User is not a member of group")
-            }
+            val role = groupRepository.getUserGroupRole(userId, groupId) ?: return ServiceResult(
+                success = false,
+                message = "User is not a member of group"
+            )
             return ServiceResult(
                 success = true,
                 message = "User role retrieved successfully",
@@ -117,5 +118,18 @@ open class GroupService(
             return ServiceResult(success = false, message = "Error getting users in group", data = null)
         }
     }
+
+
+    override fun getGroupByUuid(groupUuid: String): ServiceResult<Group> {
+        try {
+            val group = groupRepository.getGroupByUuid(groupUuid) ?: return ServiceResult(success = false, message = "Group not found", data = null)
+            return ServiceResult(success = true, data = group, message = "Group retrieved successfully")
+        } catch(exception: Exception) {
+            exception.printStackTrace()
+            return ServiceResult(success = false, message = "Error getting group by id", data = null)
+        }
+
+    }
+
 
 }

@@ -114,4 +114,22 @@ import kotlin.reflect.full.memberProperties
         )
         return rowAffected
     }
+
+    fun getGroupByUuid(groupUuid: String): Group? {
+        val group = jdbcTemplate.query("SELECT * FROM klatre_groups WHERE uuid = :groupUuid",
+            mapOf("groupUuid" to groupUuid),
+        ) { rs, _ ->
+            Group(
+                id = rs.getLong("id"),
+                owner = rs.getLong("owner"),
+                name = rs.getString("name"),
+                personal = rs.getBoolean("personal"),
+                description = rs.getString("description"),
+                uuid = rs.getString("uuid")
+            )
+        }
+        return group.firstOrNull()
+    }
+
+
 }

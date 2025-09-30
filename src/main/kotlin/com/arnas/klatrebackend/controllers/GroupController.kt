@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -84,6 +85,14 @@ class GroupController(
     @PutMapping("/settings")
     fun updateSettings(): ResponseEntity<String> {
         return ResponseEntity.ok("Settings updated successfully")
+    }
+
+
+    @GetMapping("/uuid/{uuid}")
+    fun getGroupById(@PathVariable uuid: String, user: User): ResponseEntity<Any> {
+        val serviceResult = groupService.getGroupByUuid(uuid)
+        if(!serviceResult.success) return ResponseEntity.badRequest().body(mapOf("message" to serviceResult.message))
+        return ResponseEntity.ok(mapOf("data" to serviceResult.data, "message" to serviceResult.message))
     }
 
     @GetMapping("/users")
