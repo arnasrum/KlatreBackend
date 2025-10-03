@@ -88,17 +88,6 @@ CREATE TABLE IF NOT EXISTS group_invites(
     --UNIQUE (group_id, user_id) WHERE status = 'pending'
 );
 
-CREATE TABLE IF NOT EXISTS route_sends(
-    id BIGSERIAL PRIMARY KEY,
-    userID BIGINT REFERENCES users(id) NOT NULL,
-    boulderID BIGINT REFERENCES boulders(id) NOT NULL,
-    date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    attempts INT NOT NULL DEFAULT 0,
-    completed BOOL DEFAULT false,
-    perceivedGrade TEXT,
-    UNIQUE(userID, boulderID)
-);
-
 CREATE TABLE IF NOT EXISTS boulder_equivalence(
     id BIGSERIAL PRIMARY KEY,
     boulder_id1 BIGSERIAL REFERENCES boulders(id) NOT NULL, -- Take sends from boulder2 and apply to boulder1
@@ -109,10 +98,21 @@ CREATE TABLE IF NOT EXISTS boulder_equivalence(
 
 CREATE TABLE IF NOT EXISTS climbing_sessions(
     id BIGSERIAL PRIMARY KEY,
-    userID BIGINT REFERENCES users(id) NOT NULL,
-    date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     name TEXT,
-    place BIGINT REFERENCES places(id) ON DELETE SET NULL
+    userId BIGINT REFERENCES users(id) NOT NULL,
+    startDate TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    place BIGINT REFERENCES places(id) ON DELETE SET NULL,
+    group BIGINT REFERENCES klatre_groups(id) ON DELETE SET NULL
+);
+CREATE TABLE IF NOT EXISTS route_sends(
+    id BIGSERIAL PRIMARY KEY,
+    userID BIGINT REFERENCES users(id) NOT NULL,
+    boulderID BIGINT REFERENCES boulders(id) NOT NULL,
+    date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    attempts INT NOT NULL DEFAULT 0,
+    completed BOOL DEFAULT false,
+    climbingSession BIGINT REFERENCES climbing_sessions(id) ON DELETE SET NULL,
+    perceivedGrade TEXT
 );
 
 CREATE UNIQUE INDEX idx_unique_pending_invite ON group_invites (group_id, user_id)
