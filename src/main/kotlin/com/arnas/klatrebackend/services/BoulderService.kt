@@ -73,7 +73,17 @@ class BoulderService(
         } catch (e: Exception) {
             return ServiceResult(success = false, message = "Error deleting boulder", data = null)
         }
+   }
+
+    override fun getBouldersByPlace(placeId: Long): ServiceResult<List<Boulder>> {
+        try {
+            boulderRepository.getBouldersByPlace(placeId).let { return ServiceResult(success = true, message = "Boulders retrieved successfully", data = it) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return ServiceResult(success = false, message = "Error getting boulders by place", data = null)
+        }
     }
+
 
 
 }

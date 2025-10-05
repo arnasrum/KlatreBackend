@@ -32,7 +32,7 @@ class BoulderController(
         if(!userService.usersPlacePermissions(userID, placeID)) {
             return ResponseEntity(HttpStatus.UNAUTHORIZED)
         }
-        val serviceResult = routeSendService.getBouldersWithSendsByPlace(userID, placeID)
+        val serviceResult = boulderService.getBouldersByPlace(placeID)
         if (!serviceResult.success) {
             return ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
         }
