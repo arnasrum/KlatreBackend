@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS roles(
 
 CREATE TABLE IF NOT EXISTS klatre_groups(
     id BIGSERIAL PRIMARY KEY,
-    owner BIGSERIAL REFERENCES users(id) ON DELETE CASCADE,
+    owner BIGINT REFERENCES users(id) ON DELETE SET NULL,
     name TEXT NOT NULL,
     personal BOOL NOT NULL,
     uuid TEXT NOT NULL DEFAULT gen_random_uuid(),
@@ -99,19 +99,17 @@ CREATE TABLE IF NOT EXISTS boulder_equivalence(
 CREATE TABLE IF NOT EXISTS climbing_sessions(
     id BIGSERIAL PRIMARY KEY,
     name TEXT,
-    userId BIGINT REFERENCES users(id) NOT NULL,
-    startDate TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    place BIGINT REFERENCES places(id) ON DELETE SET NULL,
-    group BIGINT REFERENCES klatre_groups(id) ON DELETE SET NULL
+    user_id BIGINT REFERENCES users(id) NOT NULL,
+    start_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    place_id BIGINT REFERENCES places(id) ON DELETE SET NULL,
+    group_id BIGINT REFERENCES klatre_groups(id) ON DELETE SET NULL
 );
 CREATE TABLE IF NOT EXISTS route_sends(
     id BIGSERIAL PRIMARY KEY,
-    userID BIGINT REFERENCES users(id) NOT NULL,
     boulderID BIGINT REFERENCES boulders(id) NOT NULL,
-    date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     attempts INT NOT NULL DEFAULT 0,
     completed BOOL DEFAULT false,
-    climbingSession BIGINT REFERENCES climbing_sessions(id) ON DELETE SET NULL,
+    climbingSession BIGINT REFERENCES climbing_sessions(id) ON DELETE CASCADE,
     perceivedGrade TEXT
 );
 
