@@ -16,8 +16,6 @@ A Spring Boot backend application for managing climbing-related data and session
 ## Features
 
 - RESTful API endpoints for climbing data management
-- Aspect-Oriented Programming (AOP) support
-- OpenAPI documentation
 - CORS configuration
 - Database integration
 - Docker support for containerized deployment
