@@ -3,6 +3,11 @@ package com.arnas.klatrebackend.controllers
 import com.arnas.klatrebackend.interfaces.services.LoginServiceInterface
 import org.springframework.web.bind.annotation.*
 import org.springframework.http.ResponseEntity
+import org.springframework.http.ResponseCookie
+import java.time.Duration
+import java.time.ZonedDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 @RestController
 class OAuthController(
@@ -39,7 +44,21 @@ class OAuthController(
             val jwt = loginService.getJWTToken(code)
             
             return if (jwt != null) {
-                ResponseEntity.ok(mapOf("access_token" to jwt))
+                // Calculate expiration in UTC
+                val expiresAt = ZonedDateTime.now(ZoneOffset.UTC).plusHours(1)
+                
+                val cookie = ResponseCookie.from("authToken", jwt)
+                    .maxAge(Duration.ofHours(1))
+                    .path("/")
+                    .httpOnly(false)
+                    .secure(false)
+                    .sameSite("Lax")
+                    .build()
+                
+                ResponseEntity.ok()
+                    .header("Set-Cookie", cookie.toString())
+                    .header("Date", DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now(ZoneOffset.UTC)))
+                    .body(mapOf("access_token" to jwt))
             } else {
                 ResponseEntity.badRequest().body(mapOf("error" to "Authentication failed"))
             }
