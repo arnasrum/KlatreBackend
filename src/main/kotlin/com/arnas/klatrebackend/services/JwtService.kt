@@ -41,4 +41,56 @@ class JwtService(
         }
         return payload
     }
+    fun validateToken(token: String): Boolean {
+        return try {
+            val claims = Jwts.parser()
+                .verifyWith(Keys.hmacShaKeyFor(googleSecret.toByteArray()))
+                .build()
+                .parseSignedClaims(token)
+            !claims.payload.expiration.before(Date())
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun extractUserId(token: String): String? {
+        return try {
+            val claims = Jwts.parser()
+                .verifyWith(Keys.hmacShaKeyFor(googleSecret.toByteArray()))
+                .build()
+                .parseSignedClaims(token)
+            claims.payload.subject
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun extractExpiration(token: String): Date {
+        val claims = Jwts.parser()
+                .verifyWith(Keys.hmacShaKeyFor(googleSecret.toByteArray()))
+                .build()
+                .parseSignedClaims(token)
+        return claims.payload.expiration
+    }
+
+    fun refreshToken(token: String): String? {
+        return try {
+            val claims = Jwts.parser()
+                .verifyWith(Keys.hmacShaKeyFor(googleSecret.toByteArray()))
+                .build()
+                .parseSignedClaims(token)
+                .payload
+
+            val userId = claims.subject
+            val email = claims["email"] as? String
+            val name = claims["name"] as? String
+            val id = claims["id"] as? String
+
+            if (userId != null && email != null && name != null && id != null) {
+                createJwtToken(userId, mapOf("email" to email, "name" to name, "id" to id))
+            } else null
+        } catch (e: Exception) {
+            null
+        }
+    }
 }

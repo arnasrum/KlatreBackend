@@ -28,18 +28,20 @@ class UserResolver(
         binderFactory: WebDataBinderFactory?
     ): Any? {
         val request = webRequest.getNativeRequest(HttpServletRequest::class.java)!!
-        val authHeader = request.getHeader("Authorization")
         
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing or invalid Authorization header")
-        }
+        val token = request.cookies?.firstOrNull { it.name == "authToken" }?.value
+            // Fallback to Authorization header for backward compatibility
+            ?: request.getHeader("Authorization")
+                ?.takeIf { it.startsWith("Bearer ") }
+                ?.removePrefix("Bearer ")?.trim()
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing authentication token")
         
-        val token = authHeader.removePrefix("Bearer ").trim()
         val userInfo = try {
             jwtService.getJwtPayload(jwtService.decodeJwt(token))
         } catch (e: Exception) {
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token")
         }
+        
         val userId = userInfo["sub"]?.toLongOrNull()
             ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid user ID")
         val email = userInfo["email"] ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing email")
