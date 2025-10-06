@@ -18,8 +18,10 @@ class LoginService(
     @Value("\${GOOGLE_CLIENT_SECRET}") private val googleClientSecret: String
 ): LoginServiceInterface {
 
+    @Value("\${GOOGLE_CLIENT_ID}")
+    private lateinit var GOOGLE_CLIENT_ID: String
+
     override fun getJWTToken(code: String): String? {
-        val GOOGLE_CLIENT_ID = "733167968471-7runi5g0s0gahprbah0lj1460ua2jjv3.apps.googleusercontent.com"
 
         try {
             val json = JsonObject()
@@ -27,7 +29,7 @@ class LoginService(
             json.addProperty("client_secret", googleClientSecret)
             json.addProperty("grant_type", "authorization_code")
             json.addProperty("code", code)
-            json.addProperty("redirect_uri", "postmessage") // or your actual redirect URI
+            json.addProperty("redirect_uri", "http://localhost:8080/api/oauth2/code") // or your actual redirect URI
 
             val client = HttpClient.newBuilder().build()
             val request = HttpRequest.newBuilder()

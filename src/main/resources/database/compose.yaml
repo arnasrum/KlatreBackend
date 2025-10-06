@@ -7,3 +7,8 @@ services:
       POSTGRES_USER: backend
       POSTGRES_DB: klatre
       POSTGRES_PASSWORD: 123qwe
+
+  redis:
+    image: 'redis:7-alpine'
+    ports:
+      - '6379:6379'
