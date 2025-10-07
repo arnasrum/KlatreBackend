@@ -11,7 +11,7 @@ import java.util.Date
 
 @Service
 class JwtService(
-    @param:Value("\${JWT_SECRET}") private val googleSecret: String,
+    @param:Value("\${JWT_SECRET}") private val jwtSecret: String,
 ): JwtServiceInterface {
 
     override fun createJwtToken(subject: String, claims: Map<String, String>): String {
@@ -21,14 +21,14 @@ class JwtService(
             .subject(subject)
             .issuedAt(Date.from(Date().toInstant()))
             .expiration(Date.from(Date().toInstant().plusSeconds(60 * 60 * 24)))
-            .signWith(Keys.hmacShaKeyFor(googleSecret.toByteArray()))
+            .signWith(Keys.hmacShaKeyFor(jwtSecret.toByteArray()))
             .compact()
         return jwt
     }
 
     override fun decodeJwt(jwt: String): Jws<Claims> {
         val jwtParser = Jwts.parser()
-            .verifyWith(Keys.hmacShaKeyFor(googleSecret.toByteArray()))
+            .verifyWith(Keys.hmacShaKeyFor(jwtSecret.toByteArray()))
             .build()
         val claims = jwtParser.parseSignedClaims(jwt)
         return claims
@@ -44,7 +44,7 @@ class JwtService(
     fun validateToken(token: String): Boolean {
         return try {
             val claims = Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(googleSecret.toByteArray()))
+                .verifyWith(Keys.hmacShaKeyFor(jwtSecret.toByteArray()))
                 .build()
                 .parseSignedClaims(token)
             !claims.payload.expiration.before(Date())
@@ -56,7 +56,7 @@ class JwtService(
     fun extractUserId(token: String): String? {
         return try {
             val claims = Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(googleSecret.toByteArray()))
+                .verifyWith(Keys.hmacShaKeyFor(jwtSecret.toByteArray()))
                 .build()
                 .parseSignedClaims(token)
             claims.payload.subject
@@ -67,7 +67,7 @@ class JwtService(
 
     fun extractExpiration(token: String): Date {
         val claims = Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(googleSecret.toByteArray()))
+                .verifyWith(Keys.hmacShaKeyFor(jwtSecret.toByteArray()))
                 .build()
                 .parseSignedClaims(token)
         return claims.payload.expiration
@@ -76,7 +76,7 @@ class JwtService(
     fun refreshToken(token: String): String? {
         return try {
             val claims = Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(googleSecret.toByteArray()))
+                .verifyWith(Keys.hmacShaKeyFor(jwtSecret.toByteArray()))
                 .build()
                 .parseSignedClaims(token)
                 .payload
