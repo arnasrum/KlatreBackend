@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS boulders(
     name TEXT NOT NULL,
     grade BIGINT REFERENCES grades(id),
     description TEXT,
+    active BOOL NOT NULL DEFAULT true,
     userID BIGINT REFERENCES users(id),
     date_added TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     place BIGSERIAL REFERENCES places(id) ON DELETE CASCADE
