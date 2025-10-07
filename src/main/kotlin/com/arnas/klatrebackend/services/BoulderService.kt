@@ -2,6 +2,7 @@ package com.arnas.klatrebackend.services
 
 import com.arnas.klatrebackend.dataclasses.Boulder
 import com.arnas.klatrebackend.dataclasses.BoulderRequest
+import com.arnas.klatrebackend.dataclasses.BoulderResponse
 import com.arnas.klatrebackend.dataclasses.ServiceResult
 import com.arnas.klatrebackend.interfaces.repositories.BoulderRepositoryInterface
 import com.arnas.klatrebackend.interfaces.repositories.GroupRepositoryInterface
@@ -58,7 +59,8 @@ class BoulderService(
        val description = boulderInfo["description"]
        val groupId = boulderInfo["groupID"]
        val grade = boulderInfo["grade"]?.toLong()
-       boulderRepository.updateBoulder(boulderId, name, grade, place, description)
+       val active = boulderInfo["active"]?.toBoolean()
+       boulderRepository.updateBoulder(boulderId, name, grade, place, description, active)
        image?.let {
            imageService.storeImageFile(image, boulderId, userId)
        }
@@ -75,9 +77,16 @@ class BoulderService(
         }
    }
 
-    override fun getBouldersByPlace(placeId: Long): ServiceResult<List<Boulder>> {
+    override fun getBouldersByPlace(placeId: Long, page: Int, limit: Int): ServiceResult<BoulderResponse> {
         try {
-            boulderRepository.getBouldersByPlace(placeId).let { return ServiceResult(success = true, message = "Boulders retrieved successfully", data = it) }
+            val pagingEnabled = limit > 0
+            boulderRepository.getBouldersByPlace(placeId, page, limit + 1, pagingEnabled).let {
+                val hasMore = it.size > limit
+                val numRetired = boulderRepository.getNumBouldersInPlace(placeId, false)
+                val numActive = boulderRepository.getNumBouldersInPlace(placeId, true)
+                val boulderResponse = BoulderResponse(it, page, limit, numActive, numRetired,  hasMore)
+                return ServiceResult(success = true, message = "Boulders retrieved successfully", data = boulderResponse)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             return ServiceResult(success = false, message = "Error getting boulders by place", data = null)

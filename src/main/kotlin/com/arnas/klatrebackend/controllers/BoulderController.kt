@@ -1,5 +1,6 @@
 package com.arnas.klatrebackend.controllers
 
+import com.arnas.klatrebackend.dataclasses.BoulderResponse
 import com.arnas.klatrebackend.dataclasses.User
 import com.arnas.klatrebackend.interfaces.services.BoulderServiceInterface
 import com.arnas.klatrebackend.interfaces.services.ImageServiceInterface
@@ -9,8 +10,10 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -27,16 +30,21 @@ class BoulderController(
 ) {
 
     @GetMapping("/place")
-    fun getBouldersByPlace(@RequestParam placeID: Long, user: User): ResponseEntity<out Any> {
+    fun getBouldersByPlace(
+        @RequestParam placeId: Long,
+        @RequestParam page: Int,
+        @RequestParam limit: Int,
+        user: User
+    ): ResponseEntity<BoulderResponse> {
         val userID: Long = user.id
-        if(!userService.usersPlacePermissions(userID, placeID)) {
+        if(!userService.usersPlacePermissions(userID, placeId)) {
             return ResponseEntity(HttpStatus.UNAUTHORIZED)
         }
-        val serviceResult = boulderService.getBouldersByPlace(placeID)
+        val serviceResult = boulderService.getBouldersByPlace(placeId, page, limit)
         if (!serviceResult.success) {
             return ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
         }
-        return ResponseEntity(serviceResult.data, HttpStatus.OK)
+        return ResponseEntity.ok().body(serviceResult.data)
 
     }
 
@@ -65,26 +73,31 @@ class BoulderController(
         return ResponseEntity(HttpStatus.OK)
     }
 
-    @PutMapping("/place/update")
+    data class BoulderUpdateRequest(
+        val active: Boolean?,
+        val name: String?,
+        val grade: String?,
+        val description: String?
+        // Note: boulderID is excluded as it's in the path
+    )
+
+    @PutMapping("/update/{boulderID}")
     fun putBoulder(
-        @RequestParam boulderID: Long,
-        @RequestParam(required = false) name: String?,
-        @RequestParam(required = false) grade: String?,
-        @RequestParam(required = false) description: String?,
+        @PathVariable boulderID: Long,
+        @RequestBody body: BoulderUpdateRequest,
         @RequestParam(required = false) image: MultipartFile?,
         user: User
-    ): ResponseEntity<Any> {
+    ): ResponseEntity<Map<String, Any>> {
         val userID: Long = user.id
-        
+
         val requestBody = mutableMapOf<String, String>().apply {
-            put("boulderID", boulderID.toString())
-            name?.let { put("name", it) }
-            grade?.let { put("grade", it) }
-            description?.let { put("description", it) }
+            body.name?.let { put("name", it) }
+            body.grade?.let { put("grade", it) }
+            body.description?.let { put("description", it) }
+            body.active?.let { put("active", it.toString()) }
         }
-        
         boulderService.updateBoulder(boulderID, userID, requestBody, image)
-        return ResponseEntity.ok("Boulder updated successfully")
+        return ResponseEntity.ok(mapOf("message" to "Boulder updated successfully"))
     }
 
     @PostMapping("/place/sends")

@@ -1,6 +1,7 @@
 package com.arnas.klatrebackend.interfaces.services
 
 import com.arnas.klatrebackend.dataclasses.Boulder
+import com.arnas.klatrebackend.dataclasses.BoulderResponse
 import com.arnas.klatrebackend.dataclasses.ServiceResult
 import org.springframework.web.multipart.MultipartFile
 
@@ -9,6 +10,6 @@ interface BoulderServiceInterface {
     fun updateBoulder(boulderId: Long, userId: Long, boulderInfo: Map<String, String>, image: MultipartFile?): ServiceResult<String>
     fun deleteBoulder(boulderId: Long): ServiceResult<Unit>
 
-    fun getBouldersByPlace(placeId: Long): ServiceResult<List<Boulder>>
+    fun getBouldersByPlace(placeId: Long, page: Int, limit: Int): ServiceResult<BoulderResponse>
 
 }

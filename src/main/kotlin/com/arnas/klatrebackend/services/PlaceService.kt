@@ -64,7 +64,7 @@ class PlaceService(
     override fun updatePlaceGradingSystem(userId: Long, placeId: Long, newGradingSystemId: Long): ServiceResult<Unit> {
         try {
             val place = placeRepository.getPlaceById(placeId)?: return ServiceResult(success = false, message = "Place not found", data = null)
-            val boulders = boulderRepository.getBouldersByPlace(placeId)
+            val boulders = boulderRepository.getBouldersByPlace(placeId, 0, 0, false)
             val oldGradingSystem = gradingSystemRepository.getGradesBySystemId(place.gradingSystem)
             val newGradingSystem = gradingSystemRepository.getGradesBySystemId(newGradingSystemId)
             val newGradeValues = newGradingSystem.map { it.numericalValue }
@@ -89,7 +89,8 @@ class PlaceService(
                     boulderId = boulder.id, 
                     name = null, 
                     place = null, 
-                    description = null
+                    description = null,
+                    active = null
                 )
                 
                 if (boulderUpdateResult <= 0) {

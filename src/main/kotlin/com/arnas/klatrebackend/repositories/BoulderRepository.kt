@@ -25,6 +25,7 @@ class BoulderRepository(
                 description = rs.getString("description"),
                 grade = rs.getLong("grade"),
                 place = rs.getLong("place"),
+                active = rs.getBoolean("active"),
                 image = null
             )
         }
@@ -56,7 +57,7 @@ class BoulderRepository(
         return (keys["id"] as Number).toLong()
     }
 
-override fun updateBoulder(boulderId: Long, name: String?, grade: Long?, place: Long?, description: String?): Int {
+override fun updateBoulder(boulderId: Long, name: String?, grade: Long?, place: Long?, description: String?, active: Boolean?): Int {
 
     val updates = mutableListOf<String>()
     val parameters = mutableMapOf<String, Any>("boulderID" to boulderId)
@@ -78,6 +79,11 @@ override fun updateBoulder(boulderId: Long, name: String?, grade: Long?, place: 
         updates.add("description = :description")
         parameters["description"] = description
     }
+    if (active != null) {
+        updates.add("active = :active")
+        parameters["active"] = active
+    }
+
     if (updates.isEmpty()) {
         return 0
     }
@@ -95,13 +101,17 @@ override fun updateBoulder(boulderId: Long, name: String?, grade: Long?, place: 
         return rowAffected
     }
 
-    override fun getBouldersByPlace(placeId: Long): List<Boulder> {
+
+    override fun getBouldersByPlace(placeId: Long, page: Int, limit: Int, pagingEnabled: Boolean): List<Boulder> {
+
         val boulders: MutableList<Boulder> = mutableListOf()
-        val sql = "SELECT b.id, b.name, b.description, g.id AS gId, b.place " +
+        val sql = "SELECT b.id, b.name, b.description, g.id AS gId, b.place, b.active AS active " +
                 "FROM boulders AS b INNER JOIN places AS p ON b.place = p.id " +
                 "INNER JOIN grades AS g ON g.system_id = p.grading_system_id " +
                 "WHERE b.place=:placeID AND g.id = b.grade " +
                 "ORDER BY b.date_added DESC"
+        if(pagingEnabled) sql.plus(" LIMIT $limit OFFSET ${(page-1)*limit}")
+
         jdbcTemplate.query(
             sql,
             MapSqlParameterSource()
@@ -114,10 +124,24 @@ override fun updateBoulder(boulderId: Long, name: String?, grade: Long?, place: 
                     description = rs.getString("description"),
                     grade = rs.getLong("gId"),
                     place = rs.getLong("place"),
+                    active = rs.getBoolean("active"),
                     image = null
                 )
             )
         }
         return boulders
+    }
+
+    override fun getNumBouldersInPlace(placeId: Long, countActive: Boolean): Int {
+        val sql = "SELECT COUNT(*) FROM boulders WHERE place=:placeID AND active=:active"
+        val result = jdbcTemplate.queryForObject(
+            sql,
+            MapSqlParameterSource()
+                .addValue("placeID", placeId)
+                .addValue("active", countActive)
+        ) { rs, _ ->
+            rs.getInt(1)
+        }
+        return result?: 0
     }
 }
