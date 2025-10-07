@@ -29,13 +29,12 @@ class LoginService(
             json.addProperty("client_secret", googleClientSecret)
             json.addProperty("grant_type", "authorization_code")
             json.addProperty("code", code)
-            json.addProperty("redirect_uri", "http://localhost:8080/api/oauth2/code") // or your actual redirect URI
+            json.addProperty("redirect_uri", "http://localhost:8080/api/oauth2/code")
 
             val client = HttpClient.newBuilder().build()
             val request = HttpRequest.newBuilder()
                 .uri(URI.create("https://oauth2.googleapis.com/token"))
                 .header("Content-Type", "application/json")
-                // Remove the Authorization header - you don't need it for token exchange
                 .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
                 .build()
 
@@ -52,7 +51,7 @@ class LoginService(
                 }
                 return (accessToken)
             } else {
-                println("Token exchange failed: ${response.statusCode()} - ${response.body()}")
+                throw Exception("Token exchange failed: ${response.statusCode()} - ${response.body()}")
             }
         } catch (e: Exception) {
             e.printStackTrace()

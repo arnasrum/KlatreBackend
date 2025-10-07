@@ -70,5 +70,12 @@ class OAuthController(
         return ResponseEntity.ok(mapOf("user" to user))
     }
 
+    @PostMapping("/logout")
+    fun logout(response: HttpServletResponse): ResponseEntity<String> {
+        response.addHeader("Set-Cookie", 
+            "authToken=; Path=/; Max-Age=-1; HttpOnly; SameSite=Lax")
+        return ResponseEntity.ok("Logged out successfully")
+    }
+
 
 }
