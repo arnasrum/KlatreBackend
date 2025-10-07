@@ -1,6 +1,5 @@
 package com.arnas.klatrebackend.services
 
-import com.arnas.klatrebackend.dataclasses.BoulderWithSend
 import com.arnas.klatrebackend.dataclasses.RouteSend
 import com.arnas.klatrebackend.dataclasses.RouteSendDTOUpdate
 import com.arnas.klatrebackend.dataclasses.ServiceResult
@@ -21,27 +20,6 @@ class RouteSendService(
         return try {
             ServiceResult(data = routeSendRepository.getRouteSends(userID, boulderIDs), success = true)
         } catch (e: Exception) {
-            ServiceResult(success = false, message = "Error getting boulder sends", data = null)
-        }
-    }
-
-    override fun getBouldersWithSendsByPlace(userID: Long, placeID: Long): ServiceResult<List<BoulderWithSend>> {
-        return try {
-            val boulders = boulderRepository.getBouldersByPlace(placeID)
-            val boulderIDs = boulders.map { it.id }
-            if(boulderIDs.isEmpty()) return ServiceResult(success = true, data = emptyList(), message = "No boulders found in this place")
-            val routeSends = routeSendRepository.getRouteSends(userID, boulderIDs)
-            val bouldersWithSends = boulders.map { boulder ->
-                val send = routeSends.filter { boulder.id == it.boulderID }
-                boulder.image = imageService.getImageMetadataByBoulder(boulder.id).data?.let { "http://localhost:8080${it.getUrl()}" }
-                BoulderWithSend(
-                    boulder = boulder,
-                    routeSend = send.firstOrNull()
-                )
-            }
-            ServiceResult(success = true, data = bouldersWithSends, message = "Boulders retrieved successfully")
-        } catch (e: Exception) {
-            e.printStackTrace()
             ServiceResult(success = false, message = "Error getting boulder sends", data = null)
         }
     }
