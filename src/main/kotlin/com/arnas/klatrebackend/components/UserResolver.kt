@@ -28,14 +28,10 @@ class UserResolver(
         binderFactory: WebDataBinderFactory?
     ): Any? {
         val request = webRequest.getNativeRequest(HttpServletRequest::class.java)!!
-        
+
         val token = request.cookies?.firstOrNull { it.name == "authToken" }?.value
-            // Fallback to Authorization header for backward compatibility
-            ?: request.getHeader("Authorization")
-                ?.takeIf { it.startsWith("Bearer ") }
-                ?.removePrefix("Bearer ")?.trim()
             ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing authentication token")
-        
+
         val userInfo = try {
             jwtService.getJwtPayload(jwtService.decodeJwt(token))
         } catch (e: Exception) {

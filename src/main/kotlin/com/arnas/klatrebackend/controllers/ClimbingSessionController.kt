@@ -21,7 +21,6 @@ class ClimbingSessionController(
 
     @GetMapping()
     fun getPastSessions(@RequestParam groupId: Long, user: User): ResponseEntity<out Any> {
-
         val serviceResult = climbingSessionService.getSessionsByGroup(groupId, user.id)
         if(!serviceResult.success) return ResponseEntity.badRequest().body(mapOf("message" to serviceResult.message))
         return ResponseEntity.ok(mapOf("data" to serviceResult.data))
