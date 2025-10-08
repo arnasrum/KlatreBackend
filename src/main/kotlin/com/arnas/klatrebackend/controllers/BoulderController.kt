@@ -77,26 +77,29 @@ class BoulderController(
         val active: Boolean?,
         val name: String?,
         val grade: String?,
-        val description: String?
-        // Note: boulderID is excluded as it's in the path
+        val description: String?,
+        val image: MultipartFile?
     )
 
-    @PutMapping("/update/{boulderID}")
+    @PutMapping("/update/{boulderId}")
     fun putBoulder(
-        @PathVariable boulderID: Long,
-        @RequestBody body: BoulderUpdateRequest,
+        @PathVariable boulderId: Long,
+        @RequestParam(required = false) name: String?,
+        @RequestParam(required = false) grade: String?,
+        @RequestParam(required = false) description: String?,
+        @RequestParam(required = false) active: Boolean?,
         @RequestParam(required = false) image: MultipartFile?,
         user: User
     ): ResponseEntity<Map<String, Any>> {
         val userID: Long = user.id
 
         val requestBody = mutableMapOf<String, String>().apply {
-            body.name?.let { put("name", it) }
-            body.grade?.let { put("grade", it) }
-            body.description?.let { put("description", it) }
-            body.active?.let { put("active", it.toString()) }
+            name?.let { put("name", it) }
+            grade?.let { put("grade", it) }
+            description?.let { put("description", it) }
+            active?.let { put("active", it.toString()) }
         }
-        boulderService.updateBoulder(boulderID, userID, requestBody, image)
+        boulderService.updateBoulder(boulderId, userID, requestBody, image)
         return ResponseEntity.ok(mapOf("message" to "Boulder updated successfully"))
     }
 
