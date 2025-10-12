@@ -125,7 +125,7 @@ CREATE TABLE IF NOT EXISTS active_sessions(
     user_id BIGINT REFERENCES users(id) NOT NULL,
     group_id BIGINT REFERENCES klatre_groups(id) ON DELETE SET NULL,
     place_id BIGINT REFERENCES places(id) ON DELETE SET NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS route_attempts(
