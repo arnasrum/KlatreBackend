@@ -11,16 +11,42 @@ data class ClimbingSession (
 )
 
 data class ClimbingSessionDTO (
+    val userId: Long,
+    val groupId: Long,
+    val placeId: Long,
+    val timestamp: Long,
+)
+
+data class ActiveSession(
+    val id: Long,
     val groupId: Long,
     val userId: Long,
     val placeId: Long,
-    val startDate: String,
-    val name: String?,
-    val routeAttempts: List<RouteAttempt>
 )
 
 data class RouteAttempt(
+    val id: Long,
     val attempts: Int,
     val completed: Boolean,
-    val routeId: Long
+    val routeId: Long,
+    val timestamp: String,
+    val session: Long
+)
+
+data class RouteAttemptDTO(
+    val id: Long,
+    val attempts: Int,
+    val completed: Boolean,
+    val routeId: Long,
+    val timestamp: String,
+    val session: Long
+)
+
+
+data class RouteAttemptDisplay(
+    val attempts: Int,
+    val completed: Boolean,
+    val routeId: Long,
+    val grade: String,
+    val timestamp: String
 )

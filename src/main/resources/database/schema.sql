@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS group_invites, user_groups, image, boulders, klatre_groups, users, roles, places, route_sends, grading_systems, grades, climbing_sessions CASCADE;
+DROP TABLE IF EXISTS group_invites, user_groups, image, boulders, klatre_groups, users, roles, places, route_sends, grading_systems, grades, active_sessions CASCADE;
 
 CREATE TABLE IF NOT EXISTS users(
     id BIGSERIAL PRIMARY KEY,
@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS boulder_equivalence(
     UNIQUE(boulder_id1, boulder_id2)
 );
 
+-- Legacy, idk if safe to delete
 CREATE TABLE IF NOT EXISTS climbing_sessions(
     id BIGSERIAL PRIMARY KEY,
     name TEXT,
@@ -105,14 +106,39 @@ CREATE TABLE IF NOT EXISTS climbing_sessions(
     place_id BIGINT REFERENCES places(id) ON DELETE SET NULL,
     group_id BIGINT REFERENCES klatre_groups(id) ON DELETE SET NULL
 );
+
 CREATE TABLE IF NOT EXISTS route_sends(
     id BIGSERIAL PRIMARY KEY,
     boulderID BIGINT REFERENCES boulders(id) NOT NULL,
     attempts INT NOT NULL DEFAULT 0,
     completed BOOL DEFAULT false,
     climbingSession BIGINT REFERENCES climbing_sessions(id) ON DELETE CASCADE,
-    perceivedGrade TEXT
+    lastUpdated TEXT NOT NULL,
+    grade BIGINT REFERENCES grades(id) ON DELETE SET NULL,
+    perceivedGrade BIGINT REFERENCES grades(id) ON DELETE SET NULL
 );
+
+CREATE TABLE IF NOT EXISTS active_sessions(
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT,
+    active BOOL DEFAULT true,
+    user_id BIGINT REFERENCES users(id) NOT NULL,
+    group_id BIGINT REFERENCES klatre_groups(id) ON DELETE SET NULL,
+    place_id BIGINT REFERENCES places(id) ON DELETE SET NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+);
+
+CREATE TABLE IF NOT EXISTS route_attempts(
+    id BIGSERIAL PRIMARY KEY,
+    route_id BIGINT REFERENCES boulders(id) NOT NULL,
+    attempts INT NOT NULL DEFAULT 0,
+    completed BOOL DEFAULT false,
+    session BIGINT REFERENCES active_sessions(id) ON DELETE CASCADE,
+    last_updated TEXT NOT NULL
+);
+
+CREATE UNIQUE INDEX active_sessions_user_group_active_idx ON active_sessions (user_id, group_id)
+    WHERE active;
 
 CREATE UNIQUE INDEX idx_unique_pending_invite ON group_invites (group_id, user_id)
     WHERE status = 'pending';

@@ -3,11 +3,14 @@ package com.arnas.klatrebackend.controllers
 import com.arnas.klatrebackend.dataclasses.ClimbingSession
 import com.arnas.klatrebackend.dataclasses.ClimbingSessionDTO
 import com.arnas.klatrebackend.dataclasses.RouteAttempt
+import com.arnas.klatrebackend.dataclasses.RouteAttemptDTO
 import com.arnas.klatrebackend.dataclasses.User
 import com.arnas.klatrebackend.services.ClimbingSessionService
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -30,17 +33,17 @@ class ClimbingSessionController(
     data class AddSessionRequest(
         val groupId: Long,
         val placeId: Long,
-        val startDate: String,
+        val timestamp: Long,
         val routeAttempts: List<RouteAttempt>
 
     )
 
     @PostMapping()
     fun uploadSession(@RequestBody request: AddSessionRequest, user: User): ResponseEntity<out Any> {
-        val climbingSession = ClimbingSessionDTO(request.groupId, user.id, request.placeId, request.startDate, null, request.routeAttempts)
-        climbingSession.routeAttempts.isEmpty().let {
-            if (it) return ResponseEntity.badRequest().body(mapOf("message" to "Session must have at least one attempt"))
-        }
+        val climbingSession = ClimbingSessionDTO(request.groupId, user.id, request.placeId, request.timestamp)
+        //climbingSession.routeAttempts.isEmpty().let {
+            //if (it) return ResponseEntity.badRequest().body(mapOf("message" to "Session must have at least one attempt"))
+        //}
         println(climbingSession)
         val sessionWithUserId = climbingSession.copy(userId = user.id)
         val serviceResult = climbingSessionService.uploadSession(user.id, sessionWithUserId)
@@ -48,5 +51,64 @@ class ClimbingSessionController(
             return ResponseEntity.badRequest().body(mapOf("message" to serviceResult.message))
         }
         return ResponseEntity.ok(mapOf("message" to "Session uploaded successfully"))
+    }
+
+
+    @GetMapping("/active")
+    fun getActiveSession(@RequestParam groupId: Long, user: User): ResponseEntity<out Any> {
+        val serviceResult = climbingSessionService.getSessionsByGroup(groupId, user.id)
+        if(!serviceResult.success) return ResponseEntity.badRequest().body(mapOf("message" to serviceResult.message))
+        return ResponseEntity.ok().body(mapOf("message" to "Session opened successfully", "data" to serviceResult.data))
+    }
+
+    @PostMapping("/open")
+    fun openPersonalSession(@RequestParam groupId: Long, @RequestParam placeId: Long, user: User): ResponseEntity<out Any> {
+        val serviceResult = climbingSessionService.openSession(groupId, placeId, user.id)
+        if(!serviceResult.success) return ResponseEntity.badRequest().body(mapOf("message" to serviceResult.message))
+        return ResponseEntity.ok().body(mapOf("message" to "Session opened successfully", "data" to serviceResult.data))
+    }
+
+
+    data class CloseSessionRequest(
+        val save: Boolean,
+        val sessionId: Long
+    )
+    @PutMapping("/close")
+    fun closePersonalSession(@RequestParam sessionId: Long, @RequestParam save: Boolean, user: User): ResponseEntity<out Any> {
+        val serviceResult = climbingSessionService.closeSession(sessionId, save, user.id)
+        if(serviceResult.success) return ResponseEntity.ok().body(mapOf("message" to "Session closed successfully"))
+        return ResponseEntity.ok().body(mapOf("message" to serviceResult.message, "data" to serviceResult.data))
+    }
+
+    @GetMapping("/attempts")
+    fun getSessionAttempts(@RequestParam sessionId: Long, user: User): ResponseEntity<out Any> {
+        val serviceResult = climbingSessionService.getRouteAttempts(sessionId)
+        if(!serviceResult.success) return ResponseEntity.badRequest().body(mapOf("message" to serviceResult.message))
+        return ResponseEntity.ok(mapOf("data" to serviceResult.data))
+    }
+
+    @PostMapping("/add/attempt")
+    fun addAttempt(@RequestParam sessionId: Long, @RequestBody routeAttempt: RouteAttemptDTO, user: User): ResponseEntity<out Any> {
+        val serviceResult = climbingSessionService.addRouteAttempt(sessionId, user.id,  routeAttempt)
+        if(!serviceResult.success) return ResponseEntity.badRequest().body(mapOf("message" to serviceResult.message))
+        return ResponseEntity.ok(mapOf("message" to "Attempt added successfully", "data" to serviceResult.data))
+    }
+
+    @DeleteMapping("/remove/attempt")
+    fun addAttempt(@RequestParam sessionId: Long, @RequestBody routeAttemptId: Long, user: User): ResponseEntity<out Any> {
+        val serviceResult = climbingSessionService.removeRouteAttempt(sessionId, routeAttemptId, user.id)
+        return ResponseEntity.ok(mapOf("message" to "Attempt added successfully", "data" to serviceResult.data))
+    }
+
+    @PostMapping("/create")
+    fun openSession(
+        user: User,
+        @RequestParam groupId: Long,
+        @RequestParam placeId: Long,
+        @RequestParam timestamp: String,
+    ): ResponseEntity<out Any> {
+
+
+        return ResponseEntity.ok(mapOf("message" to "Session opened successfully"))
     }
 }
