@@ -4,17 +4,20 @@ import com.arnas.klatrebackend.dataclasses.ClimbingSession
 import com.arnas.klatrebackend.dataclasses.ClimbingSessionDTO
 import com.arnas.klatrebackend.dataclasses.RouteAttempt
 import com.arnas.klatrebackend.dataclasses.RouteAttemptDTO
+import com.arnas.klatrebackend.dataclasses.UpdateAttemptRequest
 import com.arnas.klatrebackend.dataclasses.User
 import com.arnas.klatrebackend.services.ClimbingSessionService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import kotlin.text.toLong
 
 @RestController
 @RequestMapping("/api/climbingSessions")
@@ -68,11 +71,6 @@ class ClimbingSessionController(
         return ResponseEntity.ok().body(mapOf("message" to "Session opened successfully", "data" to serviceResult.data))
     }
 
-
-    data class CloseSessionRequest(
-        val save: Boolean,
-        val sessionId: Long
-    )
     @PutMapping("/close")
     fun closePersonalSession(@RequestParam sessionId: Long, @RequestParam save: Boolean, user: User): ResponseEntity<out Any> {
         val serviceResult = climbingSessionService.closeSession(sessionId, save, user.id)
@@ -94,10 +92,20 @@ class ClimbingSessionController(
         return ResponseEntity.ok(mapOf("message" to "Attempt added successfully", "data" to serviceResult.data))
     }
 
+
+
+    @PutMapping("/update/attempt")
+    fun updateAttempt(@RequestBody requestBody: UpdateAttemptRequest, user: User): ResponseEntity<out Any> {
+        val serviceResult = climbingSessionService.updateRouteAttempt(user.id, requestBody)
+        if(!serviceResult.success) return ResponseEntity.badRequest().body(mapOf("message" to serviceResult.message))
+        return ResponseEntity.ok(mapOf("message" to serviceResult.message, "data" to serviceResult.data))
+    }
+
     @DeleteMapping("/remove/attempt")
-    fun addAttempt(@RequestParam sessionId: Long, @RequestBody routeAttemptId: Long, user: User): ResponseEntity<out Any> {
-        val serviceResult = climbingSessionService.removeRouteAttempt(sessionId, routeAttemptId, user.id)
-        return ResponseEntity.ok(mapOf("message" to "Attempt added successfully", "data" to serviceResult.data))
+    fun addAttempt(@RequestBody requestBody: Map<String, String>, user: User): ResponseEntity<out Any> {
+        val routeAttemptId =  requestBody["attemptId"]?.toLong() ?: return ResponseEntity.badRequest().body(mapOf("message" to "Route attempt id is required"))
+        val serviceResult = climbingSessionService.removeRouteAttempt(routeAttemptId, user.id)
+        return ResponseEntity.ok(mapOf("message" to "Attempt removed successfully", "data" to serviceResult.data))
     }
 
     @PostMapping("/create")

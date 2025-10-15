@@ -33,8 +33,14 @@ data class RouteAttempt(
     val session: Long
 )
 
-data class RouteAttemptDTO(
+data class UpdateAttemptRequest(
     val id: Long,
+    val attempts: Int,
+    val completed: Boolean,
+    val timestamp: Long
+)
+
+data class RouteAttemptDTO(
     val attempts: Int,
     val completed: Boolean,
     val routeId: Long,
@@ -44,9 +50,10 @@ data class RouteAttemptDTO(
 
 
 data class RouteAttemptDisplay(
+    val id: Long,
     val attempts: Int,
     val completed: Boolean,
-    val routeId: Long,
+    val route: String,
     val grade: String,
     val timestamp: String
 )

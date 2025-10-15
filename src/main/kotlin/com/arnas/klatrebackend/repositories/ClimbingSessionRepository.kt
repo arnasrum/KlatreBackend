@@ -5,6 +5,7 @@ import com.arnas.klatrebackend.dataclasses.ClimbingSession
 import com.arnas.klatrebackend.dataclasses.ClimbingSessionDTO
 import com.arnas.klatrebackend.dataclasses.RouteAttempt
 import com.arnas.klatrebackend.dataclasses.RouteAttemptDTO
+import com.arnas.klatrebackend.dataclasses.UpdateAttemptRequest
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
@@ -171,12 +172,12 @@ class ClimbingSessionRepository(
         val keyholder = GeneratedKeyHolder()
         jdbcTemplate.update(
             "INSERT INTO route_attempts (route_id, attempts, completed, session, last_updated) VALUES " +
-                    "(:routeId, :sessionId, :attempts, :completed, :timestamp)",
+                    "(:routeId, :attempts, :completed, :sessionId, :timestamp)",
             MapSqlParameterSource()
-                .addValue("sessionId", activeSessionId)
                 .addValue("routeId", routeAttempt.routeId)
-                .addValue("attempts", activeSessionId)
+                .addValue("attempts", routeAttempt.attempts)
                 .addValue("completed", routeAttempt.completed)
+                .addValue("sessionId", activeSessionId)
                 .addValue("timestamp", routeAttempt.timestamp),
             keyholder
             )
@@ -210,7 +211,7 @@ class ClimbingSessionRepository(
     }
 
     fun getRouteAttemptsBySessionId(sessionId: Long): List<RouteAttempt> {
-        val sql = "SELECT * FROM route_attempts WHERE active_session = :sessionId"
+        val sql = "SELECT * FROM route_attempts WHERE session = :sessionId"
         val params = MapSqlParameterSource()
             .addValue("sessionId", sessionId)
         return jdbcTemplate.query(sql, params) { rs, _ ->
@@ -225,14 +226,15 @@ class ClimbingSessionRepository(
         }
     }
 
-    fun updateRouteAttempt(routeAttempt: RouteAttempt): Int  {
-        val sql = "UPDATE route_attempts SET attempts = :attempts, completed = :completed WHERE id = :id"
+    fun updateRouteAttempt(routeAttempt: UpdateAttemptRequest): Int  {
+        val sql = "UPDATE route_attempts SET attempts = :attempts, completed = :completed, last_updated = :timestamp WHERE id = :id"
         return jdbcTemplate.update(
             sql,
             MapSqlParameterSource()
                 .addValue("id", routeAttempt.id)
                 .addValue("attempts", routeAttempt.attempts)
                 .addValue("completed", routeAttempt.completed)
+                .addValue("timestamp", routeAttempt.timestamp)
         )
     }
 
