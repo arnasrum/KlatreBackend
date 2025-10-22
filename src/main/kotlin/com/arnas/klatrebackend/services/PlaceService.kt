@@ -34,27 +34,14 @@ class PlaceService(
     }
 
     override fun updatePlace(userId: Long, placeUpdateDTO: PlaceUpdateDTO): ServiceResult<Unit> {
-        println("Updating place")
-        try {
-            val place = placeRepository.getPlaceById(placeUpdateDTO.placeId)
-            if (place == null) {
-                throw RuntimeException("Place not found")
-            }
-            println("place found")
-            val rowAffected = placeRepository.updatePlace(placeUpdateDTO)
-            println("Row affected: $rowAffected")
-            if(rowAffected <= 0 && placeUpdateDTO.gradingSystem == null) {
-                throw RuntimeException("Failed to update place")
-            }
-            println(placeUpdateDTO)
-            placeUpdateDTO.gradingSystem?.let {
-                println("Updating place grading system")
-                updatePlaceGradingSystem(userId, placeUpdateDTO.placeId, it)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            println("Error updating place: ${e.message}")
-            return ServiceResult(success = false, message = "Error updating place: ${e.message}", data = null)
+        val place = placeRepository.getPlaceById(placeUpdateDTO.placeId)
+        place?: throw RuntimeException("Place not found")
+        val rowAffected = placeRepository.updatePlace(placeUpdateDTO)
+        if(rowAffected <= 0 && placeUpdateDTO.gradingSystem == null) {
+            throw RuntimeException("Failed to update place")
+        }
+        placeUpdateDTO.gradingSystem?.let {
+            updatePlaceGradingSystem(userId, placeUpdateDTO.placeId, it)
         }
         return ServiceResult(success = true, message = "Place updated successfully")
     }

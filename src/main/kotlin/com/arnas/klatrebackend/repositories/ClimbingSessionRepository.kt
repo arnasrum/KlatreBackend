@@ -23,7 +23,6 @@ class ClimbingSessionRepository(
         .toFormatter()
 
     fun getClimbingSessionsByGroupId(groupId: Long, userId: Long): List<ClimbingSession> {
-
         val sql = "SELECT * FROM climbing_sessions WHERE group_id = :groupId AND user_id = :userId ORDER BY start_date"
         val params = MapSqlParameterSource()
             .addValue("groupId", groupId)
@@ -60,8 +59,6 @@ class ClimbingSessionRepository(
         return session.firstOrNull()
     }
 
-
-
     fun uploadClimbingSession(climbingSession: ClimbingSessionDTO): Long {
         val columnMappings = mutableMapOf<String, Any?>()
         val keyHolder = GeneratedKeyHolder()
@@ -90,6 +87,22 @@ class ClimbingSessionRepository(
             "DELETE FROM climbing_sessions WHERE id = :climbingSessionId",
             mapOf("climbingSessionId" to climbingSessionId)
         )
+    }
+
+
+    fun getSessionById(sessionId: Long): ActiveSession? {
+        val sql = "SELECT * FROM active_sessions WHERE id = :id"
+        val params = MapSqlParameterSource()
+            .addValue("id", sessionId)
+        val session = jdbcTemplate.query(sql, params) { rs, _ ->
+            ActiveSession(
+                id = rs.getLong("id"),
+                groupId = rs.getLong("group_id"),
+                userId = rs.getLong("user_id"),
+                placeId = rs.getLong("place_id"),
+            )
+        }
+        return session.firstOrNull()
     }
 
     fun getRouteSendsBySessionId(sessionId: Long): List<RouteAttempt> {

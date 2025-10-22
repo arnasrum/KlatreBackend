@@ -52,33 +52,26 @@ class ImageService(
     }
 
     override fun storeImageFile(file: MultipartFile, boulderId: Long, userId: Long): ServiceResult<String> {
-        try {
-            init()
-            if (file.isEmpty) {
-                return ServiceResult(data = null, message = "File is empty", success = false)
-            }
-            imageRepository.getImageMetadataByBoulder(boulderId)?.let {
-                File("$uploadDir/${it.id}").delete()
-                deleteImage(it)
-            }
-
-            val imageId = storeImageMetadata(
-                boulderId = boulderId,
-                contentType = file.contentType!!,
-                size = file.size,
-                userId = userId).data
-
-            imageId?: throw Exception("Error storing image metadata")
-            val filePath = File("$uploadDir/$imageId")
-            file.transferTo(filePath)
-
-            return ServiceResult(data = imageId, message = "Image stored successfully", success = true)
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return ServiceResult(data = null, message = "Error storing image file: ${e.message}", success = false)
+        init()
+        if (file.isEmpty) {
+            return ServiceResult(data = null, message = "File is empty", success = false)
+        }
+        imageRepository.getImageMetadataByBoulder(boulderId)?.let {
+            File("$uploadDir/${it.id}").delete()
+            deleteImage(it)
         }
 
+        val imageId = storeImageMetadata(
+            boulderId = boulderId,
+            contentType = file.contentType!!,
+            size = file.size,
+            userId = userId).data
+
+        imageId?: throw Exception("Error storing image metadata")
+        val filePath = File("$uploadDir/$imageId")
+        file.transferTo(filePath)
+
+        return ServiceResult(data = imageId, message = "Image stored successfully", success = true)
     }
 
     override fun getImage(boulderId: Long): Image? {

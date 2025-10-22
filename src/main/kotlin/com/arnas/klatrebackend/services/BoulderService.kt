@@ -26,17 +26,13 @@ class BoulderService(
 
 
     fun getBoulder(userId: Long, boulderId: Long): ServiceResult<Boulder> {
-        try {
-            val boulder = boulderRepository.getRouteById(routeId = boulderId)?: throw Exception("Boulder not found")
-            placeRepository.getPlaceById(boulder.place)?.let {
-                groupRepository.getGroupUsers(it.groupID)
-                    .any { user -> user.id == userId }
-                    .let { hasAccess -> if (!hasAccess) throw Exception("User has no access to this boulder") }
-            }
-            return ServiceResult(success = true, message = "Boulder retrieved successfully", data = boulder)
-        } catch (e: Exception) {
-            return ServiceResult(success = false, message = e.message, data = null)
+        val boulder = boulderRepository.getRouteById(routeId = boulderId)?: throw Exception("Boulder not found")
+        placeRepository.getPlaceById(boulder.place)?.let {
+            groupRepository.getGroupUsers(it.groupID)
+                .any { user -> user.id == userId }
+                .let { hasAccess -> if (!hasAccess) throw Exception("User has no access to this boulder") }
         }
+        return ServiceResult(success = true, message = "Boulder retrieved successfully", data = boulder)
     }
 
 
@@ -48,7 +44,6 @@ class BoulderService(
             description = description,
         )
         val boulderID = boulderRepository.addBoulder(userId, boulderRequest)
-
         return ServiceResult(success = true, message = "Boulder added successfully", data = boulderID)
     }
 
@@ -68,31 +63,19 @@ class BoulderService(
    }
 
    override fun deleteBoulder(boulderId: Long): ServiceResult<Unit> {
-        try {
-            imageService.getImage(boulderId)?.let { imageService.deleteImage(it) }
-            boulderRepository.deleteBoulder(boulderId)
-            return ServiceResult(success = true, message = "Boulder deleted successfully")
-        } catch (e: Exception) {
-            return ServiceResult(success = false, message = "Error deleting boulder", data = null)
-        }
+        imageService.getImage(boulderId)?.let { imageService.deleteImage(it) }
+        boulderRepository.deleteBoulder(boulderId)
+        return ServiceResult(success = true, message = "Boulder deleted successfully")
    }
 
     override fun getBouldersByPlace(placeId: Long, page: Int, limit: Int): ServiceResult<BoulderResponse> {
-        try {
-            val pagingEnabled = limit > 0
-            boulderRepository.getBouldersByPlace(placeId, page, limit + 1, pagingEnabled).let {
-                val hasMore = it.size > limit
-                val numRetired = boulderRepository.getNumBouldersInPlace(placeId, false)
-                val numActive = boulderRepository.getNumBouldersInPlace(placeId, true)
-                val boulderResponse = BoulderResponse(it, page, limit, numActive, numRetired,  hasMore)
-                return ServiceResult(success = true, message = "Boulders retrieved successfully", data = boulderResponse)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return ServiceResult(success = false, message = "Error getting boulders by place", data = null)
+        val pagingEnabled = limit > 0
+        boulderRepository.getBouldersByPlace(placeId, page, limit + 1, pagingEnabled).let {
+            val hasMore = it.size > limit
+            val numRetired = boulderRepository.getNumBouldersInPlace(placeId, false)
+            val numActive = boulderRepository.getNumBouldersInPlace(placeId, true)
+            val boulderResponse = BoulderResponse(it, page, limit, numActive, numRetired,  hasMore)
+            return ServiceResult(success = true, message = "Boulders retrieved successfully", data = boulderResponse)
         }
     }
-
-
-
 }
