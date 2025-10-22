@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS route_attempts(
     attempts INT NOT NULL DEFAULT 0,
     completed BOOL DEFAULT false,
     session BIGINT REFERENCES active_sessions(id) ON DELETE CASCADE,
-    last_updated TEXT NOT NULL
+    last_updated BIGINT NOT NULL
 );
 
 CREATE UNIQUE INDEX active_sessions_user_group_active_idx ON active_sessions (user_id, group_id)
