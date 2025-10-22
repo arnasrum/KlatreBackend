@@ -1,5 +1,6 @@
 package com.arnas.klatrebackend.controllers
 
+import com.arnas.klatrebackend.dataclasses.User
 import com.arnas.klatrebackend.repositories.StatRepository
 import com.arnas.klatrebackend.services.StatService
 import org.springframework.web.bind.annotation.GetMapping
@@ -13,9 +14,10 @@ class StatsController(
 ) {
 
 
-    @GetMapping
-    fun getGroupActivity(groupId: Long) {
-        statService.getGroupActivityStats(groupId, "month")
+    @GetMapping("/group")
+    fun getGroupActivity(groupId: Long, user: User) {
+        val serviceResult = statService.getGroupActivityStats(groupId, "month")
+        //if(serviceResult)
     }
 
 

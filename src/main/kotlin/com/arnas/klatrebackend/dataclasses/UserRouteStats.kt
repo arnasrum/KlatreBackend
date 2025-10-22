@@ -4,5 +4,4 @@ data class UserRouteStats(
     val userId: Long,
     val hardestRouteId: Long,
     val totalAttempts: Int,
-    val totalCompleted: Int,
 )

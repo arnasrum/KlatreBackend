@@ -15,16 +15,15 @@ class StatService(
 
     }
 
-    fun getUserRouteStats(groupId: Long, userId: Long) {
+    fun getUserRouteStats(groupId: Long, userId: Long): UserRouteStats? {
         val totalAttempts = statRepository.getUserTotalAttempts(userId, groupId)?: 0
         val hardestRouteId = statRepository.getUserHardestSend(userId, groupId)?: 0
-        val totalCompleted = statRepository.getUserTotalCompletedRoutes(userId, groupId)?: 0
-
-        val userStats = UserRouteStats(userId, hardestRouteId, totalAttempts, totalCompleted)
+        //val totalCompleted = statRepository.getUserTotalCompletedRoutes(userId, groupId)?: 0
+        val userStats = UserRouteStats(userId, hardestRouteId, totalAttempts)
+        return userStats
     }
 
     fun getGroupRouteStats(groupId: Long) {
-
         val totalAttempts = statRepository.getGroupTotalAttempts(groupId)?: 0
         val totalCompleted = statRepository.getGroupTotalCompletedRoutes(groupId)?: 0
         val hardestRouteSend = statRepository.getGroupHardestRouteCompleted(groupId)?: 0
