@@ -1,5 +1,6 @@
 package com.arnas.klatrebackend.repositories
 
+import com.arnas.klatrebackend.dataclasses.UserGroupTotalStats
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 
@@ -164,26 +165,33 @@ class StatRepository(
     fun groupActivityOverTime(groupId: Long, timeAggregate: String) {
         val sql = """
             SELECT
-            DATE_TRUNC(:timeAggregate, rs.date) AS activity_period,
-            COUNT(rs.id) AS completed_sends
+            --ug.group_id AS group_id,
+            DATE_TRUNC(:timeAggregate, to_timestamp(ra.last_updated / 1000.0)) AS activity_period,
+            COUNT(ra.id) AS completed_sends
             FROM
             klatre_groups kg
                     JOIN
             user_groups ug ON kg.id = ug.group_id
                     JOIN
-            route_sends rs ON ug.user_id = rs.userID
-                    WHERE
-            kg.id = :groupId AND rs.completed = TRUE 
+            active_sessions asa ON ug.user_id = asa.user_id --AND asa.group_id = kg.id
+                    JOIN
+            route_attempts ra ON asa.id = ra.session
+            --WHERE
+                --kg.id = :groupId
             GROUP BY
                     activity_period
             ORDER BY
                     activity_period;
         """
-        val timeData = jdbcTemplate.query(sql,
+        val stat = jdbcTemplate.query(sql,
             mapOf("groupId" to groupId, "timeAggregate" to timeAggregate)) { rs, _ ->
-            rs.getString("activity_period")
+            UserGroupTotalStats(
+                //groupId = rs.getLong("group_id"),
+                groupId = 1L,
+                time = rs.getString("activity_period"),
+                totalAttempts = rs.getInt("completed_sends")
+            )
         }
-        println("timeData: $timeData")
     }
 
 
