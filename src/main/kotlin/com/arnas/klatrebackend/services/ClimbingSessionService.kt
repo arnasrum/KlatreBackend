@@ -107,6 +107,8 @@ class ClimbingSessionService(
     }
 
     fun getPastSessions(groupId: Long, userId: Long): List<ClimbingSession> {
+        accessControlService.getUserGroupRole(userId, groupId)
+            ?: throw RuntimeException("User is not a member of group")
         val sessions = climbingSessionRepository.getPastSessions(groupId, userId)
         return sessions
     }

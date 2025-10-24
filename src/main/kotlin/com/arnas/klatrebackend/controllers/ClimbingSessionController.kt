@@ -6,7 +6,9 @@ import com.arnas.klatrebackend.dataclasses.RouteAttempt
 import com.arnas.klatrebackend.dataclasses.RouteAttemptDTO
 import com.arnas.klatrebackend.dataclasses.UpdateAttemptRequest
 import com.arnas.klatrebackend.dataclasses.User
+import com.arnas.klatrebackend.services.AccessControlService
 import com.arnas.klatrebackend.services.ClimbingSessionService
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -23,10 +25,11 @@ import kotlin.text.toLong
 @RequestMapping("/api/climbingSessions")
 class ClimbingSessionController(
     private val climbingSessionService: ClimbingSessionService,
+    private val accessControlService: AccessControlService,
 ) {
 
     @GetMapping()
-    fun getPastSessions(@RequestParam groupId: Long, user: User): ResponseEntity<out Any> {
+    fun getAllSessions(@RequestParam groupId: Long, user: User): ResponseEntity<out Any> {
         val serviceResult = climbingSessionService.getSessionsByGroup(groupId, user.id)
         if(!serviceResult.success) return ResponseEntity.badRequest().body(mapOf("message" to serviceResult.message))
         return ResponseEntity.ok(mapOf("data" to serviceResult.data))
@@ -92,14 +95,12 @@ class ClimbingSessionController(
         return ResponseEntity.ok(mapOf("message" to "Attempt removed successfully", "data" to serviceResult.data))
     }
 
-    @GetMapping("/past")
-    fun getPastSessions(@RequestParam groupId: Long): ResponseEntity<out Any> {
-
-
-
-        return ResponseEntity.ok(mapOf("message" to "Past sessions fetched successfully", "data" to "test"))
+    @GetMapping("/past/{groupId}")
+    fun getPastSessions(@PathVariable groupId: Long, user: User): ResponseEntity<out Any> {
+        accessControlService.hasGroupAccess(user.id, groupId)
+            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not a member of group")
+        val serviceResult = climbingSessionService.getPastSessions(groupId, user.id)
+        println(serviceResult)
+        return ResponseEntity.ok(mapOf("data" to serviceResult))
     }
-
-
-
 }
