@@ -13,15 +13,14 @@ class ImageRepository(
     private var jdbcTemplate: NamedParameterJdbcTemplate
 ): ImageRepositoryInterface {
 
-    override fun getImageByBoulderId(boulderId: Long): Image? {
-        val result = jdbcTemplate.query("SELECT * FROM image WHERE boulder_id=:boulderID",
+    override fun getImageById(id: String): Image? {
+        val result = jdbcTemplate.query("SELECT * FROM image WHERE id=:id",
             MapSqlParameterSource()
-                .addValue("boulderID", boulderId),
+                .addValue("id", id),
             ) { rs, _ ->
                 Image(
                     id = rs.getString("id"),
                     contentType = rs.getString("content_type"),
-                    boulder = rs.getLong("boulder_id"),
                     fileSize = rs.getLong("file_size"),
                 )
             }
@@ -31,24 +30,22 @@ class ImageRepository(
         return result[0]
     }
 
-    override fun deleteImage(imageId: String): Int {
-        val rowsAffected = jdbcTemplate.update("DELETE FROM image WHERE id = :imageID",
-            mapOf("imageID" to imageId)
+    override fun deleteImage(id: String): Int {
+        val rowsAffected = jdbcTemplate.update("DELETE FROM image WHERE id = :id",
+            mapOf("id" to id)
         )
         return rowsAffected
     }
 
     override fun storeImageMetaData(
-        boulderId: Long,
         contentType: String,
         size: Long,
         userId: Long,
     ): String {
         val keyHolder: KeyHolder = GeneratedKeyHolder()
-        jdbcTemplate.update("INSERT INTO image(boulder_id, content_type, file_size, user_id) VALUES " +
-                "(:boulder_id, :content_type, :size, :user_id)",
+        jdbcTemplate.update("INSERT INTO image(content_type, file_size, user_id) VALUES " +
+                "(:content_type, :size, :user_id)",
             MapSqlParameterSource()
-                .addValue("boulder_id", boulderId)
                 .addValue("content_type", contentType)
                 .addValue("size", size)
                 .addValue("user_id", userId),
@@ -56,34 +53,18 @@ class ImageRepository(
         return keyHolder.keys!!["id"].toString()
     }
     
-    override fun getImageMetadata(imageId: String): Image? {
-        val result = jdbcTemplate.query("SELECT * FROM image WHERE id=:imageID",
+    override fun getImageMetadata(id: String): Image? {
+        val result = jdbcTemplate.query("SELECT * FROM image WHERE id=:id",
             MapSqlParameterSource()
-                .addValue("imageID", imageId),
+                .addValue("id", id),
             ) { rs, _ ->
                 Image(
                     id = rs.getString("id"),
                     contentType = rs.getString("content_type"),
-                    boulder = rs.getLong("boulder_id"),
                     fileSize = rs.getLong("file_size"),
                 )
             }
         return result.firstOrNull()
     }
 
-    override fun getImageMetadataByBoulder(boulderId: Long): Image? {
-        val result = jdbcTemplate.query(
-            "SELECT * FROM image WHERE boulder_id=:boulderID",
-            MapSqlParameterSource()
-                .addValue("boulderID", boulderId),
-        ) { rs, _ ->
-            Image(
-                id = rs.getString("id"),
-                contentType = rs.getString("content_type"),
-                boulder = rs.getLong("boulder_id"),
-                fileSize = rs.getLong("file_size"),
-            )
-        }
-        return result.firstOrNull()
-    }
 }

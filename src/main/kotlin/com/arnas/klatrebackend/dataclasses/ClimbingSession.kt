@@ -9,6 +9,15 @@ data class ClimbingSession (
     val name: String,
     val routeAttempts: List<RouteAttempt>
 )
+data class ClimbingSessionDisplay (
+    val id: Long,
+    val groupId: Long,
+    val userId: Long,
+    val placeId: Long,
+    val timestamp: Long,
+    val name: String,
+    val routeAttempts: List<RouteAttemptDisplay>
+)
 
 data class ClimbingSessionDTO (
     val userId: Long,
@@ -33,13 +42,6 @@ data class RouteAttempt(
     val session: Long
 )
 
-data class UpdateAttemptRequest(
-    val id: Long,
-    val attempts: Int,
-    val completed: Boolean,
-    val timestamp: Long
-)
-
 data class RouteAttemptDTO(
     val attempts: Int,
     val completed: Boolean,
@@ -48,12 +50,18 @@ data class RouteAttemptDTO(
     val session: Long
 )
 
+data class UpdateAttemptRequest(
+    val id: Long,
+    val attempts: Int,
+    val completed: Boolean,
+    val timestamp: Long
+)
 
 data class RouteAttemptDisplay(
     val id: Long,
     val attempts: Int,
     val completed: Boolean,
-    val route: String,
-    val grade: String,
-    val timestamp: String
+    val routeName: String,
+    val timestamp: Long,
+    val gradeName: String
 )

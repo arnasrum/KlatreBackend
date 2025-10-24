@@ -16,7 +16,7 @@ class BoulderRepository(
 
 
     override fun getRouteById(routeId: Long): Boulder? {
-        val boulder = jdbcTemplate.query("SELECT * FROM boulders WHERE id = :routeId",
+        val boulder = jdbcTemplate.query("SELECT * FROM routes WHERE id = :routeId",
             mapOf("routeId" to routeId)
         ) { rs, _ ->
             Boulder(
@@ -26,77 +26,75 @@ class BoulderRepository(
                 grade = rs.getLong("grade"),
                 place = rs.getLong("place"),
                 active = rs.getBoolean("active"),
-                image = null
+                image = rs.getString("image_id")
             )
         }
         return boulder.firstOrNull()
     }
 
-
-
-    override fun addBoulder(userId: Long, boulder: BoulderRequest): Long {
+    override fun addBoulder(name: String, grade: Long, place: Long, description: String?, active: Boolean?, imageId: String?, userId: Long): Long {
         val keyHolder: KeyHolder = GeneratedKeyHolder()
-
         val sql = """
-            INSERT INTO boulders (name, grade, place, description, userId)
-            VALUES (:name, :grade, :place, :description, :userId)
+            INSERT INTO routes (name, grade, place, description, image_id, userId)
+            VALUES (:name, :grade, :place, :description, :imageId, :userId)
         """
 
         val parameters = MapSqlParameterSource()
-            .addValue("name", boulder.name)
-            .addValue("grade", boulder.grade)
-            .addValue("place", boulder.place)
-            .addValue("description", boulder.description) // Handles null automatically
+            .addValue("name", name)
+            .addValue("grade", "V? - Placeholder")
+            .addValue("place", place)
+            .addValue("description", description)
+            .addValue("imageId", imageId)
             .addValue("userId", userId)
 
         jdbcTemplate.update(sql, parameters, keyHolder)
-
-
 
         val keys = keyHolder.keys ?: throw RuntimeException("Failed to retrieve generated keys")
         return (keys["id"] as Number).toLong()
     }
 
-override fun updateBoulder(boulderId: Long, name: String?, grade: Long?, place: Long?, description: String?, active: Boolean?): Int {
+    override fun updateBoulder(routeId: Long, name: String?, grade: Long?, place: Long?, description: String?, active: Boolean?, imageId: String?): Int {
 
-    val updates = mutableListOf<String>()
-    val parameters = mutableMapOf<String, Any>("boulderID" to boulderId)
+        val updates = mutableListOf<String>()
+        val parameters = mutableMapOf<String, Any>("routeId" to routeId)
 
-    if (!name.isNullOrEmpty()) {
-        updates.add("name = :name")
-        parameters["name"] = name
-    }
-    if (grade != null) {
-        updates.add("grade = :grade")
-        parameters["grade"] = grade
-    }
-    if (place != null) {
-        updates.add("place = :place")
-        parameters["place"] = place
+        if (!name.isNullOrEmpty()) {
+            updates.add("name = :name")
+            parameters["name"] = name
+        }
+        if (grade != null) {
+            updates.add("grade = :grade")
+            parameters["grade"] = grade
+        }
+        if (place != null) {
+            updates.add("place = :place")
+            parameters["place"] = place
+        }
+        if (imageId != null) {
+            updates.add("image_id = :imageId")
+            parameters["imageId"] = imageId
+        }
+        if (!description.isNullOrEmpty()) {
+            updates.add("description = :description")
+            parameters["description"] = description
+        }
+        if (active != null) {
+            updates.add("active = :active")
+            parameters["active"] = active
+        }
+        if (updates.isEmpty()) {
+            return 0
+        }
+
+        val sql = "UPDATE routes SET ${updates.joinToString(", ")} WHERE id = :routeId"
+        val rowsAffected = jdbcTemplate.update(sql, parameters)
+        return rowsAffected
     }
 
-    if (!description.isNullOrEmpty()) {
-        updates.add("description = :description")
-        parameters["description"] = description
-    }
-    if (active != null) {
-        updates.add("active = :active")
-        parameters["active"] = active
-    }
-
-    if (updates.isEmpty()) {
-        return 0
-    }
-
-    val sql = "UPDATE boulders SET ${updates.joinToString(", ")} WHERE id = :boulderID"
-    val rowsAffected = jdbcTemplate.update(sql, parameters)
-    return rowsAffected
-}
-
-    override fun deleteBoulder(boulderId: Long): Int {
-        val rowAffected = jdbcTemplate.update("DELETE FROM boulders WHERE id=:boulderID",
+    override fun deleteBoulder(routeId: Long): Int {
+        val rowAffected = jdbcTemplate.update("DELETE FROM routes WHERE id=:routeId",
             MapSqlParameterSource()
-                .addValue("boulderID", boulderId)
+                .addValue("routeId", routeId)
         )
         return rowAffected
     }
@@ -105,8 +103,8 @@ override fun updateBoulder(boulderId: Long, name: String?, grade: Long?, place: 
     override fun getBouldersByPlace(placeId: Long, page: Int, limit: Int, pagingEnabled: Boolean): List<Boulder> {
 
         val boulders: MutableList<Boulder> = mutableListOf()
-        val sql = "SELECT b.id, b.name, b.description, g.id AS gId, b.place, b.active AS active " +
-                "FROM boulders AS b INNER JOIN places AS p ON b.place = p.id " +
+        val sql = "SELECT b.id, b.name, b.description, g.id AS gId, b.place, b.active AS active, b.image_id AS image_id " +
+                "FROM routes AS b INNER JOIN places AS p ON b.place = p.id " +
                 "INNER JOIN grades AS g ON g.system_id = p.grading_system_id " +
                 "WHERE b.place=:placeID AND g.id = b.grade " +
                 "ORDER BY b.date_added DESC"
@@ -125,7 +123,7 @@ override fun updateBoulder(boulderId: Long, name: String?, grade: Long?, place: 
                     grade = rs.getLong("gId"),
                     place = rs.getLong("place"),
                     active = rs.getBoolean("active"),
-                    image = null
+                    image = rs.getString("image_id")
                 )
             )
         }
@@ -133,7 +131,7 @@ override fun updateBoulder(boulderId: Long, name: String?, grade: Long?, place: 
     }
 
     override fun getNumBouldersInPlace(placeId: Long, countActive: Boolean): Int {
-        val sql = "SELECT COUNT(*) FROM boulders WHERE place=:placeID AND active=:active"
+        val sql = "SELECT COUNT(*) FROM routes WHERE place=:placeID AND active=:active"
         val result = jdbcTemplate.queryForObject(
             sql,
             MapSqlParameterSource()

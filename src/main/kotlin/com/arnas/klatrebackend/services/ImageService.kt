@@ -35,52 +35,41 @@ class ImageService(
         }
     }
 
-    override fun storeImageMetadata(userId: Long, boulderId: Long, contentType: String, size: Long): ServiceResult<String> {
-        val id = imageRepository.storeImageMetaData(boulderId, contentType, size, userId)
-        return ServiceResult(data = id, message = "Image metadata stored successfully", success = true)
+    override fun storeImageMetadata(userId: Long, contentType: String, size: Long): String {
+        val id = imageRepository.storeImageMetaData(contentType, size, userId)
+        return id
     }
 
-    override fun getImageMetadata(imageId: String): ServiceResult<Image?> {
-        val image = imageRepository.getImageMetadata(imageId)
-        image?: return ServiceResult(data = null, message = "Image not found", success = false)
-        return ServiceResult(data = image, message = "Image metadata retrieved successfully", success = true)
+    override fun getImageMetadata(imageId: String): Image? {
+        val image = imageRepository.getImageMetadata(imageId) ?: throw RuntimeException("Image metadata not found")
+        return image
     }
 
-    override fun getImageMetadataByBoulder(boulderId: Long): ServiceResult<Image?> {
-        val image = imageRepository.getImageMetadataByBoulder(boulderId) ?: return ServiceResult(data = null, message = "Image not found", success = false)
-        return ServiceResult(data = image, message = "Image metadata retrieved successfully", success = true)
+    override fun getImageMetadataById(id: String): Image? {
+        val image = imageRepository.getImageMetadata(id) ?: throw RuntimeException("Image not found")
+        return image
     }
 
-    override fun storeImageFile(file: MultipartFile, boulderId: Long, userId: Long): ServiceResult<String> {
+    override fun storeImageFile(file: MultipartFile, userId: Long): String {
         init()
         if (file.isEmpty) {
-            return ServiceResult(data = null, message = "File is empty", success = false)
+            throw RuntimeException("Failed to store image. File is empty")
         }
-        imageRepository.getImageMetadataByBoulder(boulderId)?.let {
-            File("$uploadDir/${it.id}").delete()
-            deleteImage(it)
-        }
-
         val imageId = storeImageMetadata(
-            boulderId = boulderId,
             contentType = file.contentType!!,
             size = file.size,
-            userId = userId).data
-
-        imageId?: throw Exception("Error storing image metadata")
+            userId = userId
+        )
         val filePath = File("$uploadDir/$imageId")
         file.transferTo(filePath)
-
-        return ServiceResult(data = imageId, message = "Image stored successfully", success = true)
+        return imageId
     }
 
-    override fun getImage(boulderId: Long): Image? {
-       return imageRepository.getImageByBoulderId(boulderId)
+    override fun getImage(id: String): Image? {
+       return imageRepository.getImageById(id)
     }
 
-    override fun deleteImage(image: Image) {
-        imageRepository.deleteImage(image.id)
+    override fun deleteImage(id: String) {
+        imageRepository.deleteImage(id)
     }
-
-
 }

@@ -3,16 +3,13 @@ package com.arnas.klatrebackend.services
 import com.arnas.klatrebackend.dataclasses.Boulder
 import com.arnas.klatrebackend.dataclasses.BoulderRequest
 import com.arnas.klatrebackend.dataclasses.BoulderResponse
+import com.arnas.klatrebackend.dataclasses.Role
 import com.arnas.klatrebackend.dataclasses.ServiceResult
 import com.arnas.klatrebackend.interfaces.repositories.BoulderRepositoryInterface
 import com.arnas.klatrebackend.interfaces.repositories.GroupRepositoryInterface
 import com.arnas.klatrebackend.interfaces.repositories.PlaceRepositoryInterface
 import com.arnas.klatrebackend.interfaces.services.BoulderServiceInterface
 import com.arnas.klatrebackend.interfaces.services.ImageServiceInterface
-import com.arnas.klatrebackend.repositories.BoulderRepository
-import com.arnas.klatrebackend.repositories.GroupRepository
-import com.arnas.klatrebackend.repositories.PlaceRepository
-import com.arnas.klatrebackend.repositories.RouteSendRepository
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
@@ -22,6 +19,7 @@ class BoulderService(
     private val imageService: ImageServiceInterface,
     private val groupRepository: GroupRepositoryInterface,
     private val placeRepository: PlaceRepositoryInterface,
+    private val accessControlService: AccessControlService,
 ): BoulderServiceInterface {
 
 
@@ -36,46 +34,59 @@ class BoulderService(
     }
 
 
-    override fun addBoulder(userId: Long, placeId: Long, name: String, grade: Long, description: String?): ServiceResult<Long> {
-        val boulderRequest = BoulderRequest(
+    override fun addBoulder(userId: Long, placeId: Long, name: String, grade: Long, description: String?, image: MultipartFile?): Long {
+        val imageId = image?.let {
+            return@let imageService.storeImageFile(it, userId)
+        }
+        val boulderID = boulderRepository.addBoulder(
             name = name,
             grade = grade,
             place = placeId,
             description = description,
+            active = true,
+            imageId = imageId,
+            userId = userId,
         )
-        val boulderID = boulderRepository.addBoulder(userId, boulderRequest)
-        return ServiceResult(success = true, message = "Boulder added successfully", data = boulderID)
+        return boulderID
     }
 
-   override fun updateBoulder(boulderId: Long, userId: Long, boulderInfo: Map<String, String>, image: MultipartFile?): ServiceResult<String> {
-       // Check if user has permission to update boulder
-       val name = boulderInfo["name"]
-       val place = boulderInfo["place"]?.toLong()
-       val description = boulderInfo["description"]
-       val groupId = boulderInfo["groupID"]
-       val grade = boulderInfo["grade"]?.toLong()
-       val active = boulderInfo["active"]?.toBoolean()
-       boulderRepository.updateBoulder(boulderId, name, grade, place, description, active)
-       image?.let {
-           imageService.storeImageFile(image, boulderId, userId)
-       }
-       return ServiceResult(success = true, message = "Boulder updated successfully")
+    override fun updateBoulder(routeId: Long, userId: Long, boulderInfo: Map<String, String>, image: MultipartFile?) {
+
+        val oldRoute = boulderRepository.getRouteById(routeId)
+            ?: throw Exception("Boulder with ID $routeId not found, cannot update it.")
+        val group = placeRepository.getPlaceById(oldRoute.place)?.let {
+            return@let groupRepository.getGroupById(it.groupID)
+        }
+        val role = accessControlService.getUserGroupRole(userId, group!!.id) ?: throw Exception("User has no access to this boulder")
+        if(role > Role.ADMIN.id) throw Exception("User has no access to this boulder")
+        val name = boulderInfo["name"]
+        val place = boulderInfo["place"]?.toLong()
+        val description = boulderInfo["description"]
+        val grade = boulderInfo["grade"]?.toLong()
+        val active = boulderInfo["active"]?.toBoolean()
+        val newImageId = image?.let {
+            oldRoute.image?.let {
+                imageService.deleteImage(it)
+            }
+            return@let imageService.storeImageFile(image,  userId)
+        }
+        val rowAffected = boulderRepository.updateBoulder(oldRoute.id, name, grade, place, description, active, newImageId)
+        if(rowAffected <= 0) throw Exception("Failed to update boulder")
+    }
+    override fun deleteBoulder(routeId: Long){
+        val route = boulderRepository.getRouteById(routeId)?: throw Exception("Boulder not found")
+        route.image?.let { imageService.deleteImage(it) }
+        boulderRepository.deleteBoulder(routeId)
    }
 
-   override fun deleteBoulder(boulderId: Long): ServiceResult<Unit> {
-        imageService.getImage(boulderId)?.let { imageService.deleteImage(it) }
-        boulderRepository.deleteBoulder(boulderId)
-        return ServiceResult(success = true, message = "Boulder deleted successfully")
-   }
-
-    override fun getBouldersByPlace(placeId: Long, page: Int, limit: Int): ServiceResult<BoulderResponse> {
+    override fun getBouldersByPlace(placeId: Long, page: Int, limit: Int): BoulderResponse {
         val pagingEnabled = limit > 0
         boulderRepository.getBouldersByPlace(placeId, page, limit + 1, pagingEnabled).let {
             val hasMore = it.size > limit
             val numRetired = boulderRepository.getNumBouldersInPlace(placeId, false)
             val numActive = boulderRepository.getNumBouldersInPlace(placeId, true)
             val boulderResponse = BoulderResponse(it, page, limit, numActive, numRetired,  hasMore)
-            return ServiceResult(success = true, message = "Boulders retrieved successfully", data = boulderResponse)
+            return boulderResponse
         }
     }
 }

@@ -14,4 +14,6 @@ interface GroupRepositoryInterface {
     fun getUserGroupRole(userId: Long, groupId: Long): Int?
     fun updateUserGroupRole(userId: Long, groupId: Long, newRoleId: Int): Int
     fun deleteUserFromGroup(userId: Long, groupId: Long): Int
+    fun getGroupById(id: Long): Group?
+    fun getGroupByUuid(groupUuid: String): Group?
 }

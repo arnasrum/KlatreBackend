@@ -1,8 +1,8 @@
 package com.arnas.klatrebackend.services
 
 import com.arnas.klatrebackend.dataclasses.ActiveSession
-import com.arnas.klatrebackend.dataclasses.ClimbingSession
 import com.arnas.klatrebackend.dataclasses.ClimbingSessionDTO
+import com.arnas.klatrebackend.dataclasses.ClimbingSessionDisplay
 import com.arnas.klatrebackend.dataclasses.RouteAttempt
 import com.arnas.klatrebackend.dataclasses.RouteAttemptDTO
 import com.arnas.klatrebackend.dataclasses.RouteAttemptDisplay
@@ -21,7 +21,7 @@ class ClimbingSessionService(
     private val placeRepository: PlaceRepositoryInterface,
     private val gradingSystemRepository: GradingSystemRepositoryInterface,
     private val boulderRepository: BoulderRepository,
-    private val accessControlService: AccessControlService
+    private val accessControlService: AccessControlService,
 )  {
 
     fun getSessionsByGroup(groupId: Long, userId: Long): ServiceResult<ActiveSession> {
@@ -96,20 +96,21 @@ class ClimbingSessionService(
         return ServiceResult(success = true, message = "Route attempt updated successfully")
     }
 
-
     fun routeAttemptToDisplay(routeAttempt: RouteAttempt): RouteAttemptDisplay {
-        val session = climbingSessionRepository.getActiveSession(routeAttempt.session) ?: throw Exception("Session has not been opened yet")
+        val session = climbingSessionRepository.getSessionById(routeAttempt.session) ?: throw Exception("Session has not been opened yet")
         val place = placeRepository.getPlaceById(session.placeId) ?: throw Exception("Session has not a valid place")
         val grades = gradingSystemRepository.getGradesBySystemId(place.gradingSystem)
         val route = boulderRepository.getRouteById(routeAttempt.routeId) ?: throw Exception("Route not found")
         val gradeName = grades.find { grade -> grade.id == route.grade }?.gradeString ?: throw Exception("Grade not found")
-        return RouteAttemptDisplay(routeAttempt.id, routeAttempt.attempts, routeAttempt.completed, route.name, gradeName, routeAttempt.timestamp.toString())
+        return RouteAttemptDisplay(routeAttempt.id, routeAttempt.attempts, routeAttempt.completed, route.name,  routeAttempt.timestamp, gradeName)
     }
 
-    fun getPastSessions(groupId: Long, userId: Long): List<ClimbingSession> {
-        accessControlService.getUserGroupRole(userId, groupId)
-            ?: throw RuntimeException("User is not a member of group")
+    fun getPastSessions(groupId: Long, userId: Long): List<ClimbingSessionDisplay> {
         val sessions = climbingSessionRepository.getPastSessions(groupId, userId)
-        return sessions
+        val displaySessions = sessions.map {
+            val routeDisplays = it.routeAttempts.map { routeAttempt -> routeAttemptToDisplay(routeAttempt)}
+            ClimbingSessionDisplay(it.id, it.groupId, it.userId, it.placeId, it.timestamp, it.name, routeDisplays)
+        }
+        return displaySessions
     }
 }

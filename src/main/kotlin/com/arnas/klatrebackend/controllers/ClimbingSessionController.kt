@@ -1,8 +1,6 @@
 package com.arnas.klatrebackend.controllers
 
-import com.arnas.klatrebackend.dataclasses.ClimbingSession
 import com.arnas.klatrebackend.dataclasses.ClimbingSessionDTO
-import com.arnas.klatrebackend.dataclasses.RouteAttempt
 import com.arnas.klatrebackend.dataclasses.RouteAttemptDTO
 import com.arnas.klatrebackend.dataclasses.UpdateAttemptRequest
 import com.arnas.klatrebackend.dataclasses.User
@@ -97,10 +95,9 @@ class ClimbingSessionController(
 
     @GetMapping("/past/{groupId}")
     fun getPastSessions(@PathVariable groupId: Long, user: User): ResponseEntity<out Any> {
-        accessControlService.hasGroupAccess(user.id, groupId)
-            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not a member of group")
+        if(!accessControlService.hasGroupAccess(user.id, groupId))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not a member of group")
         val serviceResult = climbingSessionService.getPastSessions(groupId, user.id)
-        println(serviceResult)
         return ResponseEntity.ok(mapOf("data" to serviceResult))
     }
 }

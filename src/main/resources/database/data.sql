@@ -140,7 +140,7 @@ INSERT INTO grades(system_id, grade_string, numerical_value) VALUES
     (4, 'V17', 18);
 
 
-INSERT INTO boulders (name, grade, userID, place)
+INSERT INTO routes (name, grade, userID, place)
 VALUES
     ('svaberg', 6, 1, 1),
     ('sva', 7, 1, 1);

@@ -29,7 +29,7 @@ class ImageController(
 
     @GetMapping("/{imageID}")
     fun getImage(@PathVariable imageID: String): ResponseEntity<Resource> {
-        val image = imageService.getImageMetadata(imageID).data
+        val image = imageService.getImageMetadata(imageID)
             ?: return ResponseEntity.notFound().build()
         
         val file = File("$uploadDir/${image.id}")
@@ -53,21 +53,15 @@ class ImageController(
             return ResponseEntity.badRequest().body(mapOf("error" to "File is empty"))
         }
         
-
         file.contentType?: return ResponseEntity.badRequest().body(mapOf())
 
-
         val imageID = imageService.storeImageMetadata(
-            boulderId = boulderID,
             contentType =file.contentType!!,
             size = file.size,
             userId = user.id,
         )
 
-        if(!imageID.success) return ResponseEntity.badRequest().body(mapOf("error" to "Something went wrong when storing meta data"))
-        if(imageID.data == null) return ResponseEntity.badRequest().body(mapOf("error" to "Something went wrong when storing meta data"))
-
-        val filePath = File(uploadDir, imageID.data)
+        val filePath = File(uploadDir, imageID)
         file.transferTo(filePath)
 
 

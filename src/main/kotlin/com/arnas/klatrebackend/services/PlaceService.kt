@@ -82,11 +82,12 @@ class PlaceService(
 
             val boulderUpdateResult = boulderRepository.updateBoulder(
                 grade = newGrade.id,
-                boulderId = boulder.id,
+                routeId = boulder.id,
                 name = null,
                 place = null,
                 description = null,
-                active = null
+                active = null,
+                imageId = null
             )
 
             if (boulderUpdateResult <= 0) {

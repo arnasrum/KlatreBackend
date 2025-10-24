@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS climbing_sessions, group_invites, user_groups, image, boulders, klatre_groups, users, roles, places, route_sends, route_attempts, grading_systems, grades CASCADE;
+DROP TABLE IF EXISTS climbing_sessions, group_invites, user_groups, image, routes, klatre_groups, users, roles, places, route_sends, route_attempts, grading_systems, grades CASCADE;
 
 CREATE TABLE IF NOT EXISTS users(
     id BIGSERIAL PRIMARY KEY,
@@ -48,7 +48,15 @@ CREATE TABLE IF NOT EXISTS places(
     group_id BIGSERIAL REFERENCES klatre_groups(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS boulders(
+CREATE TABLE IF NOT EXISTS image(
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+    content_type TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    file_size BIGINT NOT NULL,
+    user_id BIGSERIAL REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS routes(
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     grade BIGINT REFERENCES grades(id),
@@ -56,17 +64,8 @@ CREATE TABLE IF NOT EXISTS boulders(
     active BOOL NOT NULL DEFAULT true,
     userID BIGINT REFERENCES users(id),
     date_added TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    place BIGSERIAL REFERENCES places(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS image(
-    id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
-    content_type TEXT NOT NULL,
-    boulder_id BIGINT UNIQUE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    file_size BIGINT NOT NULL,
-    user_id BIGSERIAL REFERENCES users(id),
-    FOREIGN KEY (boulder_id) REFERENCES boulders(id) ON DELETE CASCADE
+    place BIGSERIAL REFERENCES places(id) ON DELETE CASCADE,
+    image_id TEXT REFERENCES image(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS user_groups(
@@ -91,8 +90,8 @@ CREATE TABLE IF NOT EXISTS group_invites(
 
 CREATE TABLE IF NOT EXISTS boulder_equivalence(
     id BIGSERIAL PRIMARY KEY,
-    boulder_id1 BIGSERIAL REFERENCES boulders(id) NOT NULL, -- Take sends from boulder2 and apply to boulder1
-    boulder_id2 BIGSERIAL REFERENCES boulders(id) NOT NULL,
+    boulder_id1 BIGSERIAL REFERENCES routes(id) NOT NULL, -- Take sends from boulder2 and apply to boulder1
+    boulder_id2 BIGSERIAL REFERENCES routes(id) NOT NULL,
     user_id BIGSERIAL REFERENCES users(id) NOT NULL,
     UNIQUE(boulder_id1, boulder_id2)
 );
@@ -110,13 +109,14 @@ CREATE TABLE IF NOT EXISTS climbing_sessions(
 
 CREATE TABLE IF NOT EXISTS route_attempts(
     id BIGSERIAL PRIMARY KEY,
-    route_id BIGINT REFERENCES boulders(id) NOT NULL,
+    route_id BIGINT REFERENCES routes(id) NOT NULL,
     attempts INT NOT NULL DEFAULT 0,
     completed BOOL DEFAULT false,
     session BIGINT REFERENCES climbing_sessions(id) ON DELETE CASCADE,
     last_updated BIGINT NOT NULL
 );
 
+DROP INDEX IF EXISTS active_sessions_user_group_active_idx;
 CREATE UNIQUE INDEX active_sessions_user_group_active_idx ON climbing_sessions (user_id, group_id)
     WHERE active;
 

@@ -57,8 +57,6 @@ import kotlin.reflect.full.memberProperties
         return (keys["id"] as Number).toLong()
     }
 
-
-
     override fun addUserToGroup(userId: Long, groupId: Long, role: Int) {
         jdbcTemplate.update(
             "INSERT INTO user_groups (user_id, group_id, role) VALUES (:userID, :groupID, :role)",
@@ -115,7 +113,23 @@ import kotlin.reflect.full.memberProperties
         return rowAffected
     }
 
-    fun getGroupByUuid(groupUuid: String): Group? {
+    override fun getGroupById(id: Long): Group? {
+        val group = jdbcTemplate.query("SELECT * FROM klatre_groups WHERE id = :id",
+            mapOf("id" to id),
+        ) { rs, _ ->
+            Group(
+                id = rs.getLong("id"),
+                owner = rs.getLong("owner"),
+                name = rs.getString("name"),
+                personal = rs.getBoolean("personal"),
+                description = rs.getString("description"),
+                uuid = rs.getString("uuid")
+            )
+        }
+        return group.firstOrNull()
+    }
+
+    override fun getGroupByUuid(groupUuid: String): Group? {
         val group = jdbcTemplate.query("SELECT * FROM klatre_groups WHERE uuid = :groupUuid",
             mapOf("groupUuid" to groupUuid),
         ) { rs, _ ->
