@@ -20,12 +20,9 @@ class UserService(
     private val client: HttpClient = HttpClient.newBuilder().build()
 
     override fun getUserById(userId: Long): ServiceResult<User> {
-        try {
-            val user = userRepository.getUserById(userId) ?: throw RuntimeException("User not found")
-            return ServiceResult(success = true, data = user, message = "User retrieved successfully")
-        } catch (e: Exception) {
+        val user = userRepository.getUserById(userId) ?:
             throw RuntimeException("User not found")
-        }
+        return ServiceResult(success = true, data = user, message = "User retrieved successfully")
     }
 
 
@@ -44,14 +41,6 @@ class UserService(
             "email" to json.getString("email"),
             "id" to json.getLong("id").toString()
         )
-    }
-
-    override fun usersPlacePermissions(userID: Long, placeID: Long): Boolean {
-        val groups = groupService.getGroups(userID).data ?: return false
-        val hasAccess = groups.any { group ->
-            group.places.any{ it.id == placeID }
-        }
-        return hasAccess
     }
 
     override fun createOrUpdateUser(userInfo: Map<String, String>): Long? {

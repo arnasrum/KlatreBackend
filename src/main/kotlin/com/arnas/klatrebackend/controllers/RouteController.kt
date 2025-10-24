@@ -6,6 +6,8 @@ import com.arnas.klatrebackend.interfaces.services.BoulderServiceInterface
 import com.arnas.klatrebackend.interfaces.services.ImageServiceInterface
 import com.arnas.klatrebackend.interfaces.services.RouteSendServiceInterface
 import com.arnas.klatrebackend.interfaces.services.UserServiceInterface
+import com.arnas.klatrebackend.services.AccessControlService
+import com.arnas.klatrebackend.services.PlaceService
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -22,10 +24,11 @@ import org.springframework.web.multipart.MultipartFile
 @Tag(name = "Route", description = "Route CRUD operations")
 @RequestMapping("/boulders")
 class RouteController(
-    private val userService: UserServiceInterface,
     private val boulderService: BoulderServiceInterface,
     private val imageService: ImageServiceInterface,
     private val routeSendService: RouteSendServiceInterface,
+    private val placeService: PlaceService,
+    private val accessControlService: AccessControlService,
 ) {
 
     @GetMapping("/place")
@@ -34,10 +37,14 @@ class RouteController(
         @RequestParam page: Int,
         @RequestParam limit: Int,
         user: User
-    ): ResponseEntity<BoulderResponse> {
-        val userID: Long = user.id
-        if(!userService.usersPlacePermissions(userID, placeId)) {
-            return ResponseEntity(HttpStatus.UNAUTHORIZED)
+    ): ResponseEntity<out Any> {
+
+        if(!userHasPermissionToPlace(user.id, placeId)) {
+            return ResponseEntity(
+                mapOf(
+                "message" to "User does not have sufficient permissions"),
+                HttpStatus.UNAUTHORIZED
+            )
         }
         val serviceResult = boulderService.getBouldersByPlace(placeId, page, limit)
         if (!serviceResult.success) {
@@ -56,17 +63,15 @@ class RouteController(
         @RequestParam(required = false) image: MultipartFile?,
         user: User
     ): ResponseEntity<out Any> {
-        val userID: Long = user.id
-        
-        if(!userService.usersPlacePermissions(userID, placeID)) {
+        if(!userHasPermissionToPlace(user.id, placeID)) {
             return ResponseEntity(mapOf("message" to "User is not allowed to add boulder to this place"), HttpStatus.UNAUTHORIZED)
         }
 
-        val serviceResult = boulderService.addBoulder(userID, placeID, name, grade, description)
+        val serviceResult = boulderService.addBoulder(user.id, placeID, name, grade, description)
         serviceResult.data?: return ResponseEntity.internalServerError().body(null)
         image?.let {
             if(!serviceResult.success) return ResponseEntity(HttpStatus.BAD_REQUEST)
-            imageService.storeImageFile(image, serviceResult.data, userID)
+            imageService.storeImageFile(image, serviceResult.data, user.id)
         }
 
         return ResponseEntity(HttpStatus.OK)
@@ -94,28 +99,9 @@ class RouteController(
         return ResponseEntity.ok(mapOf("message" to "Boulder updated successfully"))
     }
 
-    @PostMapping("/place/sends")
-    fun updateRouteSend(
-        @RequestParam routeId: Long,
-        @RequestParam (required = false) attempts: Int?,
-        @RequestParam (required = false) perceivedGrade: String?,
-        @RequestParam (required = false) completed: String?,
-        user: User
-    ): ResponseEntity<Any> {
-        val userID = user.id
-
-        if(!routeSendService.getUserBoulderSends(userID, listOf(routeId)).data.isNullOrEmpty()) {
-            return ResponseEntity.badRequest().body("The user has already sent this route")
-        }
-
-        val additionalProps = mutableMapOf<String, String>()
-        attempts?.let { additionalProps["attempts"] = it.toString() }
-        perceivedGrade?.let { additionalProps["perceivedGrade"] = it }
-        completed?.let { additionalProps["completed"] = it }
-
-        routeSendService.addUserRouteSend(userID, routeId, additionalProps)
-
-        return ResponseEntity(HttpStatus.OK)
+    private fun userHasPermissionToPlace(userId: Long, placeId: Long): Boolean {
+        val place = placeService.getPlaceById(placeId)
+            ?: throw RuntimeException("Place not found")
+        return accessControlService.hasGroupAccess(userId, place.groupID)
     }
-
 }

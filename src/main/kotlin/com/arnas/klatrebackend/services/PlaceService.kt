@@ -1,6 +1,7 @@
 package com.arnas.klatrebackend.services
 
 import com.arnas.klatrebackend.dataclasses.GradingSystemWithGrades
+import com.arnas.klatrebackend.dataclasses.Place
 import com.arnas.klatrebackend.dataclasses.PlaceUpdateDTO
 import com.arnas.klatrebackend.dataclasses.PlaceWithGrades
 import com.arnas.klatrebackend.dataclasses.ServiceResult
@@ -22,11 +23,20 @@ class PlaceService(
     private val boulderRepository: BoulderRepositoryInterface,
 ): PlaceServiceInterface {
 
+
+    fun getPlaceById(placeId: Long): Place? {
+        return placeRepository.getPlaceById(placeId)
+    }
+
     override fun getPlacesByGroupId(groupId: Long, userId: Long): ServiceResult<List<PlaceWithGrades>> {
         return try {
-            groupService.getGroupUserRole(userId, groupId).data ?: return ServiceResult(success = false, message = "User is not a member of group", data = null)
+            groupService.getGroupUserRole(userId, groupId).data
+                ?: return ServiceResult(success = false, message = "User is not a member of group", data = null)
             val places = placeRepository.getPlacesByGroupId(groupId)
-            val test = places.map { PlaceWithGrades(it.id, it.name, it.description, it.groupID, GradingSystemWithGrades(it.gradingSystem, gradingSystemRepository.getGradesBySystemId(it.gradingSystem))) }
+            val test = places.map {
+                PlaceWithGrades(it.id, it.name, it.description, it.groupID, GradingSystemWithGrades(it.gradingSystem,
+                    gradingSystemRepository.getGradesBySystemId(it.gradingSystem)))
+            }
             ServiceResult(success = true, message = "Places retrieved successfully", data = test)
         } catch (e: Exception) {
             ServiceResult(success = false, message = "Error retrieving places: ${e.message}", data = null)
@@ -49,47 +59,41 @@ class PlaceService(
 
     @Transactional
     override fun updatePlaceGradingSystem(userId: Long, placeId: Long, newGradingSystemId: Long): ServiceResult<Unit> {
-        try {
-            val place = placeRepository.getPlaceById(placeId)?: return ServiceResult(success = false, message = "Place not found", data = null)
-            val boulders = boulderRepository.getBouldersByPlace(placeId, 0, 0, false)
-            val oldGradingSystem = gradingSystemRepository.getGradesBySystemId(place.gradingSystem)
-            val newGradingSystem = gradingSystemRepository.getGradesBySystemId(newGradingSystemId)
-            val newGradeValues = newGradingSystem.map { it.numericalValue }
+        val place = placeRepository.getPlaceById(placeId)?: return ServiceResult(success = false, message = "Place not found", data = null)
+        val boulders = boulderRepository.getBouldersByPlace(placeId, 0, 0, false)
+        val oldGradingSystem = gradingSystemRepository.getGradesBySystemId(place.gradingSystem)
+        val newGradingSystem = gradingSystemRepository.getGradesBySystemId(newGradingSystemId)
+        val newGradeValues = newGradingSystem.map { it.numericalValue }
 
-            val placeUpdateResult = placeRepository.updatePlace(placeId, gradingSystem = newGradingSystemId, name = null, description = null, groupId = null)
-            if (placeUpdateResult <= 0) {
-                throw RuntimeException("Failed to update place grading system")
-            }
-            
-            for(boulder in boulders) {
-                val oldGrade = oldGradingSystem.find { it.id == boulder.grade}
-                    ?: throw RuntimeException("Boulder grade not found for boulder ${boulder.id}")
-                    
-                val newGradeNumericalValue = findClosestInt(oldGrade.numericalValue, newGradeValues)
-                    ?: throw RuntimeException("Could not find closest grade value")
-                    
-                val newGrade = newGradingSystem.find { it.numericalValue == newGradeNumericalValue }
-                    ?: throw RuntimeException("New grade not found for numerical value $newGradeNumericalValue")
-                
-                val boulderUpdateResult = boulderRepository.updateBoulder(
-                    grade = newGrade.id, 
-                    boulderId = boulder.id, 
-                    name = null, 
-                    place = null, 
-                    description = null,
-                    active = null
-                )
-                
-                if (boulderUpdateResult <= 0) {
-                    throw RuntimeException("Failed to update boulder ${boulder.id} grade")
-                }
-            }
-
-            return ServiceResult(success = true, message = "Grading system successfully changed")
-        } catch(e: Exception) {
-            e.printStackTrace()
-            return ServiceResult(success = false, message = "Error changing grading system: ${e.message}", data = null)
+        val placeUpdateResult = placeRepository.updatePlace(placeId, gradingSystem = newGradingSystemId, name = null, description = null, groupId = null)
+        if (placeUpdateResult <= 0) {
+            throw RuntimeException("Failed to update place grading system")
         }
+
+        for(boulder in boulders) {
+            val oldGrade = oldGradingSystem.find { it.id == boulder.grade}
+                ?: throw RuntimeException("Boulder grade not found for boulder ${boulder.id}")
+
+            val newGradeNumericalValue = findClosestInt(oldGrade.numericalValue, newGradeValues)
+                ?: throw RuntimeException("Could not find closest grade value")
+
+            val newGrade = newGradingSystem.find { it.numericalValue == newGradeNumericalValue }
+                ?: throw RuntimeException("New grade not found for numerical value $newGradeNumericalValue")
+
+            val boulderUpdateResult = boulderRepository.updateBoulder(
+                grade = newGrade.id,
+                boulderId = boulder.id,
+                name = null,
+                place = null,
+                description = null,
+                active = null
+            )
+
+            if (boulderUpdateResult <= 0) {
+                throw RuntimeException("Failed to update boulder ${boulder.id} grade")
+            }
+        }
+        return ServiceResult(success = true, message = "Grading system successfully changed")
     }
 
     private fun findClosestInt(definedInt: Int, numbers: List<Int>): Int? {
@@ -106,11 +110,10 @@ class PlaceService(
                 minDifference = currentDifference
                 closestNumber = number
             } else if (currentDifference == minDifference) {
-                // Optional: Handle ties by choosing the smaller number.
+                // Handle ties by choosing the smaller number.
                 closestNumber = min(closestNumber, number)
             }
         }
-
         return closestNumber
     }
 }
