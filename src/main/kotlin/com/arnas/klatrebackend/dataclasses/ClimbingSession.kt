@@ -5,7 +5,7 @@ data class ClimbingSession (
     val groupId: Long,
     val userId: Long,
     val placeId: Long,
-    val startDate: String,
+    val timestamp: Long,
     val name: String,
     val routeAttempts: List<RouteAttempt>
 )
@@ -29,7 +29,7 @@ data class RouteAttempt(
     val attempts: Int,
     val completed: Boolean,
     val routeId: Long,
-    val timestamp: String,
+    val timestamp: Long,
     val session: Long
 )
 
@@ -44,7 +44,7 @@ data class RouteAttemptDTO(
     val attempts: Int,
     val completed: Boolean,
     val routeId: Long,
-    val timestamp: String,
+    val timestamp: Long,
     val session: Long
 )
 

@@ -32,24 +32,10 @@ class ClimbingSessionController(
         return ResponseEntity.ok(mapOf("data" to serviceResult.data))
     }
 
-
-    data class AddSessionRequest(
-        val groupId: Long,
-        val placeId: Long,
-        val timestamp: Long,
-        val routeAttempts: List<RouteAttempt>
-
-    )
-
+    // this has to upload
     @PostMapping()
-    fun uploadSession(@RequestBody request: AddSessionRequest, user: User): ResponseEntity<out Any> {
-        val climbingSession = ClimbingSessionDTO(request.groupId, user.id, request.placeId, request.timestamp)
-        //climbingSession.routeAttempts.isEmpty().let {
-            //if (it) return ResponseEntity.badRequest().body(mapOf("message" to "Session must have at least one attempt"))
-        //}
-        println(climbingSession)
-        val sessionWithUserId = climbingSession.copy(userId = user.id)
-        val serviceResult = climbingSessionService.uploadSession(user.id, sessionWithUserId)
+    fun uploadSession(@RequestBody climbingSession: ClimbingSessionDTO, user: User): ResponseEntity<out Any> {
+        val serviceResult = climbingSessionService.uploadSession(user.id, climbingSession)
         if (!serviceResult.success) {
             return ResponseEntity.badRequest().body(mapOf("message" to serviceResult.message))
         }
@@ -67,7 +53,7 @@ class ClimbingSessionController(
     @PostMapping("/open")
     fun openPersonalSession(@RequestParam groupId: Long, @RequestParam placeId: Long, user: User): ResponseEntity<out Any> {
         val serviceResult = climbingSessionService.openSession(groupId, placeId, user.id)
-        if(!serviceResult.success) return ResponseEntity.badRequest().body(mapOf("message" to serviceResult.message))
+        println("new session: ${serviceResult.data}")
         return ResponseEntity.ok().body(mapOf("message" to "Session opened successfully", "data" to serviceResult.data))
     }
 
@@ -92,8 +78,6 @@ class ClimbingSessionController(
         return ResponseEntity.ok(mapOf("message" to "Attempt added successfully", "data" to serviceResult.data))
     }
 
-
-
     @PutMapping("/update/attempt")
     fun updateAttempt(@RequestBody requestBody: UpdateAttemptRequest, user: User): ResponseEntity<out Any> {
         val serviceResult = climbingSessionService.updateRouteAttempt(user.id, requestBody)
@@ -108,15 +92,14 @@ class ClimbingSessionController(
         return ResponseEntity.ok(mapOf("message" to "Attempt removed successfully", "data" to serviceResult.data))
     }
 
-    @PostMapping("/create")
-    fun openSession(
-        user: User,
-        @RequestParam groupId: Long,
-        @RequestParam placeId: Long,
-        @RequestParam timestamp: String,
-    ): ResponseEntity<out Any> {
+    @GetMapping("/past")
+    fun getPastSessions(@RequestParam groupId: Long): ResponseEntity<out Any> {
 
 
-        return ResponseEntity.ok(mapOf("message" to "Session opened successfully"))
+
+        return ResponseEntity.ok(mapOf("message" to "Past sessions fetched successfully", "data" to "test"))
     }
+
+
+
 }

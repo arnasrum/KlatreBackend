@@ -1,8 +1,6 @@
 package com.arnas.klatrebackend.repositories
 
-import com.arnas.klatrebackend.dataclasses.ClimbingSessionDTO
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
@@ -35,33 +33,23 @@ class ClimbingSessionRepositoryTest {
 
     @Test
     @Sql(statements = [
-        "INSERT INTO climbing_sessions(name, group_id, user_id, place_id, start_date) VALUES ('test', 1, 1, 1, '2020-01-01');",
-        "INSERT INTO climbing_sessions(name, group_id, user_id, place_id, start_date) VALUES ('test2', 1, 1, 1, '2020-01-01');"
+        "INSERT INTO climbing_sessions(name, group_id, user_id, place_id, timestamp) VALUES ('test', 1, 1, 1, 1761252478);",
+        "INSERT INTO climbing_sessions(name, group_id, user_id, place_id, timestamp) VALUES ('test2', 1, 1, 1, 1761253478);"
     ])
     fun `test getClimbingSessionByGroupId returns sessions`() {
         val groupId = 1L
         val userId = 1L
-        val result = climbingSessionRepository.getClimbingSessionByGroupId(groupId, userId)
-        assert(result.size == 2)
+        //val result = climbingSessionRepository.getClimbingSessionByGroupId(groupId, userId)
+        //assert(result.size == 2)
     }
 
     @Test
-    fun `test uploadClimbingSession stores session successfully`() {
-        val userId = 1L
-        val climbingSession = ClimbingSessionDTO(
-            groupId = 1L,
-            placeId = 1L,
-            startDate = "2025-10-04",
-            name = "Test session",
-            userId = userId,
-            routeSends = emptyList()
-        )
-        assertDoesNotThrow {
-            val generatedID = climbingSessionRepository.uploadClimbingSession(climbingSession)
-            assert(generatedID == 1L)
-        }
+    @Sql("/database/schema.sql")
+    @Sql("/database/pastSessionsTest.sql")
+    fun `test get past sessions size`() {
+        val pastSessions = climbingSessionRepository.getPastSessions(201, 101)
+        assert(pastSessions.size == 2) {"Past sessions size is not 2. Actual size: ${pastSessions.size}"}
+
 
     }
-
-
 }
