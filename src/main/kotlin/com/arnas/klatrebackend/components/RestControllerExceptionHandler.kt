@@ -19,6 +19,7 @@ class RestControllerExceptionHandler {
     fun handleException(exception: Exception): ResponseEntity<Map<String, Any>> {
         val message = exception.message?: "Internal server error"
         val response: ResponseEntity<Map<String, Any>> = ResponseEntity.status(500).body(mapOf("message" to message))
+        exception.printStackTrace()
         return response
     }
 
@@ -26,6 +27,7 @@ class RestControllerExceptionHandler {
     fun handleException(exception: RuntimeException): ResponseEntity<Map<String, Any>> {
         val message = exception.message ?: "Internal server error"
         val response: ResponseEntity<Map<String, Any>> = ResponseEntity.status(500).body(mapOf("message" to message))
+        exception.printStackTrace()
         return response
     }
 
