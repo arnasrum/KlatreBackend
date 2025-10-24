@@ -13,16 +13,15 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
-@Tag(name = "Boulder", description = "Boulder CRUD operations")
+@Tag(name = "Route", description = "Route CRUD operations")
 @RequestMapping("/boulders")
-class BoulderController(
+class RouteController(
     private val userService: UserServiceInterface,
     private val boulderService: BoulderServiceInterface,
     private val imageService: ImageServiceInterface,
@@ -30,7 +29,7 @@ class BoulderController(
 ) {
 
     @GetMapping("/place")
-    fun getBouldersByPlace(
+    fun getRoutesByPlace(
         @RequestParam placeId: Long,
         @RequestParam page: Int,
         @RequestParam limit: Int,
@@ -49,7 +48,7 @@ class BoulderController(
     }
 
     @PostMapping("/place/add")
-    fun addBoulderToPlace(
+    fun addRoutesToPlace(
         @RequestParam placeID: Long,
         @RequestParam name: String,
         @RequestParam grade: Long,
@@ -73,17 +72,9 @@ class BoulderController(
         return ResponseEntity(HttpStatus.OK)
     }
 
-    data class BoulderUpdateRequest(
-        val active: Boolean?,
-        val name: String?,
-        val grade: String?,
-        val description: String?,
-        val image: MultipartFile?
-    )
-
-    @PutMapping("/update/{boulderId}")
-    fun putBoulder(
-        @PathVariable boulderId: Long,
+    @PutMapping("/update/{routeId}")
+    fun putRoute(
+        @PathVariable routeId: Long,
         @RequestParam(required = false) name: String?,
         @RequestParam(required = false) grade: String?,
         @RequestParam(required = false) description: String?,
@@ -99,13 +90,13 @@ class BoulderController(
             description?.let { put("description", it) }
             active?.let { put("active", it.toString()) }
         }
-        boulderService.updateBoulder(boulderId, userID, requestBody, image)
+        boulderService.updateBoulder(routeId, userID, requestBody, image)
         return ResponseEntity.ok(mapOf("message" to "Boulder updated successfully"))
     }
 
     @PostMapping("/place/sends")
     fun updateRouteSend(
-        @RequestParam boulderID: Long,
+        @RequestParam routeId: Long,
         @RequestParam (required = false) attempts: Int?,
         @RequestParam (required = false) perceivedGrade: String?,
         @RequestParam (required = false) completed: String?,
@@ -113,7 +104,7 @@ class BoulderController(
     ): ResponseEntity<Any> {
         val userID = user.id
 
-        if(!routeSendService.getUserBoulderSends(userID, listOf(boulderID)).data.isNullOrEmpty()) {
+        if(!routeSendService.getUserBoulderSends(userID, listOf(routeId)).data.isNullOrEmpty()) {
             return ResponseEntity.badRequest().body("The user has already sent this route")
         }
 
@@ -122,7 +113,7 @@ class BoulderController(
         perceivedGrade?.let { additionalProps["perceivedGrade"] = it }
         completed?.let { additionalProps["completed"] = it }
 
-        routeSendService.addUserRouteSend(userID, boulderID, additionalProps)
+        routeSendService.addUserRouteSend(userID, routeId, additionalProps)
 
         return ResponseEntity(HttpStatus.OK)
     }
