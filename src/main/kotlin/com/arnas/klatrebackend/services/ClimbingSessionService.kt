@@ -13,51 +13,41 @@ import com.arnas.klatrebackend.interfaces.repositories.PlaceRepositoryInterface
 import com.arnas.klatrebackend.repositories.BoulderRepository
 import com.arnas.klatrebackend.repositories.ClimbingSessionRepository
 import org.springframework.stereotype.Service
+import java.lang.RuntimeException
 
 @Service
 class ClimbingSessionService(
     private val climbingSessionRepository: ClimbingSessionRepository,
     private val placeRepository: PlaceRepositoryInterface,
     private val gradingSystemRepository: GradingSystemRepositoryInterface,
-    private val boulderRepository: BoulderRepository
+    private val boulderRepository: BoulderRepository,
+    private val accessControlService: AccessControlService
 )  {
 
     fun getSessionsByGroup(groupId: Long, userId: Long): ServiceResult<ActiveSession> {
-        try {
-            val session = climbingSessionRepository.getActiveSession(groupId, userId)
-            return ServiceResult(success = true, data = session, message = "Sessions fetched successfully")
-        }  catch (e: Exception) {
-            e.printStackTrace()
-            return ServiceResult(success = false, message = "Error getting sessions by group", data = null)
-        }
+        val session = climbingSessionRepository.getActiveSession(groupId, userId)
+        return ServiceResult(success = true, data = session, message = "Sessions fetched successfully")
     }
 
     fun uploadSession(userId: Long, climbingSession: ClimbingSessionDTO): ServiceResult<Unit> {
-        try {
-            val sessionId = climbingSessionRepository.uploadClimbingSession(climbingSession)
-            //val rowAffected = climbingSessionRepository.insertRouteAttemptsInSession(climbingSession.routeAttempts, sessionId).reduce { acc, i -> acc + i }
-            //if(rowAffected < climbingSession.routeAttempts.size) return ServiceResult(success = false, message = "Error uploading session", data = null)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return ServiceResult(success = false, message = "Error uploading session", data = null)
-        }
+        val groupId = climbingSession.groupId
+        accessControlService.getUserGroupRole(userId, groupId)
+            ?: throw RuntimeException("User is not a member of group")
+        val sessionId = climbingSessionRepository.uploadClimbingSession(climbingSession)
         return ServiceResult(success = true, message = "Session uploaded successfully")
     }
 
     fun openSession(groupId: Long, placeId: Long, userId: Long): ServiceResult<ActiveSession> {
-        try {
-            val activeSessionId = climbingSessionRepository.openActiveSession(userId, groupId, placeId)
-            val activeSession = climbingSessionRepository.getActiveSession(activeSessionId)?.run {
-                climbingSessionRepository.getActiveSession(activeSessionId)
-            } ?: run {
-                climbingSessionRepository.deleteActiveSession(activeSessionId)
-                return ServiceResult(success = false, message = "Something went wrong while fetching opened session", data = null)
-            }
-            return ServiceResult(success = true, data = activeSession, message = "Session opened successfully")
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return ServiceResult(success = false, message = "Error opening session; ${e.message}", data = null)
+        accessControlService.getUserGroupRole(userId, groupId)
+            ?: throw RuntimeException("User is not a member of group")
+        val activeSessionId = climbingSessionRepository.openActiveSession(userId, groupId, placeId)
+        val activeSession = climbingSessionRepository.getActiveSession(activeSessionId)?.run {
+            climbingSessionRepository.getActiveSession(activeSessionId)
+        } ?: run {
+            climbingSessionRepository.deleteActiveSession(activeSessionId)
+            return ServiceResult(success = false, message = "Something went wrong while fetching opened session", data = null)
         }
+        return ServiceResult(success = true, data = activeSession, message = "Session opened successfully")
     }
 
     fun closeSession(sessionId: Long, save: Boolean, userId: Long): ServiceResult<Unit> {
@@ -86,28 +76,17 @@ class ClimbingSessionService(
     }
 
     fun removeRouteAttempt(attemptId: Long, userId: Long): ServiceResult<Unit> {
-        try {
-            val rowsAffected = climbingSessionRepository.deleteRouteAttempt(attemptId)
-            if(rowsAffected <= 0) throw Exception("Route attempt with ID $attemptId not found, cannot remove it.")
-            return ServiceResult(success = true, message = "Route attempt removed successfully")
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return ServiceResult(success = false, message = "Error removing route attempt: ${e.message}", data = null)
-        }
+        val rowsAffected = climbingSessionRepository.deleteRouteAttempt(attemptId)
+        if(rowsAffected <= 0) throw Exception("Route attempt with ID $attemptId not found, cannot remove it.")
+        return ServiceResult(success = true, message = "Route attempt removed successfully")
     }
 
     fun getRouteAttempts(sessionId: Long): ServiceResult<List<RouteAttemptDisplay>> {
-        try {
-            //val session = climbingSessionRepository.getActiveSession(sessionId) ?: throw Exception("Session has not been opened yet")
-            val routeAttempts = climbingSessionRepository.getRouteAttemptsBySessionId(sessionId)
-            val routeDisplays = routeAttempts.map {
-                return@map routeAttemptToDisplay(it)
-            }
-            return ServiceResult(success = true, data = routeDisplays, message = "Route attempts fetched successfully")
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return ServiceResult(success = false, message = "Error getting route attempts: ${e.message}", data = null)
+        val routeAttempts = climbingSessionRepository.getRouteAttemptsBySessionId(sessionId)
+        val routeDisplays = routeAttempts.map {
+            return@map routeAttemptToDisplay(it)
         }
+        return ServiceResult(success = true, data = routeDisplays, message = "Route attempts fetched successfully")
     }
 
     fun updateRouteAttempt(userId: Long, routeAttempt: UpdateAttemptRequest): ServiceResult<Unit> {
@@ -124,6 +103,11 @@ class ClimbingSessionService(
         val grades = gradingSystemRepository.getGradesBySystemId(place.gradingSystem)
         val route = boulderRepository.getRouteById(routeAttempt.routeId) ?: throw Exception("Route not found")
         val gradeName = grades.find { grade -> grade.id == route.grade }?.gradeString ?: throw Exception("Grade not found")
-        return RouteAttemptDisplay(routeAttempt.id, routeAttempt.attempts, routeAttempt.completed, route.name, gradeName, routeAttempt.timestamp)
+        return RouteAttemptDisplay(routeAttempt.id, routeAttempt.attempts, routeAttempt.completed, route.name, gradeName, routeAttempt.timestamp.toString())
+    }
+
+    fun getPastSessions(groupId: Long, userId: Long): List<ClimbingSession> {
+        val sessions = climbingSessionRepository.getPastSessions(groupId, userId)
+        return sessions
     }
 }
