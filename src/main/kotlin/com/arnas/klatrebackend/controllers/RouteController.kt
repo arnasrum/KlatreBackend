@@ -25,8 +25,6 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/boulders")
 class RouteController(
     private val boulderService: BoulderServiceInterface,
-    private val imageService: ImageServiceInterface,
-    private val routeSendService: RouteSendServiceInterface,
     private val placeService: PlaceService,
     private val accessControlService: AccessControlService,
 ) {
@@ -46,11 +44,8 @@ class RouteController(
                 HttpStatus.UNAUTHORIZED
             )
         }
-        val serviceResult = boulderService.getBouldersByPlace(placeId, page, limit)
-        if (!serviceResult.success) {
-            return ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
-        }
-        return ResponseEntity.ok().body(serviceResult.data)
+        val pagedBoulders = boulderService.getBouldersByPlace(placeId, page, limit)
+        return ResponseEntity.ok().body(pagedBoulders)
 
     }
 
@@ -66,14 +61,7 @@ class RouteController(
         if(!userHasPermissionToPlace(user.id, placeID)) {
             return ResponseEntity(mapOf("message" to "User is not allowed to add boulder to this place"), HttpStatus.UNAUTHORIZED)
         }
-
-        val serviceResult = boulderService.addBoulder(user.id, placeID, name, grade, description)
-        serviceResult.data?: return ResponseEntity.internalServerError().body(null)
-        image?.let {
-            if(!serviceResult.success) return ResponseEntity(HttpStatus.BAD_REQUEST)
-            imageService.storeImageFile(image, serviceResult.data, user.id)
-        }
-
+        val serviceResult = boulderService.addBoulder(user.id, placeID, name, grade, description, image)
         return ResponseEntity(HttpStatus.OK)
     }
 
