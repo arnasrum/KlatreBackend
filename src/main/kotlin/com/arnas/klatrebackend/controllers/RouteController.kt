@@ -1,11 +1,8 @@
 package com.arnas.klatrebackend.controllers
 
-import com.arnas.klatrebackend.dataclasses.BoulderResponse
+import com.arnas.klatrebackend.dataclasses.RouteDTO
 import com.arnas.klatrebackend.dataclasses.User
 import com.arnas.klatrebackend.interfaces.services.BoulderServiceInterface
-import com.arnas.klatrebackend.interfaces.services.ImageServiceInterface
-import com.arnas.klatrebackend.interfaces.services.RouteSendServiceInterface
-import com.arnas.klatrebackend.interfaces.services.UserServiceInterface
 import com.arnas.klatrebackend.services.AccessControlService
 import com.arnas.klatrebackend.services.PlaceService
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -58,10 +55,7 @@ class RouteController(
         @RequestParam(required = false) image: MultipartFile?,
         user: User
     ): ResponseEntity<out Any> {
-        if(!userHasPermissionToPlace(user.id, placeID)) {
-            return ResponseEntity(mapOf("message" to "User is not allowed to add boulder to this place"), HttpStatus.UNAUTHORIZED)
-        }
-        val serviceResult = boulderService.addBoulder(user.id, placeID, name, grade, description, image)
+        boulderService.addBoulder(user.id, RouteDTO(name, grade, placeID, description, true, image))
         return ResponseEntity(HttpStatus.OK)
     }
 

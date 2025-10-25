@@ -97,7 +97,7 @@ class ClimbingSessionService(
         val place = placeRepository.getPlaceById(session.placeId) ?: throw Exception("Session has not a valid place")
         val grades = gradingSystemRepository.getGradesBySystemId(place.gradingSystem)
         val route = boulderRepository.getRouteById(routeAttempt.routeId) ?: throw Exception("Route not found")
-        val gradeName = grades.find { grade -> grade.id == route.grade }?.gradeString ?: throw Exception("Grade not found")
+        val gradeName = grades.find { grade -> grade.id == route.gradeId }?.gradeString ?: throw Exception("Grade not found")
         return RouteAttemptDisplay(routeAttempt.id, routeAttempt.attempts, routeAttempt.completed, route.name,  routeAttempt.timestamp, gradeName)
     }
 

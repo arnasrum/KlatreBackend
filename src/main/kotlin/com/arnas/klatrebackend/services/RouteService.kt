@@ -1,10 +1,10 @@
 package com.arnas.klatrebackend.services
 
-import com.arnas.klatrebackend.dataclasses.Boulder
-import com.arnas.klatrebackend.dataclasses.BoulderRequest
+import com.arnas.klatrebackend.annotation.RequireGroupAccess
 import com.arnas.klatrebackend.dataclasses.BoulderResponse
+import com.arnas.klatrebackend.dataclasses.GroupAccessSource
 import com.arnas.klatrebackend.dataclasses.Role
-import com.arnas.klatrebackend.dataclasses.ServiceResult
+import com.arnas.klatrebackend.dataclasses.RouteDTO
 import com.arnas.klatrebackend.interfaces.repositories.BoulderRepositoryInterface
 import com.arnas.klatrebackend.interfaces.repositories.GroupRepositoryInterface
 import com.arnas.klatrebackend.interfaces.repositories.PlaceRepositoryInterface
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
 @Service
-class BoulderService(
+class RouteService(
     private val boulderRepository: BoulderRepositoryInterface,
     private val imageService: ImageServiceInterface,
     private val groupRepository: GroupRepositoryInterface,
@@ -23,15 +23,16 @@ class BoulderService(
 ): BoulderServiceInterface {
 
 
-    override fun addBoulder(userId: Long, placeId: Long, name: String, grade: Long, description: String?, image: MultipartFile?): Long {
-        val imageId = image?.let {
+    @RequireGroupAccess(minRole = Role.ADMIN, resolveGroupFrom = GroupAccessSource.FROM_PLACE, sourceObjectParam = "routeDTO")
+    override fun addBoulder(userId: Long, routeDTO: RouteDTO): Long {
+        val imageId = routeDTO.image?.let {
             return@let imageService.storeImageFile(it, userId)
         }
         val boulderID = boulderRepository.addBoulder(
-            name = name,
-            grade = grade,
-            place = placeId,
-            description = description,
+            name = routeDTO.name,
+            grade = routeDTO.gradeId,
+            place = routeDTO.placeId,
+            description = routeDTO.description,
             active = true,
             imageId = imageId,
             userId = userId,
@@ -43,7 +44,7 @@ class BoulderService(
 
         val oldRoute = boulderRepository.getRouteById(routeId)
             ?: throw Exception("Boulder with ID $routeId not found, cannot update it.")
-        val group = placeRepository.getPlaceById(oldRoute.place)?.let {
+        val group = placeRepository.getPlaceById(oldRoute.placeId)?.let {
             return@let groupRepository.getGroupById(it.groupID)
         }
         val role = accessControlService.getUserGroupRole(userId, group!!.id) ?: throw Exception("User has no access to this boulder")

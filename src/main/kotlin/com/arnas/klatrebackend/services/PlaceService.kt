@@ -71,7 +71,7 @@ class PlaceService(
         }
 
         for(boulder in boulders) {
-            val oldGrade = oldGradingSystem.find { it.id == boulder.grade}
+            val oldGrade = oldGradingSystem.find { it.id == boulder.gradeId}
                 ?: throw RuntimeException("Boulder grade not found for boulder ${boulder.id}")
 
             val newGradeNumericalValue = findClosestInt(oldGrade.numericalValue, newGradeValues)
@@ -111,7 +111,7 @@ class PlaceService(
                 minDifference = currentDifference
                 closestNumber = number
             } else if (currentDifference == minDifference) {
-                // Handle ties by choosing the smaller number.
+                // Handle ties by taking the smaller number
                 closestNumber = min(closestNumber, number)
             }
         }

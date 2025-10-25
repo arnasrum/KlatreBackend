@@ -1,7 +1,6 @@
 package com.arnas.klatrebackend.repositories
 
 import com.arnas.klatrebackend.dataclasses.Boulder
-import com.arnas.klatrebackend.dataclasses.BoulderRequest
 import com.arnas.klatrebackend.interfaces.repositories.BoulderRepositoryInterface
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -23,8 +22,8 @@ class BoulderRepository(
                 id = rs.getLong("id"),
                 name = rs.getString("name"),
                 description = rs.getString("description"),
-                grade = rs.getLong("grade"),
-                place = rs.getLong("place"),
+                gradeId = rs.getLong("grade"),
+                placeId = rs.getLong("place"),
                 active = rs.getBoolean("active"),
                 image = rs.getString("image_id")
             )
@@ -32,7 +31,7 @@ class BoulderRepository(
         return boulder.firstOrNull()
     }
 
-    override fun addBoulder(name: String, grade: Long, place: Long, description: String?, active: Boolean?, imageId: String?, userId: Long): Long {
+    override fun addBoulder(name: String, grade: Long, place: Long, description: String?, active: Boolean?, imageUrl: String?, userId: Long): Long {
         val keyHolder: KeyHolder = GeneratedKeyHolder()
         val sql = """
             INSERT INTO routes (name, grade, place, description, image_id, userId)
@@ -41,10 +40,10 @@ class BoulderRepository(
 
         val parameters = MapSqlParameterSource()
             .addValue("name", name)
-            .addValue("grade", "V? - Placeholder")
+            .addValue("grade", grade)
             .addValue("place", place)
             .addValue("description", description)
-            .addValue("imageId", imageId)
+            .addValue("imageId", imageUrl)
             .addValue("userId", userId)
 
         jdbcTemplate.update(sql, parameters, keyHolder)
@@ -120,8 +119,8 @@ class BoulderRepository(
                     id = rs.getLong("id"),
                     name = rs.getString("name"),
                     description = rs.getString("description"),
-                    grade = rs.getLong("gId"),
-                    place = rs.getLong("place"),
+                    gradeId = rs.getLong("gId"),
+                    placeId = rs.getLong("place"),
                     active = rs.getBoolean("active"),
                     image = rs.getString("image_id")
                 )

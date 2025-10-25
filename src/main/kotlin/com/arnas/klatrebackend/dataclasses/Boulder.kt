@@ -1,20 +1,23 @@
 package com.arnas.klatrebackend.dataclasses
+import org.springframework.web.multipart.MultipartFile
 
 data class Boulder (
     val id: Long,
     val name: String,
-    val grade: Long,
-    val place: Long,
+    val gradeId: Long,
+    val placeId: Long,
+    var description: String?,
     val active: Boolean,
     var image: String?,
-    var description: String?,
 )
 
-data class BoulderRequest(
+data class RouteDTO(
     val name: String,
-    val grade: Long,
-    val place: Long,
-    val description: String?
+    val gradeId: Long,
+    val placeId: Long,
+    var description: String?,
+    val active: Boolean?,
+    var image: MultipartFile?,
 )
 
 data class BoulderResponse(
