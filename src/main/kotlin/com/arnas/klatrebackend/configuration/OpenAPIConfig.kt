@@ -18,9 +18,9 @@ class OpenApiConfig {
         return OpenAPI()
             .info(
                 Info()
-                    .title("KlatreBook API")
+                    .title("Klatre API")
                     .version("1.0")
-                    .description("API documentation for KlatreBook backend")
+                    .description("API documentation for Klatre backend")
             )
             .addSecurityItem(SecurityRequirement().addList(securitySchemeName))
             .components(

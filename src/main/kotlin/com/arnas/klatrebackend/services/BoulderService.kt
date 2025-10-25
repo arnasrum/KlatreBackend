@@ -23,17 +23,6 @@ class BoulderService(
 ): BoulderServiceInterface {
 
 
-    fun getBoulder(userId: Long, boulderId: Long): ServiceResult<Boulder> {
-        val boulder = boulderRepository.getRouteById(routeId = boulderId)?: throw Exception("Boulder not found")
-        placeRepository.getPlaceById(boulder.place)?.let {
-            groupRepository.getGroupUsers(it.groupID)
-                .any { user -> user.id == userId }
-                .let { hasAccess -> if (!hasAccess) throw Exception("User has no access to this boulder") }
-        }
-        return ServiceResult(success = true, message = "Boulder retrieved successfully", data = boulder)
-    }
-
-
     override fun addBoulder(userId: Long, placeId: Long, name: String, grade: Long, description: String?, image: MultipartFile?): Long {
         val imageId = image?.let {
             return@let imageService.storeImageFile(it, userId)

@@ -14,12 +14,8 @@ class CorsConfiguration : WebMvcConfigurer {
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/**")
             .allowedOrigins(
-                "http://localhost:5173",  // Your current frontend
-                "http://localhost:3000",  // Common React dev server
-                "http://localhost:8080",  // Common alternative port
-                // Add your production domains here:
-                // "https://your-domain.com",
-                // "https://www.your-domain.com"
+                "http://localhost:5173",
+                "http://localhost:8080",
             )
             .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
             .allowedHeaders("*")
@@ -32,7 +28,6 @@ class CorsConfiguration : WebMvcConfigurer {
         val configuration = CorsConfiguration()
         configuration.allowedOrigins = listOf(
             "http://localhost:5173",
-            "http://localhost:3000",
             "http://localhost:8080"
         )
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")

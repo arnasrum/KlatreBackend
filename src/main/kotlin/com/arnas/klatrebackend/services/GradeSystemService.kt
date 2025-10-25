@@ -40,7 +40,6 @@ class GradeSystemService(
 
     override fun deleteGradeSystem(gradingSystemId: Long, groupId: Long, userId: Long): ServiceResult<Unit> {
         val userRole = groupService.getGroupUserRole(userId, groupId).data ?: return ServiceResult(success = false, errorCode = "401", message = "User is not a member of group")
-        println("User role: $userRole")
         if(!(userRole == Role.OWNER.id || userRole == Role.ADMIN.id)) return ServiceResult(success = false, errorCode = "401", message = "Only group owners and admins can delete grade systems")
         val rowsAffected = gradeSystemRepository.deleteGradingSystem(gradingSystemId)
         if(rowsAffected == 0) return ServiceResult(success = false, errorCode = "404", message = "Grade system not found")
