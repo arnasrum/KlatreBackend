@@ -59,6 +59,18 @@ class RestControllerExceptionHandler {
         return response
     }
 
+
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun handleIllegalArgumentException(
+        request: HttpServletRequest,
+        exception: RuntimeException
+    ): ResponseEntity<Map<String, Any>> {
+        val message = exception.message ?: "Bad request"
+        val response: ResponseEntity<Map<String, Any>> = ResponseEntity.status(400).body(mapOf("message" to message))
+        logHttpEvent(request, exception)
+        return response
+    }
+
     @ExceptionHandler(DataAccessException::class)
     fun handleException(
         request: HttpServletRequest,
