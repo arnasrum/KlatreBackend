@@ -1,9 +1,7 @@
 package com.arnas.klatrebackend.aspects
 
-import com.arnas.klatrebackend.repositories.BoulderRepository
 import com.arnas.klatrebackend.repositories.ClimbingSessionRepository
 import com.arnas.klatrebackend.services.AccessControlService
-import com.arnas.klatrebackend.services.PlaceService
 import org.aspectj.lang.JoinPoint
 import org.aspectj.lang.annotation.Aspect
 import org.aspectj.lang.annotation.Before
@@ -12,6 +10,8 @@ import org.springframework.stereotype.Component
 import com.arnas.klatrebackend.annotation.RequireGroupAccess
 import com.arnas.klatrebackend.dataclasses.GroupAccessSource
 import com.arnas.klatrebackend.dataclasses.Role
+import com.arnas.klatrebackend.interfaces.repositories.RouteRepositoryInterface
+import com.arnas.klatrebackend.interfaces.services.PlaceServiceInterface
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.KProperty1
 
@@ -19,8 +19,8 @@ import kotlin.reflect.KProperty1
 @Component
 class AccessControlAspect(
     private val accessControlService: AccessControlService,
-    private val placeService: PlaceService,
-    private val boulderRepository: BoulderRepository,
+    private val placeService: PlaceServiceInterface,
+    private val routeRepository: RouteRepositoryInterface,
     private val climbingSessionRepository: ClimbingSessionRepository
 ) {
 
@@ -69,9 +69,9 @@ class AccessControlAspect(
                     throw IllegalArgumentException("Parameter 'routeId' not found in method arguments")
                 }
                 val routeId = args[routeIdIndex] as Long
-                val boulder = boulderRepository.getRouteById(routeId)
+                val route = routeRepository.getRouteById(routeId)
                     ?: throw IllegalArgumentException("Boulder with ID $routeId not found")
-                val place = placeService.getPlaceById(boulder.placeId)
+                val place = placeService.getPlaceById(route.placeId)
                     ?: throw IllegalArgumentException("Place not found")
                 place.groupID
             }

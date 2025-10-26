@@ -5,6 +5,7 @@ import com.arnas.klatrebackend.dataclasses.GradingSystem
 import com.arnas.klatrebackend.dataclasses.GroupWithPlaces
 import com.arnas.klatrebackend.dataclasses.PlaceRequest
 import com.arnas.klatrebackend.dataclasses.Role
+import com.arnas.klatrebackend.dataclasses.UnauthorizedException
 import com.arnas.klatrebackend.dataclasses.User
 import com.arnas.klatrebackend.interfaces.services.GroupServiceInterface
 import org.springframework.http.HttpStatus
@@ -27,25 +28,15 @@ class GroupController(
 
     @GetMapping("")
     fun getGroups(user: User): ResponseEntity<List<GroupWithPlaces>> {
-        val serviceResult = groupService.getGroups(user.id)
-        if (!serviceResult.success) {
-            return ResponseEntity.badRequest().body(null)
-        }else if(serviceResult.data == null) {
-            return ResponseEntity.internalServerError().body(null)
-        } else if(serviceResult.data.isEmpty()) {
-            return ResponseEntity.ok(serviceResult.data)
-        }
-        return ResponseEntity(serviceResult.data, HttpStatus.ACCEPTED)
+        val groups = groupService.getGroups(user.id)
+        return ResponseEntity(groups, HttpStatus.OK)
     }
 
     @PostMapping("")
     fun addGroup(@RequestBody requestBody: AddGroupRequest, user: User): ResponseEntity<String> {
         requestBody.personal = false
-        val serviceResult = groupService.addGroup(user.id, requestBody)
-        if (!serviceResult.success) {
-            return ResponseEntity.badRequest().body("Something went wrong when adding group")
-        }
-        return ResponseEntity.ok(serviceResult.message ?: "Group added successfully")
+        groupService.addGroup(user.id, requestBody)
+        return ResponseEntity.ok("Group added successfully")
     }
 
     @PostMapping("/place")
@@ -56,7 +47,7 @@ class GroupController(
         @RequestParam(required = false) description: String?
     ): ResponseEntity<String> {
         val placeRequest = PlaceRequest(groupId = groupID, name = name, description = description)
-        groupService.addPlaceToGroup(groupID, placeRequest)
+        groupService.addPlaceToGroup(user.id, groupID, placeRequest)
         return ResponseEntity.ok("Place added successfully")
     }
 
@@ -69,10 +60,7 @@ class GroupController(
     @DeleteMapping("")
     fun deleteGroup(user: User, @RequestBody requestBody: Map<String, String>): ResponseEntity<String> {
         val groupID = requestBody["groupID"]?.toLong() ?: return ResponseEntity.badRequest().body("GroupID is required")
-        val serviceResult = groupService.deleteGroup(user.id, groupID)
-        if(!serviceResult.success) {
-            return ResponseEntity.internalServerError().body(serviceResult.message)
-        }
+        groupService.deleteGroup(user.id, groupID)
         return ResponseEntity.ok("Group deleted successfully")
     }
 
@@ -90,44 +78,46 @@ class GroupController(
 
     @GetMapping("/uuid/{uuid}")
     fun getGroupById(@PathVariable uuid: String, user: User): ResponseEntity<Any> {
-        val serviceResult = groupService.getGroupByUuid(uuid)
-        if(!serviceResult.success) return ResponseEntity.badRequest().body(mapOf("message" to serviceResult.message))
-        return ResponseEntity.ok(mapOf("data" to serviceResult.data, "message" to serviceResult.message))
+        val group = groupService.getGroupByUuid(uuid)
+        return ResponseEntity.ok(mapOf("data" to group, "message" to "Group retried successfully"))
     }
 
     @GetMapping("/users")
     fun getUsersInGroup(@RequestParam("groupID") groupID: Long, user: User): ResponseEntity<Any> {
-        if(groupService.getGroupUserRole(user.id, groupID).data == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not a member of group")
-        val result = groupService.getUsersInGroup(groupID)
-        if(!result.success) return ResponseEntity.badRequest().body(result.message)
-        return ResponseEntity.ok(result.data)
+        val users = groupService.getUsersInGroup(user.id, groupID)
+        return ResponseEntity.ok(users)
     }
 
     @PutMapping("/users/permissions")
-    fun changeUserPermissions(@RequestParam(required = true) userID: Long,
-                              @RequestParam(required = true) groupID: Long,
-                              @RequestParam(required = true) role: Int,
-                              user: User): ResponseEntity<Any>
-    {
-        val userRole = groupService.getGroupUserRole(user.id, groupID).data?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("errorMessage" to "You are not a member of this group"))
-        if(!(userRole == Role.ADMIN.id || userRole == Role.OWNER.id)) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("errorMessage" to "User is not an admin of group"))
-        val originalUserRole = groupService.getGroupUserRole(userID, groupID).data?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body({"errorMessage" to "User is not a member of group"})
-        if(userRole >= originalUserRole) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mapOf("errorMessage" to "User has already the same or higher role"))
-        groupService.changeGroupUserRole(userID, role, groupID)
+    fun changeUserPermissions(
+        @RequestParam(required = true) userID: Long,
+        @RequestParam(required = true) groupID: Long,
+        @RequestParam(required = true) role: Int,
+        user: User
+    ): ResponseEntity<Any> {
+        try {
+            groupService.changeGroupUserRole(user.id, userID,  role, groupID)
+        } catch (e: UnauthorizedException) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("errorMessage" to e.message))
+        } catch (e: RuntimeException) {
+            return ResponseEntity.badRequest().body(mapOf("errorMessage" to e.message))
+        }
         return ResponseEntity.ok().body( mapOf("success" to true, "message" to "User role updated successfully") )
     }
 
     @DeleteMapping("/users/kick")
-    fun kickUserFromGroup(@RequestParam(required = true) userID: Long,
-                          @RequestParam(required = true) groupID: Long,
-                          user: User): ResponseEntity<Any> {
-
-        val userRole = groupService.getGroupUserRole(user.id, groupID).data?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("errorMessage" to "You are not a member of this group"))
-        if(!(userRole == Role.ADMIN.id || userRole == Role.OWNER.id)) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("errorMessage" to "User is not an admin of group"))
-        val originalUserRole = groupService.getGroupUserRole(userID, groupID).data?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body({"errorMessage" to "User is not a member of group"})
-        if(userRole >= originalUserRole) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mapOf("errorMessage" to "User has already the same or higher role"))
-        val result = groupService.removeUserFromGroup(userID, groupID)
-        if(!result.success) return ResponseEntity.badRequest().body(result.message)
-        return ResponseEntity.ok().body( mapOf("success" to true, "message" to result.message) )
+    fun kickUserFromGroup(
+        @RequestParam(required = true) userID: Long,
+        @RequestParam(required = true) groupID: Long,
+        user: User)
+    : ResponseEntity<Any> {
+        try {
+            groupService.kickUserFromGroup(user.id, userID, groupID)
+        } catch (e: UnauthorizedException) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("errorMessage" to e.message))
+        } catch (e: RuntimeException) {
+            return ResponseEntity.badRequest().body(mapOf("errorMessage" to e.message))
+        }
+        return ResponseEntity.ok().body( "message" to "User kicked successfully")
     }
 }

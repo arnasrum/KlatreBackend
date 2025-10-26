@@ -21,11 +21,8 @@ class PlaceController(
 
     @GetMapping("")
     fun getPlaces(@RequestParam groupID: Long, user: User): ResponseEntity<out Any> {
-        val roleServiceResult = groupService.getGroupUserRole(user.id, groupID)
-        if(!roleServiceResult.success) return ResponseEntity.badRequest().body(roleServiceResult.message)
         val result = placeService.getPlacesByGroupId(groupID, user.id)
-        if(!result.success) return ResponseEntity.badRequest().body(result.message)
-        return ResponseEntity.ok(result.data)
+        return ResponseEntity.ok(result)
     }
 
     @PutMapping("")
@@ -38,9 +35,8 @@ class PlaceController(
     ): ResponseEntity<out Any> {
         //println("placeId: $placeId, name: $name, description: $description, gradingSystemId: $gradingSystemId")
         val updateObject = PlaceUpdateDTO(placeId, name, description, gradingSystemId)
-        val result = placeService.updatePlace(user.id, updateObject)
-        if(!result.success) return ResponseEntity.badRequest().body(mapOf("message" to result.message))
-        return ResponseEntity.ok(mapOf("message" to result.message))
+        placeService.updatePlace(user.id, updateObject)
+        return ResponseEntity.ok(mapOf("message" to "Place updated successfully"))
     }
 
 

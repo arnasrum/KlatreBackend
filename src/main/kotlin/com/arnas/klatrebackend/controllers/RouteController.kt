@@ -2,7 +2,7 @@ package com.arnas.klatrebackend.controllers
 
 import com.arnas.klatrebackend.dataclasses.RouteDTO
 import com.arnas.klatrebackend.dataclasses.User
-import com.arnas.klatrebackend.interfaces.services.BoulderServiceInterface
+import com.arnas.klatrebackend.interfaces.services.RouteServiceInterface
 import com.arnas.klatrebackend.services.AccessControlService
 import com.arnas.klatrebackend.services.PlaceService
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile
 @Tag(name = "Route", description = "Route CRUD operations")
 @RequestMapping("/boulders")
 class RouteController(
-    private val boulderService: BoulderServiceInterface,
+    private val boulderService: RouteServiceInterface,
     private val placeService: PlaceService,
     private val accessControlService: AccessControlService,
 ) {
@@ -41,7 +41,7 @@ class RouteController(
                 HttpStatus.UNAUTHORIZED
             )
         }
-        val pagedBoulders = boulderService.getBouldersByPlace(placeId, page, limit)
+        val pagedBoulders = boulderService.getRoutesByPlace(placeId, page, limit)
         return ResponseEntity.ok().body(pagedBoulders)
 
     }
@@ -55,7 +55,7 @@ class RouteController(
         @RequestParam(required = false) image: MultipartFile?,
         user: User
     ): ResponseEntity<out Any> {
-        boulderService.addBoulder(user.id, RouteDTO(name, grade, placeID, description, true, image))
+        boulderService.addRoute(user.id, RouteDTO(name, grade, placeID, description, true, image))
         return ResponseEntity(HttpStatus.OK)
     }
 
@@ -77,7 +77,7 @@ class RouteController(
             description?.let { put("description", it) }
             active?.let { put("active", it.toString()) }
         }
-        boulderService.updateBoulder(routeId, userID, requestBody, image)
+        boulderService.updateRoute(routeId, userID, requestBody, image)
         return ResponseEntity.ok(mapOf("message" to "Boulder updated successfully"))
     }
 

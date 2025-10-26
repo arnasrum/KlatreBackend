@@ -6,17 +6,16 @@ import com.arnas.klatrebackend.dataclasses.Group
 import com.arnas.klatrebackend.dataclasses.GroupUser
 import com.arnas.klatrebackend.dataclasses.GroupWithPlaces
 import com.arnas.klatrebackend.dataclasses.PlaceRequest
-import com.arnas.klatrebackend.dataclasses.ServiceResult
 
 interface GroupServiceInterface {
-    fun getGroups(userId: Long): ServiceResult<List<GroupWithPlaces>>
-    fun addGroup(userId: Long, request: AddGroupRequest): ServiceResult<Long>
-    fun addPlaceToGroup(groupId: Long, placeRequest: PlaceRequest): ServiceResult<Long>
-    fun deleteGroup(userId: Long, groupId: Long): ServiceResult<Unit>
-    fun getGroupUserRole(userId: Long, groupId: Long): ServiceResult<Int?>
-    fun changeGroupUserRole(userId: Long, newRoleId: Int, groupId: Long): ServiceResult<Unit>
-    fun removeUserFromGroup(userId: Long, groupId: Long): ServiceResult<Unit>
+    fun getGroups(userId: Long): List<GroupWithPlaces>
+    fun addGroup(userId: Long, request: AddGroupRequest): Long
+    fun addPlaceToGroup(userId: Long, groupId: Long, placeRequest: PlaceRequest): Long
+    fun deleteGroup(userId: Long, groupId: Long)
+    fun getGroupUserRole(userId: Long, groupId: Long): Int?
+    fun changeGroupUserRole(userId: Long, targetUserId: Long, newRoleId: Int, groupId: Long)
+    fun kickUserFromGroup(userId: Long, targetUserId: Long, groupId: Long)
     fun getGradingSystemsInGroup(groupId: Long): List<GradingSystem>
-    fun getUsersInGroup(groupId: Long): ServiceResult<List<GroupUser>>
-    fun getGroupByUuid(groupUuid: String): ServiceResult<Group>
+    fun getUsersInGroup(userId: Long, groupId: Long): List<GroupUser>
+    fun getGroupByUuid(groupUuid: String): Group
 }

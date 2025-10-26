@@ -15,17 +15,15 @@ import java.net.http.HttpResponse
 class LoginService(
     private val userService: UserService,
     private val jwtService: JwtService,
+    @param:Value("\${GOOGLE_CLIENT_ID}") private val googleClientId: String,
     @param:Value("\${GOOGLE_CLIENT_SECRET}") private val googleClientSecret: String
 ): LoginServiceInterface {
-
-    @Value("\${GOOGLE_CLIENT_ID}")
-    private lateinit var GOOGLE_CLIENT_ID: String
 
     override fun getJWTToken(code: String, codeVerifier: String?): String? {
 
         try {
             val json = JsonObject()
-            json.addProperty("client_id", GOOGLE_CLIENT_ID)
+            json.addProperty("client_id", googleClientId)
             json.addProperty("client_secret", googleClientSecret)
             json.addProperty("grant_type", "authorization_code")
             json.addProperty("code", code)

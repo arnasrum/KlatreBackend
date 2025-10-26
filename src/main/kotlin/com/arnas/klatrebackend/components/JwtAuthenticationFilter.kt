@@ -25,25 +25,21 @@ class JwtAuthenticationFilter(
     ) {
         try {
             val jwt = extractJwtFromCookie(request)
-            
             if (jwt != null && jwtService.validateToken(jwt)) {
                 val userId = jwtService.extractUserId(jwt)
                 
                 if (userId != null && SecurityContextHolder.getContext().authentication == null) {
-                    val serviceResult = userService.getUserById(userId.toLong())
-                    val user = serviceResult.data
-                    if (!serviceResult.success || user != null) {
-                        val authentication = UsernamePasswordAuthenticationToken(
-                            user, null, emptyList()
-                        )
-                        authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
-                        SecurityContextHolder.getContext().authentication = authentication
-                        
-                        if (shouldRefreshToken(jwt)) {
-                            val newJwt = jwtService.refreshToken(jwt)
-                            if (newJwt != null) {
-                                setJwtCookie(response, newJwt)
-                            }
+                    val user = userService.getUserById(userId.toLong())
+                    val authentication = UsernamePasswordAuthenticationToken(
+                        user, null, emptyList()
+                    )
+                    authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
+                    SecurityContextHolder.getContext().authentication = authentication
+
+                    if (shouldRefreshToken(jwt)) {
+                        val newJwt = jwtService.refreshToken(jwt)
+                        if (newJwt != null) {
+                            setJwtCookie(response, newJwt)
                         }
                     }
                 }

@@ -1,9 +1,8 @@
 package com.arnas.klatrebackend.services
 
 import com.arnas.klatrebackend.dataclasses.Image
-import com.arnas.klatrebackend.dataclasses.ServiceResult
+import com.arnas.klatrebackend.interfaces.repositories.ImageRepositoryInterface
 import com.arnas.klatrebackend.interfaces.services.ImageServiceInterface
-import com.arnas.klatrebackend.repositories.ImageRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -15,7 +14,7 @@ import kotlin.io.path.exists
 
 @Service
 class ImageService(
-    val imageRepository: ImageRepository,
+    val imageRepository: ImageRepositoryInterface,
 ): ImageServiceInterface {
 
     @Value("\${app.image.upload.dir}")

@@ -2,8 +2,8 @@ package com.arnas.klatrebackend.services
 
 import com.arnas.klatrebackend.dataclasses.ServiceResult
 import com.arnas.klatrebackend.dataclasses.User
+import com.arnas.klatrebackend.interfaces.repositories.UserRepositoryInterface
 import com.arnas.klatrebackend.interfaces.services.UserServiceInterface
-import com.arnas.klatrebackend.repositories.UserRepository
 import org.json.JSONObject
 import org.springframework.stereotype.Service
 import java.net.URI
@@ -13,16 +13,15 @@ import java.net.http.HttpResponse
 
 @Service
 class UserService(
-    private var userRepository: UserRepository,
-    private val groupService: GroupService,
+    private var userRepository: UserRepositoryInterface,
 ): UserServiceInterface {
 
     private val client: HttpClient = HttpClient.newBuilder().build()
 
-    override fun getUserById(userId: Long): ServiceResult<User> {
+    override fun getUserById(userId: Long): User {
         val user = userRepository.getUserById(userId) ?:
             throw RuntimeException("User not found")
-        return ServiceResult(success = true, data = user, message = "User retrieved successfully")
+        return user
     }
 
 

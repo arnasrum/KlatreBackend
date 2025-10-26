@@ -10,17 +10,11 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
-import java.time.format.DateTimeFormatterBuilder
 
 @Repository
 class ClimbingSessionRepository(
     private val jdbcTemplate: NamedParameterJdbcTemplate,
 ) {
-
-    // Flexible date formatter that accepts both "2025-10-4" and "2025-10-04"
-    private val dateFormatter = DateTimeFormatterBuilder()
-        .appendPattern("yyyy-M-d-h:m")
-        .toFormatter()
 
     fun getActiveSession(groupId: Long, userId: Long): ActiveSession? {
         val sql = "SELECT * FROM climbing_sessions WHERE group_id = :groupId AND user_id = :userId AND active = true"

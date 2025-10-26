@@ -1,7 +1,7 @@
 package com.arnas.klatrebackend.dataclasses
 import org.springframework.web.multipart.MultipartFile
 
-data class Boulder (
+data class Route (
     val id: Long,
     val name: String,
     val gradeId: Long,
@@ -20,8 +20,8 @@ data class RouteDTO(
     var image: MultipartFile?,
 )
 
-data class BoulderResponse(
-    val boulders: List<Boulder>,
+data class RouteResponse(
+    val boulders: List<Route>,
     val page: Int,
     val limit: Int,
     val activeBouldersCount: Int,

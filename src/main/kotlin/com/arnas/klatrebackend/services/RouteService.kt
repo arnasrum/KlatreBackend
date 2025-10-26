@@ -1,34 +1,34 @@
 package com.arnas.klatrebackend.services
 
 import com.arnas.klatrebackend.annotation.RequireGroupAccess
-import com.arnas.klatrebackend.dataclasses.BoulderResponse
 import com.arnas.klatrebackend.dataclasses.GroupAccessSource
 import com.arnas.klatrebackend.dataclasses.Role
 import com.arnas.klatrebackend.dataclasses.RouteDTO
-import com.arnas.klatrebackend.interfaces.repositories.BoulderRepositoryInterface
+import com.arnas.klatrebackend.dataclasses.RouteResponse
+import com.arnas.klatrebackend.interfaces.repositories.RouteRepositoryInterface
 import com.arnas.klatrebackend.interfaces.repositories.GroupRepositoryInterface
 import com.arnas.klatrebackend.interfaces.repositories.PlaceRepositoryInterface
-import com.arnas.klatrebackend.interfaces.services.BoulderServiceInterface
+import com.arnas.klatrebackend.interfaces.services.RouteServiceInterface
 import com.arnas.klatrebackend.interfaces.services.ImageServiceInterface
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
 @Service
 class RouteService(
-    private val boulderRepository: BoulderRepositoryInterface,
+    private val boulderRepository: RouteRepositoryInterface,
     private val imageService: ImageServiceInterface,
     private val groupRepository: GroupRepositoryInterface,
     private val placeRepository: PlaceRepositoryInterface,
     private val accessControlService: AccessControlService,
-): BoulderServiceInterface {
+): RouteServiceInterface {
 
 
     @RequireGroupAccess(minRole = Role.ADMIN, resolveGroupFrom = GroupAccessSource.FROM_PLACE, sourceObjectParam = "routeDTO")
-    override fun addBoulder(userId: Long, routeDTO: RouteDTO): Long {
+    override fun addRoute(userId: Long, routeDTO: RouteDTO): Long {
         val imageId = routeDTO.image?.let {
             return@let imageService.storeImageFile(it, userId)
         }
-        val boulderID = boulderRepository.addBoulder(
+        val boulderID = boulderRepository.addRoute(
             name = routeDTO.name,
             grade = routeDTO.gradeId,
             place = routeDTO.placeId,
@@ -40,7 +40,7 @@ class RouteService(
         return boulderID
     }
 
-    override fun updateBoulder(routeId: Long, userId: Long, boulderInfo: Map<String, String>, image: MultipartFile?) {
+    override fun updateRoute(routeId: Long, userId: Long, boulderInfo: Map<String, String>, image: MultipartFile?) {
 
         val oldRoute = boulderRepository.getRouteById(routeId)
             ?: throw Exception("Boulder with ID $routeId not found, cannot update it.")
@@ -60,23 +60,23 @@ class RouteService(
             }
             return@let imageService.storeImageFile(image,  userId)
         }
-        val rowAffected = boulderRepository.updateBoulder(oldRoute.id, name, grade, place, description, active, newImageId)
+        val rowAffected = boulderRepository.updateRoute(oldRoute.id, name, grade, place, description, active, newImageId)
         if(rowAffected <= 0) throw Exception("Failed to update boulder")
     }
-    override fun deleteBoulder(routeId: Long){
+    override fun deleteRoute(routeId: Long){
         val route = boulderRepository.getRouteById(routeId)?: throw Exception("Boulder not found")
         route.image?.let { imageService.deleteImage(it) }
-        boulderRepository.deleteBoulder(routeId)
+        boulderRepository.deleteRoute(routeId)
    }
 
-    override fun getBouldersByPlace(placeId: Long, page: Int, limit: Int): BoulderResponse {
+    override fun getRoutesByPlace(placeId: Long, page: Int, limit: Int): RouteResponse {
         val pagingEnabled = limit > 0
-        boulderRepository.getBouldersByPlace(placeId, page, limit + 1, pagingEnabled).let {
+        boulderRepository.getRoutesByPlace(placeId, page, limit + 1, pagingEnabled).let {
             val hasMore = it.size > limit
-            val numRetired = boulderRepository.getNumBouldersInPlace(placeId, false)
-            val numActive = boulderRepository.getNumBouldersInPlace(placeId, true)
-            val boulderResponse = BoulderResponse(it, page, limit, numActive, numRetired,  hasMore)
-            return boulderResponse
+            val numRetired = boulderRepository.getNumRoutesInPlace(placeId, false)
+            val numActive = boulderRepository.getNumRoutesInPlace(placeId, true)
+            val routeResponse = RouteResponse(it, page, limit, numActive, numRetired,  hasMore)
+            return routeResponse
         }
     }
 }

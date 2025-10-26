@@ -7,7 +7,8 @@ import com.arnas.klatrebackend.dataclasses.PlaceWithGrades
 import com.arnas.klatrebackend.dataclasses.ServiceResult
 
 interface PlaceServiceInterface {
-    fun getPlacesByGroupId(groupId: Long, userId: Long): ServiceResult<List<PlaceWithGrades>>
-    fun updatePlace(userId: Long, placeUpdateDTO: PlaceUpdateDTO): ServiceResult<Unit>
-    fun updatePlaceGradingSystem(userId: Long, placeId: Long, newGradingSystemId: Long): ServiceResult<Unit>
+    fun getPlaceById(placeId: Long): Place?
+    fun getPlacesByGroupId(groupId: Long, userId: Long): List<PlaceWithGrades>
+    fun updatePlace(userId: Long, placeUpdateDTO: PlaceUpdateDTO)
+    fun updatePlaceGradingSystem(userId: Long, placeId: Long, newGradingSystemId: Long)
 }

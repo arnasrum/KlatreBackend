@@ -1,11 +1,12 @@
 package com.arnas.klatrebackend.services
 
+import com.arnas.klatrebackend.annotation.RequireGroupAccess
 import com.arnas.klatrebackend.dataclasses.GradingSystemWithGrades
 import com.arnas.klatrebackend.dataclasses.Place
 import com.arnas.klatrebackend.dataclasses.PlaceUpdateDTO
 import com.arnas.klatrebackend.dataclasses.PlaceWithGrades
 import com.arnas.klatrebackend.dataclasses.ServiceResult
-import com.arnas.klatrebackend.interfaces.repositories.BoulderRepositoryInterface
+import com.arnas.klatrebackend.interfaces.repositories.RouteRepositoryInterface
 import com.arnas.klatrebackend.interfaces.repositories.GradingSystemRepositoryInterface
 import com.arnas.klatrebackend.interfaces.repositories.PlaceRepositoryInterface
 import com.arnas.klatrebackend.interfaces.services.GroupServiceInterface
@@ -18,32 +19,31 @@ import kotlin.math.min
 @Service
 class PlaceService(
     private val placeRepository: PlaceRepositoryInterface,
-    private val groupService: GroupServiceInterface,
     private val gradingSystemRepository: GradingSystemRepositoryInterface,
-    private val boulderRepository: BoulderRepositoryInterface,
+    private val boulderRepository: RouteRepositoryInterface,
 ): PlaceServiceInterface {
 
 
-    fun getPlaceById(placeId: Long): Place? {
+    override fun getPlaceById(placeId: Long): Place? {
         return placeRepository.getPlaceById(placeId)
     }
 
-    override fun getPlacesByGroupId(groupId: Long, userId: Long): ServiceResult<List<PlaceWithGrades>> {
-        return try {
-            groupService.getGroupUserRole(userId, groupId).data
-                ?: return ServiceResult(success = false, message = "User is not a member of group", data = null)
-            val places = placeRepository.getPlacesByGroupId(groupId)
-            val test = places.map {
-                PlaceWithGrades(it.id, it.name, it.description, it.groupID, GradingSystemWithGrades(it.gradingSystem,
-                    gradingSystemRepository.getGradesBySystemId(it.gradingSystem)))
-            }
-            ServiceResult(success = true, message = "Places retrieved successfully", data = test)
-        } catch (e: Exception) {
-            ServiceResult(success = false, message = "Error retrieving places: ${e.message}", data = null)
+    @RequireGroupAccess
+    override fun getPlacesByGroupId(groupId: Long, userId: Long): List<PlaceWithGrades> {
+        val places = placeRepository.getPlacesByGroupId(groupId)
+        return places.map {
+            PlaceWithGrades(
+                it.id,
+                it.name,
+                it.description,
+                it.groupID,
+                GradingSystemWithGrades(it.gradingSystem, gradingSystemRepository.getGradesBySystemId(it.gradingSystem))
+            )
         }
     }
 
-    override fun updatePlace(userId: Long, placeUpdateDTO: PlaceUpdateDTO): ServiceResult<Unit> {
+    @Transactional
+    override fun updatePlace(userId: Long, placeUpdateDTO: PlaceUpdateDTO) {
         val place = placeRepository.getPlaceById(placeUpdateDTO.placeId)
         place?: throw RuntimeException("Place not found")
         val rowAffected = placeRepository.updatePlace(placeUpdateDTO)
@@ -53,14 +53,13 @@ class PlaceService(
         placeUpdateDTO.gradingSystem?.let {
             updatePlaceGradingSystem(userId, placeUpdateDTO.placeId, it)
         }
-        return ServiceResult(success = true, message = "Place updated successfully")
     }
 
 
     @Transactional
-    override fun updatePlaceGradingSystem(userId: Long, placeId: Long, newGradingSystemId: Long): ServiceResult<Unit> {
-        val place = placeRepository.getPlaceById(placeId)?: return ServiceResult(success = false, message = "Place not found", data = null)
-        val boulders = boulderRepository.getBouldersByPlace(placeId, 0, 0, false)
+    override fun updatePlaceGradingSystem(userId: Long, placeId: Long, newGradingSystemId: Long) {
+        val place = placeRepository.getPlaceById(placeId)?: throw RuntimeException("Place not found")
+        val boulders = boulderRepository.getRoutesByPlace(placeId, 0, 0, false)
         val oldGradingSystem = gradingSystemRepository.getGradesBySystemId(place.gradingSystem)
         val newGradingSystem = gradingSystemRepository.getGradesBySystemId(newGradingSystemId)
         val newGradeValues = newGradingSystem.map { it.numericalValue }
@@ -80,7 +79,7 @@ class PlaceService(
             val newGrade = newGradingSystem.find { it.numericalValue == newGradeNumericalValue }
                 ?: throw RuntimeException("New grade not found for numerical value $newGradeNumericalValue")
 
-            val boulderUpdateResult = boulderRepository.updateBoulder(
+            val boulderUpdateResult = boulderRepository.updateRoute(
                 grade = newGrade.id,
                 routeId = boulder.id,
                 name = null,
@@ -94,7 +93,6 @@ class PlaceService(
                 throw RuntimeException("Failed to update boulder ${boulder.id} grade")
             }
         }
-        return ServiceResult(success = true, message = "Grading system successfully changed")
     }
 
     private fun findClosestInt(definedInt: Int, numbers: List<Int>): Int? {

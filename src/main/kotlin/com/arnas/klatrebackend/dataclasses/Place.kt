@@ -24,11 +24,6 @@ data class PlaceWithGrades(
     val gradingSystem: GradingSystemWithGrades
 )
 
-data class PlaceWithBoulders(
-    val place: Place,
-    val boulders: List<Boulder>
-)
-
 data class PlaceRequest(
     val groupId: Long,
     val name: String,

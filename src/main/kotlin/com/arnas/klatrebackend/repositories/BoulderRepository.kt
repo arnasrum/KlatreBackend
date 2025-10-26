@@ -1,7 +1,7 @@
 package com.arnas.klatrebackend.repositories
 
-import com.arnas.klatrebackend.dataclasses.Boulder
-import com.arnas.klatrebackend.interfaces.repositories.BoulderRepositoryInterface
+import com.arnas.klatrebackend.dataclasses.Route
+import com.arnas.klatrebackend.interfaces.repositories.RouteRepositoryInterface
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
@@ -9,16 +9,16 @@ import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.jdbc.support.KeyHolder
 
 @Repository
-class BoulderRepository(
+class RouteRepository(
     private val jdbcTemplate: NamedParameterJdbcTemplate
-): BoulderRepositoryInterface {
+): RouteRepositoryInterface {
 
 
-    override fun getRouteById(routeId: Long): Boulder? {
+    override fun getRouteById(routeId: Long): Route? {
         val boulder = jdbcTemplate.query("SELECT * FROM routes WHERE id = :routeId",
             mapOf("routeId" to routeId)
         ) { rs, _ ->
-            Boulder(
+            Route(
                 id = rs.getLong("id"),
                 name = rs.getString("name"),
                 description = rs.getString("description"),
@@ -31,7 +31,7 @@ class BoulderRepository(
         return boulder.firstOrNull()
     }
 
-    override fun addBoulder(name: String, grade: Long, place: Long, description: String?, active: Boolean?, imageUrl: String?, userId: Long): Long {
+    override fun addRoute(name: String, grade: Long, place: Long, description: String?, active: Boolean?, imageUrl: String?, userId: Long): Long {
         val keyHolder: KeyHolder = GeneratedKeyHolder()
         val sql = """
             INSERT INTO routes (name, grade, place, description, image_id, userId)
@@ -52,7 +52,7 @@ class BoulderRepository(
         return (keys["id"] as Number).toLong()
     }
 
-    override fun updateBoulder(routeId: Long, name: String?, grade: Long?, place: Long?, description: String?, active: Boolean?, imageId: String?): Int {
+    override fun updateRoute(routeId: Long, name: String?, grade: Long?, place: Long?, description: String?, active: Boolean?, imageId: String?): Int {
 
         val updates = mutableListOf<String>()
         val parameters = mutableMapOf<String, Any>("routeId" to routeId)
@@ -90,7 +90,7 @@ class BoulderRepository(
         return rowsAffected
     }
 
-    override fun deleteBoulder(routeId: Long): Int {
+    override fun deleteRoute(routeId: Long): Int {
         val rowAffected = jdbcTemplate.update("DELETE FROM routes WHERE id=:routeId",
             MapSqlParameterSource()
                 .addValue("routeId", routeId)
@@ -99,9 +99,9 @@ class BoulderRepository(
     }
 
 
-    override fun getBouldersByPlace(placeId: Long, page: Int, limit: Int, pagingEnabled: Boolean): List<Boulder> {
+    override fun getRoutesByPlace(placeId: Long, page: Int, limit: Int, pagingEnabled: Boolean): List<Route> {
 
-        val boulders: MutableList<Boulder> = mutableListOf()
+        val routes: MutableList<Route> = mutableListOf()
         val sql = "SELECT b.id, b.name, b.description, g.id AS gId, b.place, b.active AS active, b.image_id AS image_id " +
                 "FROM routes AS b INNER JOIN places AS p ON b.place = p.id " +
                 "INNER JOIN grades AS g ON g.system_id = p.grading_system_id " +
@@ -114,8 +114,8 @@ class BoulderRepository(
             MapSqlParameterSource()
                 .addValue("placeID", placeId)
         ) { rs, _ ->
-            boulders.add(
-                Boulder(
+            routes.add(
+                Route(
                     id = rs.getLong("id"),
                     name = rs.getString("name"),
                     description = rs.getString("description"),
@@ -126,10 +126,10 @@ class BoulderRepository(
                 )
             )
         }
-        return boulders
+        return routes
     }
 
-    override fun getNumBouldersInPlace(placeId: Long, countActive: Boolean): Int {
+    override fun getNumRoutesInPlace(placeId: Long, countActive: Boolean): Int {
         val sql = "SELECT COUNT(*) FROM routes WHERE place=:placeID AND active=:active"
         val result = jdbcTemplate.queryForObject(
             sql,
