@@ -5,7 +5,6 @@ import com.arnas.klatrebackend.dataclasses.ActiveSession
 import com.arnas.klatrebackend.dataclasses.ClimbingSessionDTO
 import com.arnas.klatrebackend.dataclasses.ClimbingSessionDisplay
 import com.arnas.klatrebackend.dataclasses.GroupAccessSource
-import com.arnas.klatrebackend.dataclasses.Role
 import com.arnas.klatrebackend.dataclasses.RouteAttempt
 import com.arnas.klatrebackend.dataclasses.RouteAttemptDTO
 import com.arnas.klatrebackend.dataclasses.RouteAttemptDisplay
@@ -14,6 +13,7 @@ import com.arnas.klatrebackend.dataclasses.UpdateAttemptRequest
 import com.arnas.klatrebackend.interfaces.repositories.GradingSystemRepositoryInterface
 import com.arnas.klatrebackend.interfaces.repositories.PlaceRepositoryInterface
 import com.arnas.klatrebackend.interfaces.repositories.RouteRepositoryInterface
+import com.arnas.klatrebackend.interfaces.services.ClimbingSessionServiceInterface
 import com.arnas.klatrebackend.repositories.ClimbingSessionRepository
 import org.springframework.stereotype.Service
 import java.lang.RuntimeException
@@ -25,16 +25,16 @@ class ClimbingSessionService(
     private val gradingSystemRepository: GradingSystemRepositoryInterface,
     private val routeRepository: RouteRepositoryInterface,
     private val accessControlService: AccessControlService,
-)  {
+): ClimbingSessionServiceInterface {
 
-    @RequireGroupAccess(minRole = Role.ADMIN)
-    fun getSessionsByGroup(groupId: Long, userId: Long): ServiceResult<ActiveSession> {
+    @RequireGroupAccess
+    override fun getSessionsByGroup(groupId: Long, userId: Long): ServiceResult<ActiveSession> {
         val session = climbingSessionRepository.getActiveSession(groupId, userId)
         return ServiceResult(success = true, data = session, message = "Sessions fetched successfully")
     }
 
     @RequireGroupAccess
-    fun uploadSession(userId: Long, climbingSession: ClimbingSessionDTO): ServiceResult<Unit> {
+    override fun uploadSession(userId: Long, climbingSession: ClimbingSessionDTO): ServiceResult<Unit> {
         val groupId = climbingSession.groupId
         accessControlService.getUserGroupRole(userId, groupId)
             ?: throw RuntimeException("User is not a member of group")
@@ -43,7 +43,7 @@ class ClimbingSessionService(
     }
 
     @RequireGroupAccess
-    fun openSession(groupId: Long, placeId: Long, userId: Long): ServiceResult<ActiveSession> {
+    override fun openSession(groupId: Long, placeId: Long, userId: Long): ServiceResult<ActiveSession> {
         accessControlService.getUserGroupRole(userId, groupId)
             ?: throw RuntimeException("User is not a member of group")
         val activeSessionId = climbingSessionRepository.openActiveSession(userId, groupId, placeId)
@@ -57,7 +57,7 @@ class ClimbingSessionService(
     }
 
     @RequireGroupAccess(resolveGroupFrom = GroupAccessSource.FROM_SESSION)
-    fun closeSession(sessionId: Long, save: Boolean, userId: Long): ServiceResult<Unit> {
+    override fun closeSession(sessionId: Long, save: Boolean, userId: Long): ServiceResult<Unit> {
         val session = climbingSessionRepository.getSessionById(sessionId) ?:
             throw Exception("Session with ID $sessionId not found, cannot close it.")
         session.userId == userId || throw Exception("User with ID $userId has no access to this session.")
@@ -70,7 +70,7 @@ class ClimbingSessionService(
         if(rowsAffected <= 0) throw Exception("Session with ID $sessionId not found, cannot close it.")
         return ServiceResult(success = true, message = "Session closed successfully")
     }
-    fun addRouteAttempt(activeSessionId: Long, userId: Long, routeAttempt: RouteAttemptDTO): ServiceResult<RouteAttemptDisplay> {
+    override fun addRouteAttempt(activeSessionId: Long, userId: Long, routeAttempt: RouteAttemptDTO): ServiceResult<RouteAttemptDisplay> {
         val activeSession = climbingSessionRepository.getActiveSession(activeSessionId) ?:
             throw Exception("Session with ID $activeSessionId not found, cannot add route attempt.")
         activeSession.userId == userId || throw Exception("User with ID $userId has no access to this session.")
@@ -79,13 +79,13 @@ class ClimbingSessionService(
         return ServiceResult(success = true, message = "Test", data = attemptDisplay)
     }
 
-    fun removeRouteAttempt(attemptId: Long, userId: Long): ServiceResult<Unit> {
+    override fun removeRouteAttempt(attemptId: Long, userId: Long): ServiceResult<Unit> {
         val rowsAffected = climbingSessionRepository.deleteRouteAttempt(attemptId)
         if(rowsAffected <= 0) throw Exception("Route attempt with ID $attemptId not found, cannot remove it.")
         return ServiceResult(success = true, message = "Route attempt removed successfully")
     }
 
-    fun getRouteAttempts(sessionId: Long): ServiceResult<List<RouteAttemptDisplay>> {
+    override fun getRouteAttempts(sessionId: Long): ServiceResult<List<RouteAttemptDisplay>> {
         val routeAttempts = climbingSessionRepository.getRouteAttemptsBySessionId(sessionId)
         val routeDisplays = routeAttempts.map {
             return@map routeAttemptToDisplay(it)
@@ -93,13 +93,13 @@ class ClimbingSessionService(
         return ServiceResult(success = true, data = routeDisplays, message = "Route attempts fetched successfully")
     }
 
-    fun updateRouteAttempt(userId: Long, routeAttempt: UpdateAttemptRequest): ServiceResult<Unit> {
+    override fun updateRouteAttempt(userId: Long, routeAttempt: UpdateAttemptRequest): ServiceResult<Unit> {
         val rowAffected = climbingSessionRepository.updateRouteAttempt(routeAttempt)
         if(rowAffected <= 0) throw Exception("Route attempt with ID ${routeAttempt.id} not found, cannot update it.")
         return ServiceResult(success = true, message = "Route attempt updated successfully")
     }
 
-    fun routeAttemptToDisplay(routeAttempt: RouteAttempt): RouteAttemptDisplay {
+    override fun routeAttemptToDisplay(routeAttempt: RouteAttempt): RouteAttemptDisplay {
         val session = climbingSessionRepository.getSessionById(routeAttempt.session) ?: throw Exception("Session has not been opened yet")
         val place = placeRepository.getPlaceById(session.placeId) ?: throw Exception("Session has not a valid place")
         val grades = gradingSystemRepository.getGradesBySystemId(place.gradingSystem)
@@ -109,7 +109,7 @@ class ClimbingSessionService(
     }
 
     @RequireGroupAccess
-    fun getPastSessions(groupId: Long, userId: Long): List<ClimbingSessionDisplay> {
+    override fun getPastSessions(groupId: Long, userId: Long): List<ClimbingSessionDisplay> {
         val sessions = climbingSessionRepository.getPastSessions(groupId, userId)
         val displaySessions = sessions.map {
             val routeDisplays = it.routeAttempts.map { routeAttempt -> routeAttemptToDisplay(routeAttempt)}

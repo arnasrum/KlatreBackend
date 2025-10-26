@@ -4,8 +4,8 @@ import com.arnas.klatrebackend.dataclasses.ClimbingSessionDTO
 import com.arnas.klatrebackend.dataclasses.RouteAttemptDTO
 import com.arnas.klatrebackend.dataclasses.UpdateAttemptRequest
 import com.arnas.klatrebackend.dataclasses.User
+import com.arnas.klatrebackend.interfaces.services.ClimbingSessionServiceInterface
 import com.arnas.klatrebackend.services.AccessControlService
-import com.arnas.klatrebackend.services.ClimbingSessionService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -17,12 +17,11 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import kotlin.text.toLong
 
 @RestController
 @RequestMapping("/api/climbingSessions")
 class ClimbingSessionController(
-    private val climbingSessionService: ClimbingSessionService,
+    private val climbingSessionService: ClimbingSessionServiceInterface,
     private val accessControlService: AccessControlService,
 ) {
 
