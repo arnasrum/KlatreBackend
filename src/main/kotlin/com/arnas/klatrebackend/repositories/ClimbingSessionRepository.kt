@@ -6,6 +6,7 @@ import com.arnas.klatrebackend.dataclasses.ClimbingSessionDTO
 import com.arnas.klatrebackend.dataclasses.RouteAttempt
 import com.arnas.klatrebackend.dataclasses.RouteAttemptDTO
 import com.arnas.klatrebackend.dataclasses.UpdateAttemptRequest
+import com.arnas.klatrebackend.interfaces.repositories.ClimbingSessionRepositoryInterface
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
@@ -14,9 +15,9 @@ import org.springframework.stereotype.Repository
 @Repository
 class ClimbingSessionRepository(
     private val jdbcTemplate: NamedParameterJdbcTemplate,
-) {
+): ClimbingSessionRepositoryInterface {
 
-    fun getActiveSession(groupId: Long, userId: Long): ActiveSession? {
+    override fun getActiveSession(groupId: Long, userId: Long): ActiveSession? {
         val sql = "SELECT * FROM climbing_sessions WHERE group_id = :groupId AND user_id = :userId AND active = true"
         val params = MapSqlParameterSource()
             .addValue("groupId", groupId)
@@ -32,7 +33,7 @@ class ClimbingSessionRepository(
         return session.firstOrNull()
     }
 
-    fun getPastSessions(groupId: Long, userId: Long): List<ClimbingSession> {
+    override fun getPastSessions(groupId: Long, userId: Long): List<ClimbingSession> {
         val sql = "SELECT * FROM climbing_sessions WHERE group_id = :groupId AND user_id = :userId AND active = false"
         val params = MapSqlParameterSource()
             .addValue("groupId", groupId)
@@ -50,7 +51,7 @@ class ClimbingSessionRepository(
         }
     }
 
-    fun uploadClimbingSession(climbingSession: ClimbingSessionDTO): Long {
+    override fun uploadClimbingSession(climbingSession: ClimbingSessionDTO): Long {
         val columnMappings = mutableMapOf<String, Any?>()
         val keyHolder = GeneratedKeyHolder()
 
@@ -73,15 +74,14 @@ class ClimbingSessionRepository(
         return insertedObject?.get("id") as Long? ?: throw RuntimeException("Failed to retrieve generated key")
     }
 
-    fun deleteClimbingSession(climbingSessionId: Long): Int {
+    override fun deleteClimbingSession(climbingSessionId: Long): Int {
         return jdbcTemplate.update(
             "DELETE FROM climbing_sessions WHERE id = :climbingSessionId",
             mapOf("climbingSessionId" to climbingSessionId)
         )
     }
 
-
-    fun getSessionById(sessionId: Long): ActiveSession? {
+    override fun getSessionById(sessionId: Long): ActiveSession? {
         val sql = "SELECT * FROM climbing_sessions WHERE id = :id"
         val params = MapSqlParameterSource()
             .addValue("id", sessionId)
@@ -96,7 +96,7 @@ class ClimbingSessionRepository(
         return session.firstOrNull()
     }
 
-    fun openActiveSession(userId: Long, groupId: Long, placeId: Long): Long {
+    override fun openActiveSession(userId: Long, groupId: Long, placeId: Long): Long {
         val keyholder = GeneratedKeyHolder()
         val sql = "INSERT INTO climbing_sessions (user_id, group_id, place_id, active) VALUES (:userId, :groupId, :placeId, true)"
         val rowAffected = jdbcTemplate.update(
@@ -110,7 +110,7 @@ class ClimbingSessionRepository(
         return keyholder.keys?.get("id") as Long? ?: throw RuntimeException("Failed to retrieve generated key")
     }
 
-    fun getActiveSession(activeSessionId: Long): ActiveSession? {
+    override fun getActiveSession(activeSessionId: Long): ActiveSession? {
         val sql = "SELECT * FROM climbing_sessions WHERE id = :id AND active = true"
         val params = MapSqlParameterSource()
             .addValue("id", activeSessionId)
@@ -125,8 +125,7 @@ class ClimbingSessionRepository(
         return session.firstOrNull()
     }
 
-
-    fun setSessionAsInactive(activeSessionId: Long): Int {
+    override fun setSessionAsInactive(activeSessionId: Long): Int {
         return jdbcTemplate.update(
             "UPDATE climbing_sessions SET active = false WHERE id = :id",
             mapOf("id" to activeSessionId)
@@ -140,7 +139,7 @@ class ClimbingSessionRepository(
         )
     }
 
-    fun addRouteAttemptToActiveSession(activeSessionId: Long, routeAttempt: RouteAttemptDTO): RouteAttempt {
+    override fun addRouteAttemptToActiveSession(activeSessionId: Long, routeAttempt: RouteAttemptDTO): RouteAttempt {
         val keyholder = GeneratedKeyHolder()
         println("routeAttempt: $routeAttempt")
         try {
@@ -190,7 +189,7 @@ class ClimbingSessionRepository(
         return routeAttempt.firstOrNull()
     }
 
-    fun getRouteAttemptsBySessionId(sessionId: Long): List<RouteAttempt> {
+    override fun getRouteAttemptsBySessionId(sessionId: Long): List<RouteAttempt> {
         val sql = "SELECT * FROM route_attempts WHERE session = :sessionId"
         val params = MapSqlParameterSource()
             .addValue("sessionId", sessionId)
@@ -206,7 +205,7 @@ class ClimbingSessionRepository(
         }
     }
 
-    fun updateRouteAttempt(routeAttempt: UpdateAttemptRequest): Int  {
+    override fun updateRouteAttempt(routeAttempt: UpdateAttemptRequest): Int  {
         val sql = "UPDATE route_attempts SET attempts = :attempts, completed = :completed, last_updated = :timestamp WHERE id = :id"
         return jdbcTemplate.update(
             sql,
@@ -218,7 +217,7 @@ class ClimbingSessionRepository(
         )
     }
 
-    fun deleteRouteAttempt(routeAttemptId: Long): Int {
+    override fun deleteRouteAttempt(routeAttemptId: Long): Int {
         return jdbcTemplate.update(
             "DELETE FROM route_attempts WHERE id = :routeAttemptId",
             mapOf("routeAttemptId" to routeAttemptId)
