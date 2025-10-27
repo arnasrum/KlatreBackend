@@ -141,20 +141,17 @@ class ClimbingSessionRepository(
 
     override fun addRouteAttemptToActiveSession(activeSessionId: Long, routeAttempt: RouteAttemptDTO): RouteAttempt {
         val keyholder = GeneratedKeyHolder()
-        println("routeAttempt: $routeAttempt")
-        try {
-
         jdbcTemplate.update(
-            "INSERT INTO route_attempts (route_id, attempts, completed, session, last_updated) VALUES " +
-                    "(:routeId, :attempts, :completed, :sessionId, :timestamp)",
-            MapSqlParameterSource()
-                .addValue("routeId", routeAttempt.routeId)
-                .addValue("attempts", routeAttempt.attempts)
-                .addValue("completed", routeAttempt.completed)
-                .addValue("sessionId", activeSessionId)
-                .addValue("timestamp", routeAttempt.timestamp),
-            keyholder
-            )
+        "INSERT INTO route_attempts (route_id, attempts, completed, session, last_updated) VALUES " +
+                "(:routeId, :attempts, :completed, :sessionId, :timestamp)",
+        MapSqlParameterSource()
+            .addValue("routeId", routeAttempt.routeId)
+            .addValue("attempts", routeAttempt.attempts)
+            .addValue("completed", routeAttempt.completed)
+            .addValue("sessionId", activeSessionId)
+            .addValue("timestamp", routeAttempt.timestamp),
+        keyholder
+        )
         val generatedId = keyholder.keys?.get("id") as? Long
             ?: throw IllegalStateException("Failed to retrieve generated key for routeAttempt")
 
@@ -166,10 +163,6 @@ class ClimbingSessionRepository(
             timestamp = routeAttempt.timestamp,
             session = activeSessionId,
         )
-        } catch (e: Exception) {
-            e.printStackTrace()
-            throw e
-        }
     }
 
     fun getRouteAttemptById(routeAttemptId: Long): RouteAttempt? {

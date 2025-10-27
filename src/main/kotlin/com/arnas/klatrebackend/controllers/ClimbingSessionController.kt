@@ -53,7 +53,6 @@ class ClimbingSessionController(
     @PostMapping("/open")
     fun openPersonalSession(@RequestParam groupId: Long, @RequestParam placeId: Long, user: User): ResponseEntity<out Any> {
         val serviceResult = climbingSessionService.openSession(groupId, placeId, user.id)
-        println("new session: ${serviceResult.data}")
         return ResponseEntity.ok().body(mapOf("message" to "Session opened successfully", "data" to serviceResult.data))
     }
 
