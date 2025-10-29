@@ -73,33 +73,6 @@ class PlaceRepository(
         return results.firstOrNull()
     }
 
-    override fun updatePlace(placeId: Long, name: String?, description: String?, groupId: Long?, gradingSystem: Long?): Int {
-
-        val updates = mutableListOf<String>()
-        val parameters = MapSqlParameterSource().addValue("placeId", placeId)
-
-        if (!name.isNullOrEmpty()) {
-            updates.add("name = :name")
-            parameters.addValue("name", name)
-        }
-        if (!description.isNullOrEmpty()) {
-            updates.add("description = :description")
-            parameters.addValue("description", description)
-        }
-        if (groupId != null) {
-            updates.add("group_id = :groupId")
-            parameters.addValue("groupId", groupId)
-        }
-        if (gradingSystem != null) {
-            updates.add("grading_system_id = :gradingSystem")
-            parameters.addValue("gradingSystem", gradingSystem)
-        }
-
-        val sql = "UPDATE places SET ${updates.joinToString(", ")} WHERE id = :placeId"
-        val rowAffected = jdbcTemplate.update(sql, parameters)
-        return rowAffected
-    }
-
     override fun updatePlace(newPlace: Place): Int {
         val updates = mutableListOf<String>()
         val parameters = MapSqlParameterSource().addValue("placeId", newPlace.id)

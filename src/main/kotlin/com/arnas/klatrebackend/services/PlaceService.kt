@@ -46,7 +46,6 @@ class PlaceService(
 
     @Transactional
     override fun updatePlace(userId: Long, placeUpdateDTO: PlaceUpdateDTO) {
-        println("place update $placeUpdateDTO")
         val place = placeRepository.getPlaceById(placeUpdateDTO.placeId)
         place?: throw RuntimeException("Place not found")
         val newPlace = Place(
@@ -54,29 +53,25 @@ class PlaceService(
             name = placeUpdateDTO.name ?: place.name,
             description = placeUpdateDTO.description ?: place.description,
             groupId = placeUpdateDTO.groupId ?: place.groupId,
-            gradingSystemId = placeUpdateDTO.gradingSystemId ?: place.gradingSystemId,
+            gradingSystemId = updatePlaceGradingSystem(
+                place.id,
+                place.gradingSystemId,
+                placeUpdateDTO.gradingSystemId
+            )
         )
         val rowAffected = placeRepository.updatePlace(newPlace)
         if(rowAffected <= 0 && placeUpdateDTO.gradingSystemId == null) {
             throw RuntimeException("Failed to update place")
         }
-        placeUpdateDTO.gradingSystemId?.let {
-            updatePlaceGradingSystem(placeUpdateDTO.placeId, place.gradingSystemId, it)
-        }
     }
 
 
-    @Transactional
-    override fun updatePlaceGradingSystem(placeId: Long, oldGradingSystemId: Long, newGradingSystemId: Long) {
+    override fun updatePlaceGradingSystem(placeId: Long, oldGradingSystemId: Long, newGradingSystemId: Long?): Long {
+        if(newGradingSystemId == null || oldGradingSystemId == newGradingSystemId) {return oldGradingSystemId}
         val routes = routeService.getRoutesByPlaceId(placeId)
         val oldGradingSystem = gradingSystemRepository.getGradesBySystemId(oldGradingSystemId)
         val newGradingSystem = gradingSystemRepository.getGradesBySystemId(newGradingSystemId)
         val newGradeValues = newGradingSystem.map { it.numericalValue }
-
-        val placeUpdateResult = placeRepository.updatePlace(placeId, gradingSystem = newGradingSystemId, name = null, description = null, groupId = null)
-        if (placeUpdateResult <= 0) {
-            throw RuntimeException("Failed to update place grading system")
-        }
 
         for(route in routes) {
             val oldGrade = oldGradingSystem.find { it.id == route.gradeId}
@@ -88,14 +83,15 @@ class PlaceService(
             val newGrade = newGradingSystem.find { it.numericalValue == newGradeNumericalValue }
                 ?: throw RuntimeException("New grade not found for numerical value $newGradeNumericalValue")
 
-            val boulderUpdateResult = routeService.updateRoute(
+            val routeUpdateResult = routeService.updateRoute(
                 route.copy(gradeId = newGrade.id)
             )
 
-            if (boulderUpdateResult <= 0) {
+            if (routeUpdateResult <= 0) {
                 throw RuntimeException("Failed to update boulder ${route.id} grade")
             }
         }
+        return newGradingSystemId
     }
 
     private fun findClosestInt(definedInt: Int, numbers: List<Int>): Int? {

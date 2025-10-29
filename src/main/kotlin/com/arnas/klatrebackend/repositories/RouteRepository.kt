@@ -55,45 +55,6 @@ class RouteRepository(
         return (keys["id"] as Number).toLong()
     }
 
-    override fun updateRoute(routeId: Long, name: String?, grade: Long?, place: Long?, description: String?, active: Boolean?, imageId: String?): Int {
-
-        val updates = mutableListOf<String>()
-        val parameters = mutableMapOf<String, Any>("routeId" to routeId)
-
-        if (!name.isNullOrEmpty()) {
-            updates.add("name = :name")
-            parameters["name"] = name
-        }
-        if (grade != null) {
-            updates.add("grade = :grade")
-            parameters["grade"] = grade
-        }
-        if (place != null) {
-            updates.add("place = :place")
-            parameters["place"] = place
-        }
-        if (imageId != null) {
-            updates.add("image_id = :imageId")
-            parameters["imageId"] = imageId
-        }
-        if (!description.isNullOrEmpty()) {
-            updates.add("description = :description")
-            parameters["description"] = description
-        }
-        if (active != null) {
-            updates.add("active = :active")
-            parameters["active"] = active
-        }
-        if (updates.isEmpty()) {
-            return 0
-        }
-
-        val sql = "UPDATE routes SET ${updates.joinToString(", ")} WHERE id = :routeId"
-        val rowsAffected = jdbcTemplate.update(sql, parameters)
-        return rowsAffected
-    }
-
-
     override fun updateRoute(route: Route): Int {
 
         val updates = mutableListOf<String>()
