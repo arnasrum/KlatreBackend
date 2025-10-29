@@ -2,9 +2,9 @@ package com.arnas.klatrebackend.dataclasses
 
 data class ClimbingSession (
     val id: Long,
-    val groupId: Long,
     val userId: Long,
     val placeId: Long,
+    val groupId: Long,
     val timestamp: Long,
     val name: String,
     val routeAttempts: List<RouteAttempt>

@@ -60,7 +60,7 @@ class AccessControlAspect(
                     }
                     placeId = args[placeIdIndex] as Long
                 }
-                placeService.getPlaceById(placeId)?.groupID
+                placeService.getPlaceById(placeId)?.groupId
                     ?: throw IllegalArgumentException("Place with ID $placeId not found")
             }
             GroupAccessSource.FROM_ROUTE -> {
@@ -73,7 +73,7 @@ class AccessControlAspect(
                     ?: throw IllegalArgumentException("Boulder with ID $routeId not found")
                 val place = placeService.getPlaceById(route.placeId)
                     ?: throw IllegalArgumentException("Place not found")
-                place.groupID
+                place.groupId
             }
             GroupAccessSource.FROM_SESSION -> {
                 val sessionIdIndex = parameterNames.indexOf("sessionId")

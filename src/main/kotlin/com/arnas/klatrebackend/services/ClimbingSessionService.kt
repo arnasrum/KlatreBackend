@@ -102,7 +102,7 @@ class ClimbingSessionService(
     override fun routeAttemptToDisplay(routeAttempt: RouteAttempt): RouteAttemptDisplay {
         val session = climbingSessionRepository.getSessionById(routeAttempt.session) ?: throw Exception("Session has not been opened yet")
         val place = placeRepository.getPlaceById(session.placeId) ?: throw Exception("Session has not a valid place")
-        val grades = gradingSystemRepository.getGradesBySystemId(place.gradingSystem)
+        val grades = gradingSystemRepository.getGradesBySystemId(place.gradingSystemId)
         val route = routeRepository.getRouteById(routeAttempt.routeId) ?: throw Exception("Route not found")
         val gradeName = grades.find { grade -> grade.id == route.gradeId }?.gradeString ?: throw Exception("Grade not found")
         return RouteAttemptDisplay(routeAttempt.id, routeAttempt.attempts, routeAttempt.completed, route.name,  routeAttempt.timestamp, gradeName)

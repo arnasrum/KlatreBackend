@@ -36,8 +36,9 @@ class PlaceService(
                 it.id,
                 it.name,
                 it.description,
-                it.groupID,
-                GradingSystemWithGrades(it.gradingSystem, gradingSystemRepository.getGradesBySystemId(it.gradingSystem))
+                it.groupId,
+                GradingSystemWithGrades(it.gradingSystemId,
+                    gradingSystemRepository.getGradesBySystemId(it.gradingSystemId))
             )
         }
     }
@@ -46,11 +47,18 @@ class PlaceService(
     override fun updatePlace(userId: Long, placeUpdateDTO: PlaceUpdateDTO) {
         val place = placeRepository.getPlaceById(placeUpdateDTO.placeId)
         place?: throw RuntimeException("Place not found")
-        val rowAffected = placeRepository.updatePlace(placeUpdateDTO)
-        if(rowAffected <= 0 && placeUpdateDTO.gradingSystem == null) {
+        val newPlace = Place(
+            id = placeUpdateDTO.placeId,
+            name = placeUpdateDTO.name ?: place.name,
+            description = placeUpdateDTO.description ?: place.description,
+            groupId = placeUpdateDTO.groupId ?: place.groupId,
+            gradingSystemId = placeUpdateDTO.gradingSystemId ?: place.gradingSystemId,
+        )
+        val rowAffected = placeRepository.updatePlace(newPlace)
+        if(rowAffected <= 0 && placeUpdateDTO.gradingSystemId == null) {
             throw RuntimeException("Failed to update place")
         }
-        placeUpdateDTO.gradingSystem?.let {
+        placeUpdateDTO.gradingSystemId?.let {
             updatePlaceGradingSystem(userId, placeUpdateDTO.placeId, it)
         }
     }
@@ -60,7 +68,7 @@ class PlaceService(
     override fun updatePlaceGradingSystem(userId: Long, placeId: Long, newGradingSystemId: Long) {
         val place = placeRepository.getPlaceById(placeId)?: throw RuntimeException("Place not found")
         val boulders = boulderRepository.getRoutesByPlace(placeId, 0, 0, false)
-        val oldGradingSystem = gradingSystemRepository.getGradesBySystemId(place.gradingSystem)
+        val oldGradingSystem = gradingSystemRepository.getGradesBySystemId(place.gradingSystemId)
         val newGradingSystem = gradingSystemRepository.getGradesBySystemId(newGradingSystemId)
         val newGradeValues = newGradingSystem.map { it.numericalValue }
 

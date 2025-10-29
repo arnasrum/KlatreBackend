@@ -84,6 +84,6 @@ class RouteController(
     private fun userHasPermissionToPlace(userId: Long, placeId: Long): Boolean {
         val place = placeService.getPlaceById(placeId)
             ?: throw RuntimeException("Place not found")
-        return accessControlService.hasGroupAccess(userId, place.groupID)
+        return accessControlService.hasGroupAccess(userId, place.groupId)
     }
 }

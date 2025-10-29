@@ -4,6 +4,7 @@ import com.arnas.klatrebackend.dataclasses.Place
 import com.arnas.klatrebackend.dataclasses.PlaceRequest
 import com.arnas.klatrebackend.dataclasses.PlaceUpdateDTO
 import com.arnas.klatrebackend.interfaces.repositories.PlaceRepositoryInterface
+import com.arnas.klatrebackend.util.toSnakeCase
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -24,8 +25,8 @@ class PlaceRepository(
                 id = rs.getLong("id"),
                 name = rs.getString("name"),
                 description = rs.getString("description"),
-                groupID = rs.getLong("group_id"),
-                gradingSystem = rs.getLong("grading_system_id")
+                groupId = rs.getLong("group_id"),
+                gradingSystemId = rs.getLong("grading_system_id")
             )
         }
         val places =  jdbcTemplate.query("SELECT * FROM places WHERE group_id = :groupId",
@@ -65,33 +66,12 @@ class PlaceRepository(
                 id = rs.getLong("id"),
                 name = rs.getString("name"),
                 description = rs.getString("description"),
-                groupID = rs.getLong("group_id"),
-                gradingSystem = rs.getLong("grading_system_id")
+                groupId = rs.getLong("group_id"),
+                gradingSystemId = rs.getLong("grading_system_id")
             )
         }
         return results.firstOrNull()
     }
-
-    override fun updatePlace(placeUpdateDTO: PlaceUpdateDTO): Int {
-        val updates = mutableListOf<String>()
-        val parameters = MapSqlParameterSource().addValue("placeId", placeUpdateDTO.placeId)
-
-        placeUpdateDTO.name?.let {
-            updates.add("name = :name")
-            parameters.addValue("name", it)
-        }
-        placeUpdateDTO.description?.let {
-            updates.add("description = :description")
-            parameters.addValue("description", it)
-        }
-        if(updates.isEmpty()) {return 0}
-        val sql = "UPDATE places SET ${updates.joinToString(", ")} WHERE id = :placeId"
-        val rowAffected = jdbcTemplate.update(sql, parameters)
-
-        return rowAffected
-    }
-
-
 
     override fun updatePlace(placeId: Long, name: String?, description: String?, groupId: Long?, gradingSystem: Long?): Int {
 
@@ -115,6 +95,19 @@ class PlaceRepository(
             parameters.addValue("gradingSystem", gradingSystem)
         }
 
+        val sql = "UPDATE places SET ${updates.joinToString(", ")} WHERE id = :placeId"
+        val rowAffected = jdbcTemplate.update(sql, parameters)
+        return rowAffected
+    }
+
+    override fun updatePlace(newPlace: Place): Int {
+        val updates = mutableListOf<String>()
+        val parameters = MapSqlParameterSource().addValue("placeId", newPlace.id)
+        Place::class.memberProperties.forEach { prop ->
+            if(prop.getter.call(newPlace) == null || prop.name == "id") return@forEach
+            updates.add("${prop.name.toSnakeCase()} = :${prop.name}")
+            parameters.addValue(prop.name, prop.getter.call(newPlace))
+        }
         val sql = "UPDATE places SET ${updates.joinToString(", ")} WHERE id = :placeId"
         val rowAffected = jdbcTemplate.update(sql, parameters)
         return rowAffected
