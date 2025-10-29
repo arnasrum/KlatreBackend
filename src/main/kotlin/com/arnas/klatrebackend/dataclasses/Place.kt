@@ -21,7 +21,7 @@ data class PlaceWithGrades(
     val name: String,
     val description: String? = null,
     val groupId: Long,
-    val gradingSystemId: GradingSystemWithGrades
+    val gradingSystem: GradingSystemWithGrades
 )
 
 data class PlaceRequest(

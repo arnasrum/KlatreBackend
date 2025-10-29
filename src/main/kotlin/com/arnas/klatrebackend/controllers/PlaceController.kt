@@ -38,12 +38,4 @@ class PlaceController(
         placeService.updatePlace(user.id, updateObject)
         return ResponseEntity.ok(mapOf("message" to "Place updated successfully"))
     }
-
-
-
-    @PutMapping("/gradingSystem")
-    fun updateGradingSystem(@RequestParam placeId: Long, @RequestParam gradingSystemId: Long, user: User): ResponseEntity<out Any> {
-        placeService.updatePlaceGradingSystem(user.id, placeId, gradingSystemId)
-        return ResponseEntity.ok(mapOf("message" to "Grading system updated successfully"))
-    }
 }

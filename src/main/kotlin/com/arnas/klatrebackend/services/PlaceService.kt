@@ -5,6 +5,7 @@ import com.arnas.klatrebackend.dataclasses.GradingSystemWithGrades
 import com.arnas.klatrebackend.dataclasses.Place
 import com.arnas.klatrebackend.dataclasses.PlaceUpdateDTO
 import com.arnas.klatrebackend.dataclasses.PlaceWithGrades
+import com.arnas.klatrebackend.dataclasses.Route
 import com.arnas.klatrebackend.dataclasses.ServiceResult
 import com.arnas.klatrebackend.interfaces.repositories.RouteRepositoryInterface
 import com.arnas.klatrebackend.interfaces.repositories.GradingSystemRepositoryInterface
@@ -20,7 +21,7 @@ import kotlin.math.min
 class PlaceService(
     private val placeRepository: PlaceRepositoryInterface,
     private val gradingSystemRepository: GradingSystemRepositoryInterface,
-    private val boulderRepository: RouteRepositoryInterface,
+    private val routeService: RouteRepositoryInterface,
 ): PlaceServiceInterface {
 
 
@@ -45,6 +46,7 @@ class PlaceService(
 
     @Transactional
     override fun updatePlace(userId: Long, placeUpdateDTO: PlaceUpdateDTO) {
+        println("place update $placeUpdateDTO")
         val place = placeRepository.getPlaceById(placeUpdateDTO.placeId)
         place?: throw RuntimeException("Place not found")
         val newPlace = Place(
@@ -59,16 +61,15 @@ class PlaceService(
             throw RuntimeException("Failed to update place")
         }
         placeUpdateDTO.gradingSystemId?.let {
-            updatePlaceGradingSystem(userId, placeUpdateDTO.placeId, it)
+            updatePlaceGradingSystem(placeUpdateDTO.placeId, place.gradingSystemId, it)
         }
     }
 
 
     @Transactional
-    override fun updatePlaceGradingSystem(userId: Long, placeId: Long, newGradingSystemId: Long) {
-        val place = placeRepository.getPlaceById(placeId)?: throw RuntimeException("Place not found")
-        val boulders = boulderRepository.getRoutesByPlace(placeId, 0, 0, false)
-        val oldGradingSystem = gradingSystemRepository.getGradesBySystemId(place.gradingSystemId)
+    override fun updatePlaceGradingSystem(placeId: Long, oldGradingSystemId: Long, newGradingSystemId: Long) {
+        val routes = routeService.getRoutesByPlaceId(placeId)
+        val oldGradingSystem = gradingSystemRepository.getGradesBySystemId(oldGradingSystemId)
         val newGradingSystem = gradingSystemRepository.getGradesBySystemId(newGradingSystemId)
         val newGradeValues = newGradingSystem.map { it.numericalValue }
 
@@ -77,9 +78,9 @@ class PlaceService(
             throw RuntimeException("Failed to update place grading system")
         }
 
-        for(boulder in boulders) {
-            val oldGrade = oldGradingSystem.find { it.id == boulder.gradeId}
-                ?: throw RuntimeException("Boulder grade not found for boulder ${boulder.id}")
+        for(route in routes) {
+            val oldGrade = oldGradingSystem.find { it.id == route.gradeId}
+                ?: throw RuntimeException("Boulder grade not found for boulder ${route.id}, ${route.gradeId}, ${oldGradingSystem}}")
 
             val newGradeNumericalValue = findClosestInt(oldGrade.numericalValue, newGradeValues)
                 ?: throw RuntimeException("Could not find closest grade value")
@@ -87,18 +88,12 @@ class PlaceService(
             val newGrade = newGradingSystem.find { it.numericalValue == newGradeNumericalValue }
                 ?: throw RuntimeException("New grade not found for numerical value $newGradeNumericalValue")
 
-            val boulderUpdateResult = boulderRepository.updateRoute(
-                grade = newGrade.id,
-                routeId = boulder.id,
-                name = null,
-                place = null,
-                description = null,
-                active = null,
-                imageId = null
+            val boulderUpdateResult = routeService.updateRoute(
+                route.copy(gradeId = newGrade.id)
             )
 
             if (boulderUpdateResult <= 0) {
-                throw RuntimeException("Failed to update boulder ${boulder.id} grade")
+                throw RuntimeException("Failed to update boulder ${route.id} grade")
             }
         }
     }
