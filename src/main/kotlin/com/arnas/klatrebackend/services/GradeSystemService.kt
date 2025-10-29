@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service
 @Service
 class GradeSystemService(
     private val gradeSystemRepository: GradingSystemRepositoryInterface,
-    private val groupService: GroupServiceInterface
 ): GradeSystemServiceInterface {
 
     @RequireGroupAccess(minRole = Role.ADMIN)
