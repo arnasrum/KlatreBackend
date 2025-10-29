@@ -1,6 +1,5 @@
 package com.arnas.klatrebackend.services
 
-import com.arnas.klatrebackend.dataclasses.ServiceResult
 import com.arnas.klatrebackend.dataclasses.User
 import com.arnas.klatrebackend.interfaces.repositories.UserRepositoryInterface
 import com.arnas.klatrebackend.interfaces.services.UserServiceInterface
@@ -23,8 +22,6 @@ class UserService(
             throw RuntimeException("User not found")
         return user
     }
-
-
 
      override fun getGoogleUserProfile(token: String): Map<String, String> {
         val request = HttpRequest.newBuilder()
