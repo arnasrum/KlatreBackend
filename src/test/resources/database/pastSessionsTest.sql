@@ -45,7 +45,7 @@ INSERT INTO places (id, name, group_id) VALUES
 (301, 'Test Gym', 201)
 ON CONFLICT (id) DO NOTHING; -- Assuming places table has name and address columns
 
-INSERT INTO routes (id, name, grade, userID, place)
+INSERT INTO routes (id, name, grade_id, user_id, place_id)
 VALUES
     (501, 'a', 6, 999, 301),
     (502, 'b', 7, 999, 301),
