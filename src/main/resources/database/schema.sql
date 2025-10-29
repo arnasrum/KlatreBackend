@@ -59,12 +59,12 @@ CREATE TABLE IF NOT EXISTS image(
 CREATE TABLE IF NOT EXISTS routes(
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
-    grade BIGINT REFERENCES grades(id),
+    grade_id BIGINT REFERENCES grades(id),
     description TEXT,
     active BOOL NOT NULL DEFAULT true,
-    userID BIGINT REFERENCES users(id),
+    user_id BIGINT REFERENCES users(id),
     date_added TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    place BIGSERIAL REFERENCES places(id) ON DELETE CASCADE,
+    place_id BIGSERIAL REFERENCES places(id) ON DELETE CASCADE,
     image_id TEXT REFERENCES image(id) ON DELETE SET NULL
 );
 
