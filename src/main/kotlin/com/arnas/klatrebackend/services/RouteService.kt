@@ -3,6 +3,7 @@ package com.arnas.klatrebackend.services
 import com.arnas.klatrebackend.annotation.RequireGroupAccess
 import com.arnas.klatrebackend.dataclasses.GroupAccessSource
 import com.arnas.klatrebackend.dataclasses.Role
+import com.arnas.klatrebackend.dataclasses.Route
 import com.arnas.klatrebackend.dataclasses.RouteDTO
 import com.arnas.klatrebackend.dataclasses.RouteResponse
 import com.arnas.klatrebackend.interfaces.repositories.RouteRepositoryInterface
@@ -15,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile
 
 @Service
 class RouteService(
-    private val boulderRepository: RouteRepositoryInterface,
+    private val routeRepository: RouteRepositoryInterface,
     private val imageService: ImageServiceInterface,
     private val groupRepository: GroupRepositoryInterface,
     private val placeRepository: PlaceRepositoryInterface,
@@ -28,7 +29,7 @@ class RouteService(
         val imageId = routeDTO.image?.let {
             return@let imageService.storeImageFile(it, userId)
         }
-        val boulderID = boulderRepository.addRoute(
+        val boulderID = routeRepository.addRoute(
             routeDTO = routeDTO,
             imageId = imageId,
             userId = userId,
@@ -36,9 +37,10 @@ class RouteService(
         return boulderID
     }
 
+    @RequireGroupAccess(minRole = Role.ADMIN, resolveGroupFrom = GroupAccessSource.FROM_ROUTE)
     override fun updateRoute(routeId: Long, userId: Long, boulderInfo: Map<String, String>, image: MultipartFile?) {
 
-        val oldRoute = boulderRepository.getRouteById(routeId)
+        val oldRoute = routeRepository.getRouteById(routeId)
             ?: throw Exception("Boulder with ID $routeId not found, cannot update it.")
         val group = placeRepository.getPlaceById(oldRoute.placeId)?.let {
             return@let groupRepository.getGroupById(it.groupId)
@@ -51,26 +53,35 @@ class RouteService(
         val grade = boulderInfo["grade"]?.toLong()
         val active = boulderInfo["active"]?.toBoolean()
         val newImageId = image?.let {
-            oldRoute.image?.let {
+            oldRoute.imageId?.let {
                 imageService.deleteImage(it)
             }
             return@let imageService.storeImageFile(image,  userId)
         }
-        val rowAffected = boulderRepository.updateRoute(oldRoute.id, name, grade, place, description, active, newImageId)
+        val newRoute = Route(
+            id = routeId,
+            name = name?: oldRoute.name,
+            gradeId = grade?: oldRoute.gradeId,
+            placeId = place?: oldRoute.placeId,
+            description = description?: oldRoute.description,
+            active = active?: oldRoute.active,
+            imageId = newImageId ?: oldRoute.imageId,
+        )
+        val rowAffected = routeRepository.updateRoute(newRoute)
         if(rowAffected <= 0) throw Exception("Failed to update boulder")
     }
     override fun deleteRoute(routeId: Long){
-        val route = boulderRepository.getRouteById(routeId)?: throw Exception("Boulder not found")
-        route.image?.let { imageService.deleteImage(it) }
-        boulderRepository.deleteRoute(routeId)
+        val route = routeRepository.getRouteById(routeId)?: throw Exception("Boulder not found")
+        route.imageId?.let { imageService.deleteImage(it) }
+        routeRepository.deleteRoute(routeId)
    }
 
     override fun getRoutesByPlace(placeId: Long, page: Int, limit: Int): RouteResponse {
         val pagingEnabled = limit > 0
-        boulderRepository.getRoutesByPlace(placeId, page, limit + 1, pagingEnabled).let {
+        routeRepository.getRoutesByPlace(placeId, page, limit + 1, pagingEnabled).let {
             val hasMore = it.size > limit
-            val numRetired = boulderRepository.getNumRoutesInPlace(placeId, false)
-            val numActive = boulderRepository.getNumRoutesInPlace(placeId, true)
+            val numRetired = routeRepository.getNumRoutesInPlace(placeId, false)
+            val numActive = routeRepository.getNumRoutesInPlace(placeId, true)
             val routeResponse = RouteResponse(it, page, limit, numActive, numRetired,  hasMore)
             return routeResponse
         }
