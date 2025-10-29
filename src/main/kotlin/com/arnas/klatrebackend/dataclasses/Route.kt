@@ -20,6 +20,16 @@ data class RouteDTO(
     var image: MultipartFile?,
 )
 
+data class RouteUpdateDTO(
+    val routeId: Long,
+    val name: String?,
+    val gradeId: Long?,
+    val placeId: Long?,
+    var description: String?,
+    val active: Boolean?,
+    var image: MultipartFile?,
+)
+
 data class RouteResponse(
     val boulders: List<Route>,
     val page: Int,

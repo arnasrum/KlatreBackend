@@ -1,6 +1,7 @@
 package com.arnas.klatrebackend.controllers
 
 import com.arnas.klatrebackend.dataclasses.RouteDTO
+import com.arnas.klatrebackend.dataclasses.RouteUpdateDTO
 import com.arnas.klatrebackend.dataclasses.User
 import com.arnas.klatrebackend.interfaces.services.RouteServiceInterface
 import com.arnas.klatrebackend.services.AccessControlService
@@ -21,9 +22,7 @@ import org.springframework.web.multipart.MultipartFile
 @Tag(name = "Route", description = "Route CRUD operations")
 @RequestMapping("/boulders")
 class RouteController(
-    private val boulderService: RouteServiceInterface,
-    private val placeService: PlaceService,
-    private val accessControlService: AccessControlService,
+    private val routeService: RouteServiceInterface,
 ) {
 
     @GetMapping("/place")
@@ -34,14 +33,7 @@ class RouteController(
         user: User
     ): ResponseEntity<out Any> {
 
-        if(!userHasPermissionToPlace(user.id, placeId)) {
-            return ResponseEntity(
-                mapOf(
-                "message" to "User does not have sufficient permissions"),
-                HttpStatus.UNAUTHORIZED
-            )
-        }
-        val pagedBoulders = boulderService.getRoutesByPlace(placeId, page, limit)
+        val pagedBoulders = routeService.getRoutesByPlace(placeId, page, limit)
         return ResponseEntity.ok().body(pagedBoulders)
 
     }
@@ -55,7 +47,7 @@ class RouteController(
         @RequestParam(required = false) image: MultipartFile?,
         user: User
     ): ResponseEntity<out Any> {
-        boulderService.addRoute(user.id, RouteDTO(name, grade, placeID, description, true, image))
+        routeService.addRoute(user.id, RouteDTO(name, grade, placeID, description, true, image))
         return ResponseEntity(HttpStatus.OK)
     }
 
@@ -63,27 +55,25 @@ class RouteController(
     fun putRoute(
         @PathVariable routeId: Long,
         @RequestParam(required = false) name: String?,
-        @RequestParam(required = false) grade: String?,
+        @RequestParam(required = false) grade: Long?,
         @RequestParam(required = false) description: String?,
         @RequestParam(required = false) active: Boolean?,
         @RequestParam(required = false) image: MultipartFile?,
         user: User
     ): ResponseEntity<Map<String, Any>> {
-        val userID: Long = user.id
+        val userId: Long = user.id
 
-        val requestBody = mutableMapOf<String, String>().apply {
-            name?.let { put("name", it) }
-            grade?.let { put("grade", it) }
-            description?.let { put("description", it) }
-            active?.let { put("active", it.toString()) }
-        }
-        boulderService.updateRoute(routeId, userID, requestBody, image)
+
+       val routeUpdateDTO = RouteUpdateDTO(
+           routeId = routeId,
+           name = name,
+           gradeId = grade,
+           placeId = null,
+           description = description,
+           active = active,
+           image = image
+       )
+        routeService.updateRoute(routeUpdateDTO, userId)
         return ResponseEntity.ok(mapOf("message" to "Boulder updated successfully"))
-    }
-
-    private fun userHasPermissionToPlace(userId: Long, placeId: Long): Boolean {
-        val place = placeService.getPlaceById(placeId)
-            ?: throw RuntimeException("Place not found")
-        return accessControlService.hasGroupAccess(userId, place.groupId)
     }
 }

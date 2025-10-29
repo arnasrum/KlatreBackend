@@ -64,11 +64,21 @@ class AccessControlAspect(
                     ?: throw IllegalArgumentException("Place with ID $placeId not found")
             }
             GroupAccessSource.FROM_ROUTE -> {
-                val routeIdIndex = parameterNames.indexOf("routeId")
-                if (routeIdIndex == -1) {
-                    throw IllegalArgumentException("Parameter 'routeId' not found in method arguments")
+                var routeId: Long
+                if(requireGroupAccess.sourceObjectParam.isNotBlank()) {
+                    val sourceObjectIndex = parameterNames.indexOf(requireGroupAccess.sourceObjectParam)
+                    if (sourceObjectIndex == -1) {
+                        throw IllegalArgumentException("Parameter '${requireGroupAccess.sourceObjectParam}' not found in method arguments")
+                    }
+                    val sourceObject = args[sourceObjectIndex]
+                    routeId = getLongProperty("routeId", sourceObject)
+                } else {
+                    val routeIdIndex = parameterNames.indexOf("routeId")
+                    if (routeIdIndex == -1) {
+                        throw IllegalArgumentException("Parameter 'routeId' not found in method arguments")
+                    }
+                    routeId = args[routeIdIndex] as Long
                 }
-                val routeId = args[routeIdIndex] as Long
                 val route = routeRepository.getRouteById(routeId)
                     ?: throw IllegalArgumentException("Boulder with ID $routeId not found")
                 val place = placeService.getPlaceById(route.placeId)
