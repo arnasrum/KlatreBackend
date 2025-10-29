@@ -29,11 +29,7 @@ class RouteService(
             return@let imageService.storeImageFile(it, userId)
         }
         val boulderID = boulderRepository.addRoute(
-            name = routeDTO.name,
-            grade = routeDTO.gradeId,
-            place = routeDTO.placeId,
-            description = routeDTO.description,
-            active = true,
+            routeDTO = routeDTO,
             imageId = imageId,
             userId = userId,
         )
@@ -45,7 +41,7 @@ class RouteService(
         val oldRoute = boulderRepository.getRouteById(routeId)
             ?: throw Exception("Boulder with ID $routeId not found, cannot update it.")
         val group = placeRepository.getPlaceById(oldRoute.placeId)?.let {
-            return@let groupRepository.getGroupById(it.groupID)
+            return@let groupRepository.getGroupById(it.groupId)
         }
         val role = accessControlService.getUserGroupRole(userId, group!!.id) ?: throw Exception("User has no access to this boulder")
         if(role > Role.ADMIN.id) throw Exception("User has no access to this boulder")

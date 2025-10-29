@@ -1,12 +1,15 @@
 package com.arnas.klatrebackend.repositories
 
 import com.arnas.klatrebackend.dataclasses.Route
+import com.arnas.klatrebackend.dataclasses.RouteDTO
 import com.arnas.klatrebackend.interfaces.repositories.RouteRepositoryInterface
+import com.arnas.klatrebackend.util.toSnakeCase
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.jdbc.support.KeyHolder
+import kotlin.reflect.full.memberProperties
 
 @Repository
 class RouteRepository(
@@ -22,8 +25,8 @@ class RouteRepository(
                 id = rs.getLong("id"),
                 name = rs.getString("name"),
                 description = rs.getString("description"),
-                gradeId = rs.getLong("grade"),
-                placeId = rs.getLong("place"),
+                gradeId = rs.getLong("grade_id"),
+                placeId = rs.getLong("place_id"),
                 active = rs.getBoolean("active"),
                 image = rs.getString("image_id")
             )
@@ -31,19 +34,19 @@ class RouteRepository(
         return boulder.firstOrNull()
     }
 
-    override fun addRoute(name: String, grade: Long, place: Long, description: String?, active: Boolean?, imageUrl: String?, userId: Long): Long {
+    override fun addRoute(routeDTO: RouteDTO, imageId: String?, userId: Long): Long {
         val keyHolder: KeyHolder = GeneratedKeyHolder()
         val sql = """
-            INSERT INTO routes (name, grade, place, description, image_id, userId)
+            INSERT INTO routes (name, grade_id, place_id, description, image_id, user_id)
             VALUES (:name, :grade, :place, :description, :imageId, :userId)
         """
 
         val parameters = MapSqlParameterSource()
-            .addValue("name", name)
-            .addValue("grade", grade)
-            .addValue("place", place)
-            .addValue("description", description)
-            .addValue("imageId", imageUrl)
+            .addValue("name", routeDTO.name)
+            .addValue("grade", routeDTO.gradeId)
+            .addValue("place", routeDTO.placeId)
+            .addValue("description", routeDTO.description)
+            .addValue("imageId", imageId)
             .addValue("userId", userId)
 
         jdbcTemplate.update(sql, parameters, keyHolder)
@@ -90,6 +93,27 @@ class RouteRepository(
         return rowsAffected
     }
 
+
+    override fun updateRoute(route: Route, imageId: String?): Int {
+
+        val updates = mutableListOf<String>()
+        val parameters = MapSqlParameterSource()
+            .addValue("routeId", route.id)
+        imageId?.let {
+            updates.add("image_id = :imageId")
+            parameters.addValue("imageId", it)
+        }
+
+        Route::class.memberProperties.forEach { prop ->
+            if(prop.getter.call(route) == null || prop.name == "id" || prop.name == "image") return@forEach
+            updates.add("${prop.name.toSnakeCase()} = :${prop.name}")
+            parameters.addValue(prop.name, prop.getter.call(route))
+        }
+        val sql = "UPDATE routes SET ${updates.joinToString(", ")} WHERE id = :routeId"
+        val rowsAffected = jdbcTemplate.update(sql, parameters)
+        return rowsAffected
+    }
+
     override fun deleteRoute(routeId: Long): Int {
         val rowAffected = jdbcTemplate.update("DELETE FROM routes WHERE id=:routeId",
             MapSqlParameterSource()
@@ -102,8 +126,8 @@ class RouteRepository(
     override fun getRoutesByPlace(placeId: Long, page: Int, limit: Int, pagingEnabled: Boolean): List<Route> {
 
         val routes: MutableList<Route> = mutableListOf()
-        val sql = "SELECT b.id, b.name, b.description, g.id AS gId, b.place, b.active AS active, b.image_id AS image_id " +
-                "FROM routes AS b INNER JOIN places AS p ON b.place = p.id " +
+        val sql = "SELECT b.id, b.name, b.description, g.id AS gId, b.place_id, b.active AS active, b.image_id AS image_id " +
+                "FROM routes AS b INNER JOIN places AS p ON b.place_id = p.id " +
                 "INNER JOIN grades AS g ON g.system_id = p.grading_system_id " +
                 "WHERE b.place=:placeID AND g.id = b.grade " +
                 "ORDER BY b.date_added DESC"
@@ -120,7 +144,7 @@ class RouteRepository(
                     name = rs.getString("name"),
                     description = rs.getString("description"),
                     gradeId = rs.getLong("gId"),
-                    placeId = rs.getLong("place"),
+                    placeId = rs.getLong("place_id"),
                     active = rs.getBoolean("active"),
                     image = rs.getString("image_id")
                 )
@@ -130,11 +154,11 @@ class RouteRepository(
     }
 
     override fun getNumRoutesInPlace(placeId: Long, countActive: Boolean): Int {
-        val sql = "SELECT COUNT(*) FROM routes WHERE place=:placeID AND active=:active"
+        val sql = "SELECT COUNT(*) FROM routes WHERE place_id=:placeId AND active=:active"
         val result = jdbcTemplate.queryForObject(
             sql,
             MapSqlParameterSource()
-                .addValue("placeID", placeId)
+                .addValue("placeId", placeId)
                 .addValue("active", countActive)
         ) { rs, _ ->
             rs.getInt(1)

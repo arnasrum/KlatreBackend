@@ -84,10 +84,11 @@ public class RouteRepositoryTest {
     @Sql("/database/schema.sql")
     @Sql("/database/data.sql")
     public void testUpdateRoute() {
-        var route = Objects.requireNonNull(routeRepository.getRouteById(1));
+        var route = Objects.requireNonNull(routeRepository.getRouteById(2));
         var newRoute = new Route(route.getId(), "newRoute", 2, 2, null, false, null);
-        routeRepository.updateRoute(newRoute, null);
+        var rowsAffected = routeRepository.updateRoute(newRoute, null);
         var fetchedRoute = routeRepository.getRouteById(route.getId());
+        Assertions.assertEquals(1, rowsAffected, "Rows affected should be 1");
         Assertions.assertEquals(newRoute, fetchedRoute, "Route should be equal");
     }
 
