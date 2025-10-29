@@ -1,4 +1,4 @@
-package com.arnas.klatrebackend;
+package com.arnas.klatrebackend.repository;
 
 import com.arnas.klatrebackend.dataclasses.Route;
 import com.arnas.klatrebackend.dataclasses.RouteDTO;
