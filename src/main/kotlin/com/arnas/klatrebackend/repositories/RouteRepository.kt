@@ -28,7 +28,7 @@ class RouteRepository(
                 gradeId = rs.getLong("grade_id"),
                 placeId = rs.getLong("place_id"),
                 active = rs.getBoolean("active"),
-                image = rs.getString("image_id")
+                imageId = rs.getString("image_id")
             )
         }
         return boulder.firstOrNull()
@@ -94,18 +94,14 @@ class RouteRepository(
     }
 
 
-    override fun updateRoute(route: Route, imageId: String?): Int {
+    override fun updateRoute(route: Route): Int {
 
         val updates = mutableListOf<String>()
         val parameters = MapSqlParameterSource()
             .addValue("routeId", route.id)
-        imageId?.let {
-            updates.add("image_id = :imageId")
-            parameters.addValue("imageId", it)
-        }
 
         Route::class.memberProperties.forEach { prop ->
-            if(prop.getter.call(route) == null || prop.name == "id" || prop.name == "image") return@forEach
+            if(prop.getter.call(route) == null || prop.name == "id") return@forEach
             updates.add("${prop.name.toSnakeCase()} = :${prop.name}")
             parameters.addValue(prop.name, prop.getter.call(route))
         }
@@ -122,6 +118,21 @@ class RouteRepository(
         return rowAffected
     }
 
+    override fun getRoutesByPlaceId(placeId: Long): List<Route> {
+        val sql = "SELECT * FROM routes WHERE place_id=:placeId"
+        val route = jdbcTemplate.query(sql, MapSqlParameterSource().addValue("placeId", placeId)) { rs, _ ->
+            Route(
+                id = rs.getLong("id"),
+                name = rs.getString("name"),
+                description = rs.getString("description"),
+                gradeId = rs.getLong("grade_id"),
+                placeId = rs.getLong("place_id"),
+                active = rs.getBoolean("active"),
+                imageId = rs.getString("image_id"),
+            )
+        }
+        return route
+    }
 
     override fun getRoutesByPlace(placeId: Long, page: Int, limit: Int, pagingEnabled: Boolean): List<Route> {
 
@@ -129,14 +140,14 @@ class RouteRepository(
         val sql = "SELECT b.id, b.name, b.description, g.id AS gId, b.place_id, b.active AS active, b.image_id AS image_id " +
                 "FROM routes AS b INNER JOIN places AS p ON b.place_id = p.id " +
                 "INNER JOIN grades AS g ON g.system_id = p.grading_system_id " +
-                "WHERE b.place=:placeID AND g.id = b.grade " +
+                "WHERE b.place_id=:placeId AND g.id = b.grade_id " +
                 "ORDER BY b.date_added DESC"
         if(pagingEnabled) sql.plus(" LIMIT $limit OFFSET ${(page-1)*limit}")
 
         jdbcTemplate.query(
             sql,
             MapSqlParameterSource()
-                .addValue("placeID", placeId)
+                .addValue("placeId", placeId)
         ) { rs, _ ->
             routes.add(
                 Route(
@@ -146,7 +157,7 @@ class RouteRepository(
                     gradeId = rs.getLong("gId"),
                     placeId = rs.getLong("place_id"),
                     active = rs.getBoolean("active"),
-                    image = rs.getString("image_id")
+                    imageId = rs.getString("image_id")
                 )
             )
         }

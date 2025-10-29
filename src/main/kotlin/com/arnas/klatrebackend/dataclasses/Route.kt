@@ -8,7 +8,7 @@ data class Route (
     val placeId: Long,
     var description: String?,
     val active: Boolean,
-    var image: String?,
+    var imageId: String?,
 )
 
 data class RouteDTO(
