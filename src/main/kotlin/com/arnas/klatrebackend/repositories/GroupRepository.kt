@@ -57,8 +57,8 @@ import kotlin.reflect.full.memberProperties
         return (keys["id"] as Number).toLong()
     }
 
-    override fun addUserToGroup(userId: Long, groupId: Long, role: Int) {
-        jdbcTemplate.update(
+    override fun addUserToGroup(userId: Long, groupId: Long, role: Int): Int {
+        return jdbcTemplate.update(
             "INSERT INTO user_groups (user_id, group_id, role) VALUES (:userID, :groupID, :role)",
             mapOf("userID" to userId, "groupID" to groupId, "role" to role)
         )
