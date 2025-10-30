@@ -11,7 +11,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.Objects;
-import java.util.Optional;
 
 @Repository
 public class UserRepositoryDefault implements UserRepositoryInterface {
@@ -40,7 +39,7 @@ public class UserRepositoryDefault implements UserRepositoryInterface {
     @Override
     public User getUserByEmail(@NonNull String email) {
         var sql = "SELECT * FROM users WHERE email = :email";
-        var user = jdbcTemplate.query(sql, new MapSqlParameterSource().addValue("email", email),
+        return jdbcTemplate.query(sql, new MapSqlParameterSource().addValue("email", email),
             (rs, index) ->
                 new User(
                     rs.getLong("id"),
@@ -48,7 +47,6 @@ public class UserRepositoryDefault implements UserRepositoryInterface {
                     rs.getString("name")
                 )
         ).getFirst();
-        return Optional.of(user);
     }
 
     @Override
