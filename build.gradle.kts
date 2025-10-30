@@ -1,4 +1,5 @@
 plugins {
+    java
     kotlin("jvm") version "2.1.21"
     kotlin("plugin.spring") version "1.9.25"
     id("org.springframework.boot") version "3.4.0"
@@ -13,6 +14,25 @@ java {
         languageVersion = JavaLanguageVersion.of(21)
     }
 }
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
+    }
+    jvmToolchain(21)
+}
+
+sourceSets {
+    main {
+        kotlin {
+            srcDirs("src/main/kotlin")
+        }
+        java {
+            srcDirs("src/main/java")
+        }
+    }
+}
+
 
 repositories {
     mavenCentral()
@@ -54,11 +74,7 @@ dependencies {
 
 }
 
-kotlin {
-    compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict")
-    }
-}
+
 
 tasks.withType<Test> {
     useJUnitPlatform()

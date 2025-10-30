@@ -7,4 +7,6 @@ interface JwtServiceInterface {
     fun createJwtToken(subject: String, claims: Map<String, String>): String
     fun decodeJwt(jwt: String): Jws<Claims>
     fun getJwtPayload(claims: Jws<Claims>): Map<String, String>
+    fun validateJwtToken(token: String): Boolean
+    fun refreshToken(token: String): String?
 }

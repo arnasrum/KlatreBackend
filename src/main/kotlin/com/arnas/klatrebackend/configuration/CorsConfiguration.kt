@@ -30,7 +30,7 @@ class CorsConfiguration : WebMvcConfigurer {
             "http://localhost:5173",
             "http://localhost:8080"
         )
-        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH" )
         configuration.allowedHeaders = listOf("*")
         configuration.allowCredentials = true
         configuration.maxAge = 3600L

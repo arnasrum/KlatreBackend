@@ -116,7 +116,7 @@ class ClimbingSessionRepositoryTest {
         "INSERT INTO grading_systems(id, name, climb_type, is_global) VALUES (1, 'V-Scale', 'boulder', true);",
         "INSERT INTO grades(id, system_id, grade_string, numerical_value) VALUES (1, 1, 'V5', 5);",
         "INSERT INTO places(id, name, group_id, grading_system_id) VALUES (1, 'Test Place', 1, 1);",
-        "INSERT INTO routes(id, name, grade, place, active) VALUES (1, 'Test Route', 1, 1, true);"
+        "INSERT INTO routes(id, name, grade_id, place_id, active) VALUES (1, 'Test Route', 1, 1, true);"
     ])
     fun `test addRouteAttemptToActiveSession creates attempt`() {
         val userId = 1L
@@ -149,7 +149,7 @@ class ClimbingSessionRepositoryTest {
         "INSERT INTO grading_systems(id, name, climb_type, is_global) VALUES (1, 'V-Scale', 'boulder', true);",
         "INSERT INTO grades(id, system_id, grade_string, numerical_value) VALUES (1, 1, 'V5', 5);",
         "INSERT INTO places(id, name, group_id, grading_system_id) VALUES (1, 'Test Place', 1, 1);",
-        "INSERT INTO routes(id, name, grade, place, active) VALUES (1, 'Test Route', 1, 1, true);",
+        "INSERT INTO routes(id, name, grade_id, place_id, active) VALUES (1, 'Test Route', 1, 1, true);",
         "INSERT INTO climbing_sessions(id, user_id, group_id, place_id, active) VALUES (100, 1, 1, 1, true);",
         "INSERT INTO route_attempts(id, route_id, attempts, completed, session, last_updated) VALUES (1, 1, 2, false, 100, 1000000);"
     ])
@@ -172,7 +172,7 @@ class ClimbingSessionRepositoryTest {
         "INSERT INTO grading_systems(id, name, climb_type, is_global) VALUES (1, 'V-Scale', 'boulder', true);",
         "INSERT INTO grades(id, system_id, grade_string, numerical_value) VALUES (1, 1, 'V5', 5);",
         "INSERT INTO places(id, name, group_id, grading_system_id) VALUES (1, 'Test Place', 1, 1);",
-        "INSERT INTO routes(id, name, grade, place, active) VALUES (1, 'Test Route', 1, 1, true);",
+        "INSERT INTO routes(id, name, grade_id, place_id, active) VALUES (1, 'Test Route', 1, 1, true);",
         "INSERT INTO climbing_sessions(id, user_id, group_id, place_id, active) VALUES (100, 1, 1, 1, true);",
         "INSERT INTO route_attempts(id, route_id, attempts, completed, session, last_updated) VALUES (1, 1, 2, false, 100, 1000000);"
     ])
