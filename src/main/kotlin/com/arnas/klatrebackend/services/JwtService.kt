@@ -41,7 +41,8 @@ class JwtService(
         }
         return payload
     }
-    fun validateToken(token: String): Boolean {
+
+    override fun validateJwtToken(token: String): Boolean {
         return try {
             val claims = Jwts.parser()
                 .verifyWith(Keys.hmacShaKeyFor(jwtSecret.toByteArray()))
@@ -73,7 +74,7 @@ class JwtService(
         return claims.payload.expiration
     }
 
-    fun refreshToken(token: String): String? {
+    override fun refreshToken(token: String): String? {
         return try {
             val claims = Jwts.parser()
                 .verifyWith(Keys.hmacShaKeyFor(jwtSecret.toByteArray()))
