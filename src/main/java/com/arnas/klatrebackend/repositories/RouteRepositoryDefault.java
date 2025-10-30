@@ -72,7 +72,7 @@ public class RouteRepositoryDefault implements RouteRepository {
                 .addValue("grade", routeDTO.getGradeId())
                 .addValue("place", routeDTO.getPlaceId())
                 .addValue("active", routeDTO.getActive())
-                .addValue("description", routeDTO.getDescription())
+                .addValue("description", routeDTO.getDescription());
         var keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(sql, parameters, keyHolder);
         return Objects.requireNonNull(keyHolder.getKey()).longValue();

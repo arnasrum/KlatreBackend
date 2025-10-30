@@ -53,10 +53,10 @@ public class GroupRepositoryDefault implements GroupRepositoryInterface {
         var keyholder = new GeneratedKeyHolder();
         var sql = "INSERT INTO klatre_groups(name, personal, description, owner) VALUES (:name, :personal, :description, :owner)";
         var parameters = new MapSqlParameterSource()
-                .addValue("name", group.name())
-                .addValue("personal", group.personal())
-                .addValue("description", group.description())
-                .addValue("owner", group.owner());
+                .addValue("name", group.getName())
+                .addValue("personal", group.getPersonal())
+                .addValue("description", group.getDescription())
+                .addValue("owner", group.getOwner());
         jdbcTemplate.update(sql, parameters, keyholder);
         return Objects.requireNonNull(keyholder.getKey()).longValue();
     }
