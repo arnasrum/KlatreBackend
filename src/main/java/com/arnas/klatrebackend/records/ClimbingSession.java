@@ -1,4 +1,4 @@
-package com.arnas.KlatreBackend.records;
+package com.arnas.klatrebackend.records;
 
 public record ClimbingSession(
         long id,
@@ -6,6 +6,7 @@ public record ClimbingSession(
         long groupId,
         long placeId,
         long timestamp,
+        boolean active,
         String name,
         RouteAttempt[] attempts
 ) { }

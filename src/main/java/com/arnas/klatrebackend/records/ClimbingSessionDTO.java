@@ -1,4 +1,6 @@
-package com.arnas.KlatreBackend.records;
+package com.arnas.klatrebackend.records;
+
+import com.arnas.klatrebackend.records.RouteAttempt;
 
 public record ClimbingSessionDTO(
         long userId,

@@ -1,4 +1,4 @@
-package com.arnas.KlatreBackend.records;
+package com.arnas.klatrebackend.records;
 
 import org.springframework.lang.NonNull;
 

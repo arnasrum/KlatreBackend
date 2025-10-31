@@ -1,4 +1,4 @@
-package com.arnas.KlatreBackend.records;
+package com.arnas.klatrebackend.records;
 
 public record PagedRoutes(
     Route[] routes,
