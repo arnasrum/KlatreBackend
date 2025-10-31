@@ -43,17 +43,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         try {
-            Cookie[] cookies = request.getCookies();
-            if( cookies == null) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("No cookies found.");
-                return;
-            }
-            Cookie authCookieObject = Arrays.stream(cookies)
+            Cookie authCookieObject = Arrays.stream(request.getCookies())
                     .filter((Cookie cookie) -> cookie.getName().equals(AUTH_COOKIE_NAME))
                     .findFirst()
                     .orElse(null);
-
             if (authCookieObject == null || authCookieObject.getValue() == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("No auth cookie found.");
@@ -79,7 +72,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception exception) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Invalid token.");
-            return;
         }
         filterChain.doFilter(request,response);
     }

@@ -20,6 +20,7 @@ fun main(args: Array<String>) {
     runApplication<KlatreBackendApplication>(*args)
 }
 
+/*
 @Configuration
 class ApplicationNoSecurity {
     @Bean fun webSecurityCustomizer(): WebSecurityCustomizer {
@@ -27,3 +28,5 @@ class ApplicationNoSecurity {
             .requestMatchers(AntPathRequestMatcher("/**"))}
     }
 }
+
+ */

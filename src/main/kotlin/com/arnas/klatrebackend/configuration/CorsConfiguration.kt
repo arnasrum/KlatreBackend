@@ -9,7 +9,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
-class CorsConfiguration : WebMvcConfigurer {
+public class CorsConfigurationDefault : WebMvcConfigurer {
 
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/**")
@@ -24,7 +24,7 @@ class CorsConfiguration : WebMvcConfigurer {
     }
 
     @Bean
-    fun corsConfigurationSource(): CorsConfigurationSource {
+    public fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
         configuration.allowedOrigins = listOf(
             "http://localhost:5173",
