@@ -31,6 +31,14 @@ sourceSets {
             srcDirs("src/main/java")
         }
     }
+    test {
+        kotlin {
+            srcDirs("src/test/kotlin")
+        }
+        java {
+            srcDirs("src/test/java")
+        }
+    }
 }
 
 
