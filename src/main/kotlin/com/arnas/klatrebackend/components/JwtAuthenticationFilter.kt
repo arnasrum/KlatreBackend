@@ -13,8 +13,9 @@ import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 import java.util.*
 
+@Primary
 @Component
-class JwtAuthenticationFilterKotlin(
+class JwtAuthenticationFilterDefault(
     private val jwtService: JwtService,
     private val userService: UserService
 ) : OncePerRequestFilter() {
