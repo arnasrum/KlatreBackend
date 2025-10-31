@@ -50,6 +50,7 @@ public class JwtServiceDefault implements JwtServiceInterface {
     }
 
     @Override
+    @NonNull
     public Map<String, String> getJwtPayload(Jws<Claims> claims) {
         var payload = new HashMap<String, String>();
         claims.getPayload().forEach((key, value) -> {
