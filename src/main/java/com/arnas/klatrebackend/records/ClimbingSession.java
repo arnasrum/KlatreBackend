@@ -1,5 +1,7 @@
 package com.arnas.klatrebackend.records;
 
+import java.util.List;
+
 public record ClimbingSession(
         long id,
         long userId,
@@ -8,5 +10,5 @@ public record ClimbingSession(
         long timestamp,
         boolean active,
         String name,
-        RouteAttempt[] attempts
+        List<RouteAttempt> attempts
 ) { }

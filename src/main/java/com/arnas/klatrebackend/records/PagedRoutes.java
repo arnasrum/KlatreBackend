@@ -1,7 +1,11 @@
 package com.arnas.klatrebackend.records;
 
+import com.arnas.klatrebackend.dataclasses.Route;
+
+import java.util.List;
+
 public record PagedRoutes(
-    Route[] routes,
+    List<Route>routes,
     int page,
     int limit,
     int activeRoutesCount,

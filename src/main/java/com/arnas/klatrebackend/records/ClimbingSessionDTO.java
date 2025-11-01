@@ -1,6 +1,6 @@
 package com.arnas.klatrebackend.records;
 
-import com.arnas.klatrebackend.records.RouteAttempt;
+import java.util.List;
 
 public record ClimbingSessionDTO(
         long userId,
@@ -8,5 +8,5 @@ public record ClimbingSessionDTO(
         long placeId,
         long timestamp,
         String name,
-        RouteAttempt[] attempts
+        List<RouteAttempt> attempts
 ) { }
