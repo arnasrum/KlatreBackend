@@ -92,8 +92,8 @@ public class GroupRepositoryDefault implements GroupRepositoryInterface {
                 rs.getLong("owner"),
                 rs.getString("name"),
                 rs.getBoolean("personal"),
-                rs.getString("description"),
-                rs.getString("uuid")
+                rs.getString("uuid"),
+                rs.getString("description")
         ));
         return group.getFirst();
     }
@@ -108,8 +108,8 @@ public class GroupRepositoryDefault implements GroupRepositoryInterface {
                 rs.getLong("owner"),
                 rs.getString("name"),
                 rs.getBoolean("personal"),
-                rs.getString("description"),
-                rs.getString("uuid")
+                rs.getString("uuid"),
+                rs.getString("description")
         ));
         return group.getFirst();
     }
