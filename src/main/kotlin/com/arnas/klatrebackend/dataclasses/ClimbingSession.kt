@@ -6,6 +6,7 @@ data class ClimbingSession (
     val placeId: Long,
     val groupId: Long,
     val timestamp: Long,
+    val active: Boolean,
     val name: String,
     val routeAttempts: List<RouteAttempt>
 )
@@ -15,6 +16,7 @@ data class ClimbingSessionDisplay (
     val userId: Long,
     val placeId: Long,
     val timestamp: Long,
+    val active: Boolean,
     val name: String,
     val routeAttempts: List<RouteAttemptDisplay>
 )

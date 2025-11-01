@@ -24,7 +24,6 @@ class ClimbingSessionService(
     private val placeRepository: PlaceRepositoryInterface,
     private val gradingSystemRepository: GradingSystemRepositoryInterface,
     private val routeRepository: RouteRepositoryInterface,
-    private val accessControlService: AccessControlService,
 ): ClimbingSessionServiceInterface {
 
     @RequireGroupAccess
@@ -35,17 +34,12 @@ class ClimbingSessionService(
 
     @RequireGroupAccess
     override fun uploadSession(userId: Long, climbingSession: ClimbingSessionDTO): ServiceResult<Unit> {
-        val groupId = climbingSession.groupId
-        accessControlService.getUserGroupRole(userId, groupId)
-            ?: throw RuntimeException("User is not a member of group")
         val sessionId = climbingSessionRepository.uploadClimbingSession(climbingSession)
         return ServiceResult(success = true, message = "Session uploaded successfully")
     }
 
     @RequireGroupAccess
     override fun openSession(groupId: Long, placeId: Long, userId: Long): ServiceResult<ActiveSession> {
-        accessControlService.getUserGroupRole(userId, groupId)
-            ?: throw RuntimeException("User is not a member of group")
         val activeSessionId = climbingSessionRepository.openActiveSession(userId, groupId, placeId)
         val activeSession = climbingSessionRepository.getActiveSession(activeSessionId)?.run {
             climbingSessionRepository.getActiveSession(activeSessionId)
@@ -60,7 +54,6 @@ class ClimbingSessionService(
     override fun closeSession(sessionId: Long, save: Boolean, userId: Long): ServiceResult<Unit> {
         val session = climbingSessionRepository.getSessionById(sessionId) ?:
             throw Exception("Session with ID $sessionId not found, cannot close it.")
-        session.userId == userId || throw Exception("User with ID $userId has no access to this session.")
         if(save) {
             val rowsAffected = climbingSessionRepository.setSessionAsInactive(sessionId)
             if(rowsAffected <= 0) throw Exception("Something went wrong while saving session")
@@ -113,7 +106,7 @@ class ClimbingSessionService(
         val sessions = climbingSessionRepository.getPastSessions(groupId, userId)
         val displaySessions = sessions.map {
             val routeDisplays = it.routeAttempts.map { routeAttempt -> routeAttemptToDisplay(routeAttempt)}
-            ClimbingSessionDisplay(it.id, it.groupId, it.userId, it.placeId, it.timestamp, it.name, routeDisplays)
+            ClimbingSessionDisplay(it.id, it.groupId, it.userId, it.placeId, it.timestamp, it.active,  it.name, routeDisplays)
         }
         return displaySessions
     }

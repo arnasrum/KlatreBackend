@@ -52,8 +52,8 @@ public class ClimbingSessionRepositoryTest {
     @Sql("/database/schema.sql")
     @Sql("/database/data.sql")
     @Sql(statements = {
-            "INSERT INTO climbing_sessions(id, name, active, user_id, group_id, place_id, created_at) VALUES (1, 'test', true, 1, 1, 1, 987654321);",
-            "INSERT INTO route_attempts(route_id, attempts, completed, session, last_updated) VALUES (1, 10, true, 1 , 123456789);"
+        "INSERT INTO climbing_sessions(id, name, active, user_id, group_id, place_id, created_at) VALUES (1, 'test', true, 1, 1, 1, 987654321);",
+        "INSERT INTO route_attempts(route_id, attempts, completed, session, last_updated) VALUES (1, 10, true, 1 , 123456789);"
     })
     public void testGetClimbingSessionByIdBasic() {
 
@@ -68,8 +68,8 @@ public class ClimbingSessionRepositoryTest {
     @Sql("/database/schema.sql")
     @Sql("/database/data.sql")
     @Sql(statements = {
-            "INSERT INTO climbing_sessions(id, name, active, user_id, group_id, place_id, created_at) VALUES (1, 'test', true, 1, 1, 1, 987654321);",
-            "INSERT INTO route_attempts(route_id, attempts, completed, session, last_updated) VALUES (1, 10, true, 1 , 123456789);"
+        "INSERT INTO climbing_sessions(id, name, active, user_id, group_id, place_id, created_at) VALUES (1, 'test', true, 1, 1, 1, 987654321);",
+        "INSERT INTO route_attempts(route_id, attempts, completed, session, last_updated) VALUES (1, 10, true, 1 , 123456789);"
     })
     public void testGetClimbingSessionByIdBasicWrongUser() {
 

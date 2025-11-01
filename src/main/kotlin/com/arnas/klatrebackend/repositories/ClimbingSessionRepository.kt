@@ -45,6 +45,7 @@ class ClimbingSessionRepository(
                 userId = rs.getLong("user_id"),
                 placeId = rs.getLong("place_id"),
                 timestamp = rs.getTimestamp("created_at").time,
+                active = rs.getBoolean("active"),
                 name = "",
                 routeAttempts = getRouteAttemptsBySessionId(rs.getLong("id"))
             )

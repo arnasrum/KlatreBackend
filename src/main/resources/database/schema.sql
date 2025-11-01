@@ -104,7 +104,7 @@ CREATE TABLE IF NOT EXISTS climbing_sessions(
     user_id BIGINT REFERENCES users(id) NOT NULL,
     group_id BIGINT REFERENCES klatre_groups(id) ON DELETE SET NULL,
     place_id BIGINT REFERENCES places(id) ON DELETE SET NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at BIGINT DEFAULT FLOOR(EXTRACT(EPOCH FROM NOW()))::BIGINT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS route_attempts(

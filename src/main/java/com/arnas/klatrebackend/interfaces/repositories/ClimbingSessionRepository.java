@@ -1,9 +1,6 @@
 package com.arnas.klatrebackend.interfaces.repositories;
 
-import com.arnas.klatrebackend.records.ClimbingSession;
-import com.arnas.klatrebackend.records.ClimbingSessionDTO;
-import com.arnas.klatrebackend.records.RouteAttempt;
-import com.arnas.klatrebackend.records.RouteAttemptDTO;
+import com.arnas.klatrebackend.dataclasses.*;
 
 import org.springframework.lang.Nullable;
 
@@ -21,4 +18,5 @@ public interface ClimbingSessionRepository {
     int updateRouteAttempt(RouteAttempt routeAttempt);
     int deleteRouteAttempt(long routeAttemptId);
     RouteAttempt addRouteAttemptToActiveSession(long activeSessionId, RouteAttemptDTO routeAttempt);
+    RouteAttempt getRouteAttemptById(long id);
 }

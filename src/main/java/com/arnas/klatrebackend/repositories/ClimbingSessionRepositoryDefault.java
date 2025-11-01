@@ -1,20 +1,20 @@
 package com.arnas.klatrebackend.repositories;
 
-import com.arnas.klatrebackend.records.ClimbingSession;
-import com.arnas.klatrebackend.records.ClimbingSessionDTO;
-import com.arnas.klatrebackend.records.RouteAttempt;
-import com.arnas.klatrebackend.records.RouteAttemptDTO;
+import com.arnas.klatrebackend.dataclasses.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import com.arnas.klatrebackend.interfaces.repositories.ClimbingSessionRepository;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+@Repository
 public class ClimbingSessionRepositoryDefault implements ClimbingSessionRepository {
 
     final private NamedParameterJdbcTemplate jdbcTemplate;
@@ -41,13 +41,14 @@ public class ClimbingSessionRepositoryDefault implements ClimbingSessionReposito
     }
 
     @Override
+    @Nullable
     public ClimbingSession getActiveSession(long groupId, long userId) {
         var sql = "SELECT * FROM climbing_sessions WHERE group_id = :groupId AND user_id = :userId AND active = :active";
         var parameters = new MapSqlParameterSource()
             .addValue("groupId", groupId)
             .addValue("userId", userId)
             .addValue("active", true);
-        return jdbcTemplate.query(sql, parameters, (rs, index) -> new ClimbingSession(
+        var sessions = jdbcTemplate.query(sql, parameters, (rs, index) -> new ClimbingSession(
                 rs.getLong("id"),
                 rs.getLong("user_id"),
                 rs.getLong("group_id"),
@@ -56,7 +57,9 @@ public class ClimbingSessionRepositoryDefault implements ClimbingSessionReposito
                 rs.getBoolean("active"),
                 rs.getString("name"),
                 getRouteAttemptsBySessionId(rs.getLong("id"))
-        )).getFirst();
+        ));
+        if(sessions.isEmpty()) return null;
+        return sessions.getFirst();
     }
 
     @Override
@@ -86,10 +89,11 @@ public class ClimbingSessionRepositoryDefault implements ClimbingSessionReposito
                 .addValue("groupId", groupId)
                 .addValue("placeId", placeId)
                 .addValue("active", true)
-                .addValue("name", null);
+                .addValue("name", "");
         var keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(sql, parameters, keyHolder);
-        return Objects.requireNonNull(keyHolder.getKey()).longValue();
+        Object id = Objects.requireNonNull(keyHolder.getKeys()).get("id");
+        return Long.parseLong(id.toString());
     }
 
     @Override
@@ -103,16 +107,16 @@ public class ClimbingSessionRepositoryDefault implements ClimbingSessionReposito
 
     @Override
     public long uploadClimbingSession(ClimbingSessionDTO climbingSession) {
-        var sql = "INSERT INTO climbing_sessions(user_id, group_id, place_id, active, name) VALUES (:userId, :groupId, :placeId, :active, :name)";
+        var sql = "INSERT INTO climbing_sessions(user_id, group_id, place_id, active) VALUES (:userId, :groupId, :placeId, :active)";
         var parameters = new MapSqlParameterSource()
-                .addValue("user_id", climbingSession.userId())
-                .addValue("group_id", climbingSession.groupId())
-                .addValue("place_id", climbingSession.placeId())
-                .addValue("active", false)
-                .addValue("name", climbingSession.name());
+                .addValue("user_id", climbingSession.getUserId())
+                .addValue("group_id", climbingSession.getGroupId())
+                .addValue("place_id", climbingSession.getPlaceId())
+                .addValue("active", false);
         var keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(sql, parameters, keyHolder);
-        return Objects.requireNonNull(keyHolder.getKey()).longValue();
+        Object id = Objects.requireNonNull(keyHolder.getKeys()).get("id");
+        return Long.parseLong(id.toString());
     }
 
     @Override
@@ -123,6 +127,7 @@ public class ClimbingSessionRepositoryDefault implements ClimbingSessionReposito
     }
 
     @Override
+    @NonNull
     public List<RouteAttempt> getRouteAttemptsBySessionId(long sessionId) {
         var sql = "SELECT * FROM route_attempts WHERE session = :sessionId";
         var parameters = new MapSqlParameterSource().addValue("sessionId", sessionId);
@@ -141,10 +146,10 @@ public class ClimbingSessionRepositoryDefault implements ClimbingSessionReposito
     public int updateRouteAttempt(RouteAttempt routeAttempt) {
         var sql = "UPDATE route_attempts SET attempts = :attempts, completed = :completed, last_updated = :lastUpdated WHERE id = :id";
         var parameters = new MapSqlParameterSource()
-                .addValue("attempts", routeAttempt.attempts())
-                .addValue("completed", routeAttempt.completed())
+                .addValue("attempts", routeAttempt.getAttempts())
+                .addValue("completed", routeAttempt.getCompleted())
                 .addValue("lastUpdated", new Date().getTime())
-                .addValue("id", routeAttempt.id());
+                .addValue("id", routeAttempt.getId());
         return jdbcTemplate.update(sql, parameters);
     }
 
@@ -157,18 +162,22 @@ public class ClimbingSessionRepositoryDefault implements ClimbingSessionReposito
 
     @Override
     public RouteAttempt addRouteAttemptToActiveSession(long activeSessionId, RouteAttemptDTO routeAttempt) {
-        var sql = "INSERT INTO route_attempts(route_id, session, attempts, completed) VALUES (:routeId, :activeSessionId, :attempts, :completed)";
+        var sql = "INSERT INTO route_attempts(route_id, session, attempts, completed, last_updated) VALUES (:routeId, :activeSessionId, :attempts, :completed, :timestamp)";
         var keyHolder = new GeneratedKeyHolder();
         var parameters = new MapSqlParameterSource()
-                .addValue("routeId", routeAttempt.routeId())
+                .addValue("routeId", routeAttempt.getRouteId())
                 .addValue("activeSessionId", activeSessionId)
-                .addValue("attempts", routeAttempt.attempts())
-                .addValue("completed", routeAttempt.completed());
+                .addValue("attempts", routeAttempt.getAttempts())
+                .addValue("completed", routeAttempt.getCompleted())
+                .addValue("timestamp", routeAttempt.getTimestamp());
         jdbcTemplate.update(sql, parameters, keyHolder);
-        return getRouteAttemptById(Objects.requireNonNull(keyHolder.getKey()).longValue());
+        Long id = (Long) Objects.requireNonNull(keyHolder.getKeys()).get("id");
+        return getRouteAttemptById(id);
     }
 
-    RouteAttempt getRouteAttemptById(long id) {
+    @Override
+    @NonNull
+    public RouteAttempt getRouteAttemptById(long id) {
         var sql = "SELECT * FROM route_attempts WHERE id = :id";
         var parameters = new MapSqlParameterSource().addValue("id", id);
         return jdbcTemplate.query(sql, parameters, (rs, index) ->
