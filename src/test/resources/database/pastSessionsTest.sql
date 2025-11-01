@@ -54,20 +54,20 @@ VALUES
     (505, 'b', 7, 999, 301);
 
 -- Past Session 1: Should be returned by getPastSessions(201)
-INSERT INTO climbing_sessions (id, name, active, user_id, group_id, place_id, created_at) VALUES
-(1, 'Morning Climb', FALSE, 101, 201, 301, NOW() - INTERVAL '2 days');
+INSERT INTO climbing_sessions (id, active, user_id, group_id, place_id, created_at) VALUES
+(1, FALSE, 101, 201, 301, NOW() - INTERVAL '2 days');
 
 -- Past Session 2: Should be returned by getPastSessions(201)
-INSERT INTO climbing_sessions (id, name, active, user_id, group_id, place_id, created_at) VALUES
-(2, 'Evening Bouldering', FALSE, 101, 201, 301, NOW() - INTERVAL '1 day');
+INSERT INTO climbing_sessions (id, active, user_id, group_id, place_id, created_at) VALUES
+(2, FALSE, 101, 201, 301, NOW() - INTERVAL '1 day');
 
 -- Active Session: Should NOT be returned by getPastSessions(201) because active = TRUE
-INSERT INTO climbing_sessions (id, name, active, user_id, group_id, place_id, created_at) VALUES
-(3, 'Current Session', TRUE, 101, 201, 301, NOW());
+INSERT INTO climbing_sessions (id, active, user_id, group_id, place_id, created_at) VALUES
+(3, TRUE, 101, 201, 301, NOW());
 
 -- Session for a different group: Should NOT be returned by getPastSessions(201)
-INSERT INTO climbing_sessions (id, name, active, user_id, group_id, place_id, created_at) VALUES
-(4, 'Other Group Session', FALSE, 999, 999, 301, NOW() - INTERVAL '3 days');
+INSERT INTO climbing_sessions (id, active, user_id, group_id, place_id, created_at) VALUES
+(4,FALSE, 999, 999, 301, NOW() - INTERVAL '3 days');
 
 -- Attempts for Past Session 1
 INSERT INTO route_attempts (id, route_id, attempts, completed, session, last_updated) VALUES

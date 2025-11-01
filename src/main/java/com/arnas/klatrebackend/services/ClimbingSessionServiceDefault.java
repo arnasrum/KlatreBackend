@@ -141,7 +141,6 @@ public class ClimbingSessionServiceDefault implements ClimbingSessionService {
                     session.getGroupId(),
                     session.getTimestamp(),
                     session.getActive(),
-                    session.getName(),
                     routeDisplays.toList()
             );
         }).toList();

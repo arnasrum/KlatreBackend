@@ -35,7 +35,6 @@ public class ClimbingSessionRepositoryDefault implements ClimbingSessionReposito
                 rs.getLong("place_id"),
                 rs.getLong("created_at"),
                 rs.getBoolean("active"),
-                rs.getString("name"),
                 getRouteAttemptsBySessionId(sessionId)
         )).stream().findFirst().orElse(null);
     }
@@ -55,7 +54,6 @@ public class ClimbingSessionRepositoryDefault implements ClimbingSessionReposito
                 rs.getLong("place_id"),
                 rs.getLong("created_at"),
                 rs.getBoolean("active"),
-                rs.getString("name"),
                 getRouteAttemptsBySessionId(rs.getLong("id"))
         ));
         if(sessions.isEmpty()) return null;
@@ -76,20 +74,18 @@ public class ClimbingSessionRepositoryDefault implements ClimbingSessionReposito
                 rs.getLong("place_id"),
                 rs.getLong("created_at"),
                 rs.getBoolean("active"),
-                rs.getString("name"),
                 getRouteAttemptsBySessionId(rs.getLong("id"))
         ));
     }
 
     @Override
     public long openActiveSession(long userId, long groupId, long placeId) {
-        var sql = "INSERT INTO climbing_sessions(user_id, group_id, place_id, active, name) VALUES (:userId, :groupId, :placeId, :active, :name)";
+        var sql = "INSERT INTO climbing_sessions(user_id, group_id, place_id, active) VALUES (:userId, :groupId, :placeId, :active)";
         var parameters = new MapSqlParameterSource()
                 .addValue("userId", userId)
                 .addValue("groupId", groupId)
                 .addValue("placeId", placeId)
-                .addValue("active", true)
-                .addValue("name", "");
+                .addValue("active", true);
         var keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(sql, parameters, keyHolder);
         Object id = Objects.requireNonNull(keyHolder.getKeys()).get("id");

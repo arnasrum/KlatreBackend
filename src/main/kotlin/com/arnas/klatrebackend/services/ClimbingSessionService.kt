@@ -106,7 +106,7 @@ class ClimbingSessionService(
         val sessions = climbingSessionRepository.getPastSessions(groupId, userId)
         val displaySessions = sessions.map {
             val routeDisplays = it.routeAttempts.map { routeAttempt -> routeAttemptToDisplay(routeAttempt)}
-            ClimbingSessionDisplay(it.id, it.groupId, it.userId, it.placeId, it.timestamp, it.active,  it.name, routeDisplays)
+            ClimbingSessionDisplay(it.id, it.groupId, it.userId, it.placeId, it.timestamp, it.active, routeDisplays)
         }
         return displaySessions
     }

@@ -99,7 +99,6 @@ CREATE TABLE IF NOT EXISTS boulder_equivalence(
 
 CREATE TABLE IF NOT EXISTS climbing_sessions(
     id BIGSERIAL PRIMARY KEY,
-    name TEXT,
     active BOOL DEFAULT true,
     user_id BIGINT REFERENCES users(id) NOT NULL,
     group_id BIGINT REFERENCES klatre_groups(id) ON DELETE SET NULL,

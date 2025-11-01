@@ -34,8 +34,8 @@ class ClimbingSessionRepositoryTest {
 
     @Test
     @Sql(statements = [
-        "INSERT INTO climbing_sessions(name, group_id, user_id, place_id, active) VALUES ('test', 1, 1, 1, false);",
-        "INSERT INTO climbing_sessions(name, group_id, user_id, place_id, active) VALUES ('test2', 1, 1, 1, false);"
+        "INSERT INTO climbing_sessions(group_id, user_id, place_id, active, created_at) VALUES (1, 1, 1, false, 1609459200000);",
+        "INSERT INTO climbing_sessions(group_id, user_id, place_id, active, created_at) VALUES (1, 1, 1, false, 1609545600000);"
     ])
     fun `test getPastSessions returns 2`() {
         val groupId = 1L
