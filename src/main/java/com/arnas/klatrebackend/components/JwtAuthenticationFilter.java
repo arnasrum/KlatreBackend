@@ -49,13 +49,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .orElse(null);
             if (authCookieObject == null || authCookieObject.getValue() == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("No auth cookie found.");
+                filterChain.doFilter(request,response);
                 return;
             }
             String authCookie = authCookieObject.getValue();
             if (!jwtService.validateJwtToken(authCookie)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Invalid auth cookie.");
+                filterChain.doFilter(request,response);
                 return;
             }
 

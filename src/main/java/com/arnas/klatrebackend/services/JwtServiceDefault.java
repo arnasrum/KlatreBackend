@@ -1,11 +1,11 @@
 package com.arnas.klatrebackend.services;
 
 
-import com.arnas.klatrebackend.exceptions.InvalidTokenException;
 import com.arnas.klatrebackend.interfaces.services.JwtServiceInterface;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Date;
 import java.util.Map;
 
+@Primary
 @Service
 public class JwtServiceDefault implements JwtServiceInterface {
 
