@@ -1,33 +1,43 @@
 package com.arnas.klatrebackend.services;
 
 import com.arnas.klatrebackend.annotation.RequireGroupAccess;
-import com.arnas.klatrebackend.dataclasses.GradingSystemWithGrades;
-import com.arnas.klatrebackend.dataclasses.Place;
-import com.arnas.klatrebackend.dataclasses.PlaceUpdateDTO;
-import com.arnas.klatrebackend.dataclasses.PlaceWithGrades;
+import com.arnas.klatrebackend.dataclasses.*;
 import com.arnas.klatrebackend.interfaces.repositories.GradingSystemRepositoryInterface;
 import com.arnas.klatrebackend.interfaces.repositories.PlaceRepositoryInterface;
+import com.arnas.klatrebackend.interfaces.repositories.RouteRepositoryInterface;
 import com.arnas.klatrebackend.interfaces.services.PlaceServiceInterface;
+import com.arnas.klatrebackend.repositories.RouteRepository;
+import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
+import static java.lang.Math.abs;
+
+@Primary
 @Service
 public class PlaceServiceDefault implements PlaceServiceInterface {
 
-    final private PlaceRepositoryInterface placeRepository;
-    final private GradingSystemRepositoryInterface gradingSystemRepository;
+    private final PlaceRepositoryInterface placeRepository;
+    private final GradingSystemRepositoryInterface gradingSystemRepository;
+    private final RouteRepositoryInterface routeRepository;
 
     @Autowired
     public PlaceServiceDefault(
             PlaceRepositoryInterface placeRepository,
-            GradingSystemRepositoryInterface gradingSystemRepository
-    ) {
+            GradingSystemRepositoryInterface gradingSystemRepository,
+            RouteRepositoryInterface routeRepository) {
         this.placeRepository = placeRepository;
         this.gradingSystemRepository = gradingSystemRepository;
+        this.routeRepository = routeRepository;
     }
 
 
@@ -53,20 +63,52 @@ public class PlaceServiceDefault implements PlaceServiceInterface {
     }
 
     @Override
+    @Transactional
     public void updatePlace(long userId, @NotNull PlaceUpdateDTO placeUpdateDTO) {
         var place = placeRepository.getPlaceById(placeUpdateDTO.getPlaceId());
         if(place == null) throw new RuntimeException("Cannot find the place in the update request");
         var newPlace = new Place(
                 place.getId(),
-                placeUpdateDTO.getName(),
-                placeUpdateDTO.getDescription(),
+                Optional.ofNullable(placeUpdateDTO.getName()).orElse(place.getName()),
+                Optional.ofNullable(placeUpdateDTO.getDescription()).orElse(place.getDescription()),
                 place.getGroupId(),
-                placeUpdateDTO.getGradingSystemId());
-
+                updatePlaceGradingSystem(place.getId(), place.getGradingSystemId(), placeUpdateDTO.getGradingSystemId())
+        );
+        placeRepository.updatePlace(newPlace);
     }
 
     @Override
     public long updatePlaceGradingSystem(long placeId, long oldGradingSystemId, @Nullable Long newGradingSystemId) {
-        return 0;
+        if(newGradingSystemId == null || oldGradingSystemId == newGradingSystemId) return oldGradingSystemId;
+        var oldGradingSystem = gradingSystemRepository.getGradesBySystemId(oldGradingSystemId);
+        var newGradingSystem = gradingSystemRepository.getGradesBySystemId(newGradingSystemId);
+        var routes = routeRepository.getRoutesByPlaceId(placeId);
+        routes.forEach((route) -> {
+            var oldGrade = oldGradingSystem.stream().filter((grade) -> grade.getId() == route.getGradeId()).findFirst().orElse(null);
+            var newGradeId = findClosestGrade(oldGrade, newGradingSystem);
+            if(newGradeId == null) throw new RuntimeException("Cannot find a grade that matches the old grade");
+            var newRoute = new Route(
+                    route.getId(),
+                    route.getName(),
+                    newGradeId,
+                    route.getPlaceId(),
+                    route.getDescription(),
+                    route.getActive(),
+                    route.getImageId()
+            );
+            routeRepository.updateRoute(newRoute);
+        });
+        return newGradingSystemId;
+    }
+
+    @Nullable
+    private Long findClosestGrade(Grade grade, List<Grade> newReferenceGrades) {
+        var closestGradeDifferencePair = newReferenceGrades.stream()
+                .map((Grade referenceGrade) -> new Pair<Long, Integer>(referenceGrade.getId(), abs(referenceGrade.getNumericalValue() - grade.getNumericalValue())))
+                .min(Comparator
+                        .comparing((Pair<Long, Integer> pair) -> pair.getSecond())
+                        .thenComparing(Pair::getFirst)
+                );
+        return closestGradeDifferencePair.map(Pair::getFirst).orElse(null);
     }
 }
