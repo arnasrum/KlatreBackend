@@ -93,7 +93,6 @@ public class ClimbingSessionServiceDefault implements ClimbingSessionService {
     }
 
     @Override
-    @NotNull
     public RouteAttempt getRouteAttemptById(long attemptId) {
         return climbingSessionRepository.getRouteAttemptById(attemptId);
     }
@@ -111,6 +110,7 @@ public class ClimbingSessionServiceDefault implements ClimbingSessionService {
             try {
                 return routeAttemptToDisplay(routeAttempt);
             } catch (Exception e) {
+                e.printStackTrace();
                 throw new RuntimeException("Error while converting route attempt to display object");
             }
         }).toList();
