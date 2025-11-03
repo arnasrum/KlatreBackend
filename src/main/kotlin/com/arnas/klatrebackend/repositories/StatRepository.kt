@@ -21,7 +21,7 @@ class StatRepository(
             JOIN
                 klatre_groups kg ON ug.group_id = kg.id
             JOIN
-                route_sends rs ON u.id = rs.userID
+                route_attempts rs ON u.id = rs.userID
             WHERE
                 kg.id = :groudId AND u.id = :userId
             GROUP BY
@@ -48,9 +48,9 @@ class StatRepository(
             JOIN
                 klatre_groups kg ON ug.group_id = kg.id
             JOIN
-                route_sends rs ON u.id = rs.userID
+                route_attempts rs ON u.id = rs.userID
             JOIN
-                boulders b ON rs.boulderID = b.id
+                routes b ON rs.boulderID = b.id
             JOIN
                 grades g ON b.grade = g.id
             WHERE
@@ -76,7 +76,7 @@ class StatRepository(
             JOIN
                 user_groups ug ON kg.id = ug.group_id
             JOIN
-                route_sends rs ON ug.user_id = rs.userID
+                route_attempts rs ON ug.user_id = rs.userID
             WHERE
                 rs.completed = TRUE AND kg.id = :groupId AND ug.user_id = :userId 
             GROUP BY
@@ -99,7 +99,7 @@ class StatRepository(
             JOIN
                 user_groups ug ON kg.id = ug.group_id
             JOIN
-                route_sends rs ON ug.user_id = rs.userID
+                route_attempts rs ON ug.user_id = rs.userID
             WHERE
                 kg.id = :groupId
             GROUP BY
@@ -121,9 +121,9 @@ class StatRepository(
             JOIN
                 user_groups ug ON kg.id = ug.group_id
             JOIN
-                route_sends rs ON ug.user_id = rs.userID
+                route_attempts rs ON ug.user_id = rs.userID
             WHERE
-                kg.name = 'Climbing Buddies' AND rs.completed = TRUE -- Replace with your desired group name
+                kg.id = :groupId AND rs.completed = TRUE
             GROUP BY
                 kg.id;
         """.trimIndent()
@@ -145,9 +145,9 @@ class StatRepository(
             JOIN
                 user_groups ug ON kg.id = ug.group_id
             JOIN
-                route_sends rs ON ug.user_id = rs.userID
+                route_attempts rs ON ug.user_id = rs.userID
             JOIN
-                boulders b ON rs.boulderID = b.id
+                routes b ON rs.boulderID = b.id
             JOIN
                 grades g ON b.grade = g.id
             WHERE
