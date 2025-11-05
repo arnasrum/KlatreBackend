@@ -145,5 +145,24 @@ VALUES
     ('svaberg', 6, 1, 1),
     ('sva', 7, 1, 1);
 
+INSERT INTO climbing_sessions (active, user_id, group_id, place_id, created_at) VALUES
+( false, 1, 1, 1, 1704067200), -- 1 jan 2024
+( false, 1, 1, 1, 1704240000), -- 3 jan 2024
+( false, 1, 1, 1, 1706918400); -- 3 feb 2024
+
+-- Route Attempts
+INSERT INTO route_attempts (route_id, attempts, completed, session, last_updated) VALUES
+(1, 1, true, 1, 1704067200000),  -- Warm Up: flash
+(2, 3, true, 1, 1704069000000),  -- The Crimper: 3 forsøk
+(2, 5, false, 1, 1704070800000); -- Roof Problem: ikke sendt
+
+INSERT INTO route_attempts (route_id, attempts, completed, session, last_updated) VALUES
+(1, 1, true, 2, 1704240000000),  -- Warm Up igjen
+(2, 12, true, 2, 1704243600000); -- Roof Problem: sendt etter mange forsøk!
+
+INSERT INTO route_attempts (route_id, attempts, completed, session, last_updated) VALUES
+(2, 2, true, 3, 1706918400000),  -- Roof Problem: nå lett!
+(2, 15, false, 3, 1706922000000); -- Project X: ikke sendt
+
 SELECT MAX(id) FROM grading_systems;
 SELECT setval('grading_systems_id_seq', (SELECT MAX(id) FROM grading_systems));
