@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS places(
     name TEXT NOT NULL,
     description TEXT,
     grading_system_id BIGINT REFERENCES grading_systems(id) ON DELETE CASCADE DEFAULT 1,
-    group_id BIGSERIAL REFERENCES klatre_groups(id) ON DELETE CASCADE
+    group_id BIGINT REFERENCES klatre_groups(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS image(
