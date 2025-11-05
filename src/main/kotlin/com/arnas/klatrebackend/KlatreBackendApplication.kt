@@ -19,14 +19,3 @@ class KlatreBackendApplication
 fun main(args: Array<String>) {
     runApplication<KlatreBackendApplication>(*args)
 }
-
-/*
-@Configuration
-class ApplicationNoSecurity {
-    @Bean fun webSecurityCustomizer(): WebSecurityCustomizer {
-        return WebSecurityCustomizer { web: WebSecurity -> web.ignoring()
-            .requestMatchers(AntPathRequestMatcher("/**"))}
-    }
-}
-
- */
