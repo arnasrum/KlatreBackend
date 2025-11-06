@@ -1,6 +1,6 @@
 package com.arnas.klatrebackend.repositories
 
-import com.arnas.klatrebackend.dataclasses.UserGroupTotalStats
+import com.arnas.klatrebackend.dataclasses.UserGroupSessionStats
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 
@@ -176,13 +176,14 @@ class StatRepository(
             active_sessions asa ON ug.user_id = asa.user_id --AND asa.group_id = kg.id
                     JOIN
             route_attempts ra ON asa.id = ra.session
-            --WHERE
-                --kg.id = :groupId
+            WHERE
+                kg.id = :groupId
             GROUP BY
                     activity_period
             ORDER BY
                     activity_period;
         """
+        /*
         val stat = jdbcTemplate.query(sql,
             mapOf("groupId" to groupId, "timeAggregate" to timeAggregate)) { rs, _ ->
             UserGroupTotalStats(
@@ -192,6 +193,7 @@ class StatRepository(
                 totalAttempts = rs.getInt("completed_sends")
             )
         }
+         */
     }
 
 
