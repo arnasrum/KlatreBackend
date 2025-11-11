@@ -46,7 +46,9 @@ public class StatsRepositoryDefault implements StatsRepository {
                 .addValue("groupId", groupId);
         return jdbcTemplate.query(sql, parameters, (rs, index) ->
             new UserGroupSessionStats(
-                    rs.getString("session_date"),
+                    Integer.parseInt(rs.getString("session_date").split("-")[0]),
+                    Integer.parseInt(rs.getString("session_date").split("-")[1]),
+                    Integer.parseInt(rs.getString("session_date").split("-")[2]),
                     rs.getInt("route_attempts"),
                     rs.getInt("total_tries"),
                     rs.getInt("sends"),
