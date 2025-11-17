@@ -80,12 +80,12 @@ CREATE TABLE IF NOT EXISTS group_invites(
     id BIGSERIAL PRIMARY KEY,
     group_id BIGSERIAL REFERENCES klatre_groups(id) ON DELETE CASCADE,
     user_id BIGSERIAL REFERENCES users(id) ON DELETE CASCADE,
+    sender_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'pending', -- 'pending', 'accepted', 'declined', 'revoked', 'expired'
-    invited_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    accepted_at TIMESTAMP WITH TIME ZONE,
-    declined_at TIMESTAMP WITH TIME ZONE,
-    revoked_at TIMESTAMP WITH TIME ZONE
-    --UNIQUE (group_id, user_id) WHERE status = 'pending'
+    invited_at BIGINT DEFAULT EXTRACT(EPOCH FROM NOW()),
+    accepted_at BIGINT,
+    declined_at BIGINT,
+    revoked_at BIGINT
 );
 
 CREATE TABLE IF NOT EXISTS boulder_equivalence(
