@@ -1,5 +1,8 @@
 package com.arnas.klatrebackend.components
 
+import com.arnas.klatrebackend.dataclasses.UnauthorizedException
+import com.arnas.klatrebackend.exceptions.InviteAlreadyProcessedException
+import com.arnas.klatrebackend.exceptions.NotUpdatedException
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
@@ -81,4 +84,37 @@ class RestControllerExceptionHandler {
         logHttpEvent(request, exception)
         return response
     }
+
+    @ExceptionHandler(InviteAlreadyProcessedException::class)
+    fun handleInviteAlreadyProcessedException(
+        request: HttpServletRequest,
+        exception: InviteAlreadyProcessedException
+    ): ResponseEntity<Map<String, Any>> {
+        val message = exception.message ?: "Invite already processed"
+        val response: ResponseEntity<Map<String, Any>> = ResponseEntity.status(400).body(mapOf("message" to message))
+        return response
+    }
+
+    @ExceptionHandler(NotUpdatedException::class)
+    fun handleNotUpdatedException(
+        request: HttpServletRequest,
+        exception: NotUpdatedException
+    ): ResponseEntity<Map<String, Any>> {
+        val message = exception.message ?: "Not updated"
+        val response: ResponseEntity<Map<String, Any>> = ResponseEntity.status(400).body(mapOf("message" to message))
+        return response
+    }
+
+    @ExceptionHandler(UnauthorizedException::class)
+    fun handleUnauthorizedException(
+        request: HttpServletRequest,
+        exception: UnauthorizedException
+    ): ResponseEntity<Map<String, Any>> {
+        val message = exception.message ?: "Unauthorized"
+        val response: ResponseEntity<Map<String, Any>> = ResponseEntity.status(401).body(mapOf("message" to message))
+        return response
+    }
+
+
+
 }

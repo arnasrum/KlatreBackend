@@ -3,11 +3,15 @@ package com.arnas.klatrebackend.services;
 import com.arnas.klatrebackend.annotation.RequireGroupAccess;
 import com.arnas.klatrebackend.dataclasses.GroupInviteDisplay;
 import com.arnas.klatrebackend.dataclasses.Role;
+import com.arnas.klatrebackend.dataclasses.UnauthorizedException;
+import com.arnas.klatrebackend.exceptions.InviteAlreadyProcessedException;
+import com.arnas.klatrebackend.exceptions.NotUpdatedException;
 import com.arnas.klatrebackend.interfaces.repositories.GroupRepositoryInterface;
 import com.arnas.klatrebackend.interfaces.repositories.InviteRepository;
 import com.arnas.klatrebackend.interfaces.repositories.UserRepositoryInterface;
 import com.arnas.klatrebackend.interfaces.services.InviteService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -51,7 +55,33 @@ public class InviteServiceDefault implements InviteService {
     }
 
     @Override
+    @Transactional
     public void acceptInvite(long inviteId, long userId) {
-        inviteRepository.acceptInvite(inviteId);
+        var invite = inviteRepository.getGroupInviteById(inviteId);
+        if(invite.getUserId() != userId) {
+            throw new UnauthorizedException("Tried accepting an invite that is not for the user.", null);
+        }
+        if(!invite.getStatus().equals("pending")) {
+            throw new InviteAlreadyProcessedException(invite.getStatus());
+        }
+        var userGroups = groupRepository.getGroups(invite.getUserId()).stream();
+        if(userGroups.anyMatch(group -> group.getId() == invite.getGroupId())) {
+            throw new InviteAlreadyProcessedException("User already has access to the group");
+        }
+        var rowsAffected = inviteRepository.acceptInvite(inviteId);
+        if(rowsAffected != 1) throw new NotUpdatedException("Only one row should be affected");
+        groupRepository.addUserToGroup(invite.getUserId(), invite.getGroupId(), Role.USER.getId());
+    }
+
+    @Override
+    @Transactional
+    public void rejectInvite(long inviteId, long userId) {
+        var invite = inviteRepository.getGroupInviteById(inviteId);
+        if(invite.getUserId() != userId)
+            throw new UnauthorizedException("Tried declining an invite that is not for the user.", null);
+        if(!invite.getStatus().equals("pending"))
+            throw new InviteAlreadyProcessedException(invite.getStatus());
+        var rowsAffected = inviteRepository.declineInvite(inviteId);
+        if(rowsAffected != 1) throw new NotUpdatedException("Only one row should be affected");
     }
 }

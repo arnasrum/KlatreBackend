@@ -26,13 +26,13 @@ public class InviteRepositoryDefault implements InviteRepository {
         var parameters = new MapSqlParameterSource().addValue("inviteId", inviteId);
         return jdbcTemplate.query(sql, parameters, (rs, rowNum) -> new GroupInvite(
                     rs.getLong("id"),
-                    rs.getLong("userId"),
-                    rs.getLong("senderId"),
-                    rs.getLong("groupId"),
+                    rs.getLong("user_id"),
+                    rs.getLong("sender_id"),
+                    rs.getLong("group_id"),
                     rs.getString("status"),
-                    rs.getLong("acceptedAt"),
-                    rs.getLong("declinedAt"),
-                    rs.getLong("revokedAt")
+                    rs.getLong("accepted_at"),
+                    rs.getLong("declined_at"),
+                    rs.getLong("revoked_at")
                 )
         ).getFirst();
     }
