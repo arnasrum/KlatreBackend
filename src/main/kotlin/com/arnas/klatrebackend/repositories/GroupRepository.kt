@@ -59,15 +59,15 @@ import kotlin.reflect.full.memberProperties
 
     override fun addUserToGroup(userId: Long, groupId: Long, role: Int): Int {
         return jdbcTemplate.update(
-            "INSERT INTO user_groups (user_id, group_id, role) VALUES (:userID, :groupID, :role)",
-            mapOf("userID" to userId, "groupID" to groupId, "role" to role)
+            "INSERT INTO user_groups (user_id, group_id, role) VALUES (:userID, :groupId, :role)",
+            mapOf("userID" to userId, "groupId" to groupId, "role" to role)
         )
     }
 
     override fun getUserGroupRole(userId: Long, groupId: Long): Int? {
         var userRole: Int? = null
-        jdbcTemplate.query("SELECT role FROM user_groups WHERE user_id = :userID AND group_id = :groupID",
-            mapOf("userID" to userId, "groupID" to groupId)
+        jdbcTemplate.query("SELECT role FROM user_groups WHERE user_id = :userID AND group_id = :groupId",
+            mapOf("userID" to userId, "groupId" to groupId)
         ) { rs -> userRole = rs.getInt("role") }
         return userRole
     }
@@ -90,7 +90,7 @@ import kotlin.reflect.full.memberProperties
                 id = rs.getLong("user_id"),
                 isAdmin = rs.getString("role") == "1" || rs.getString("role") == "0",
                 isOwner = rs.getString("role") == "0",
-                groupID = groupId,
+                groupId = groupId,
                 email = rs.getString("email"),
                 name = rs.getString("name")
             )) }

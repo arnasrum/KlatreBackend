@@ -12,5 +12,5 @@ data class GroupUser(
     val email: String,
     val isOwner: Boolean,
     val isAdmin: Boolean,
-    val groupID: Long,
+    val groupId: Long,
 )

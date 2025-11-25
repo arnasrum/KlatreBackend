@@ -42,12 +42,12 @@ class GroupController(
     @PostMapping("/place")
     fun addPlaceToGroup(
         user: User,
-        @RequestParam groupID: Long,
+        @RequestParam groupId: Long,
         @RequestParam name: String,
         @RequestParam(required = false) description: String?
     ): ResponseEntity<String> {
-        val placeRequest = PlaceRequest(groupId = groupID, name = name, description = description)
-        groupService.addPlaceToGroup(user.id, groupID, placeRequest)
+        val placeRequest = PlaceRequest(groupId = groupId, name = name, description = description)
+        groupService.addPlaceToGroup(user.id, groupId, placeRequest)
         return ResponseEntity.ok("Place added successfully")
     }
 
@@ -65,8 +65,8 @@ class GroupController(
     }
 
     @GetMapping("/grading")
-    fun getGradingSystemsInGroup(@RequestParam groupID: Long, user: User): ResponseEntity<List<GradingSystem>> {
-        val gradingSystems = groupService.getGradingSystemsInGroup(groupID)
+    fun getGradingSystemsInGroup(@RequestParam groupId: Long, user: User): ResponseEntity<List<GradingSystem>> {
+        val gradingSystems = groupService.getGradingSystemsInGroup(groupId)
         return ResponseEntity.ok(gradingSystems)
     }
 
@@ -83,20 +83,20 @@ class GroupController(
     }
 
     @GetMapping("/users")
-    fun getUsersInGroup(@RequestParam("groupID") groupID: Long, user: User): ResponseEntity<Any> {
-        val users = groupService.getUsersInGroup(user.id, groupID)
+    fun getUsersInGroup(@RequestParam("groupID") groupId: Long, user: User): ResponseEntity<Any> {
+        val users = groupService.getUsersInGroup(user.id, groupId)
         return ResponseEntity.ok(users)
     }
 
     @PutMapping("/users/permissions")
     fun changeUserPermissions(
-        @RequestParam(required = true) userID: Long,
-        @RequestParam(required = true) groupID: Long,
+        @RequestParam(required = true) userId: Long,
+        @RequestParam(required = true) groupId: Long,
         @RequestParam(required = true) role: Int,
         user: User
     ): ResponseEntity<Any> {
         try {
-            groupService.changeGroupUserRole(user.id, userID,  role, groupID)
+            groupService.changeGroupUserRole(user.id, userId,  role, groupId)
         } catch (e: UnauthorizedException) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("errorMessage" to e.message))
         } catch (e: RuntimeException) {
@@ -107,12 +107,12 @@ class GroupController(
 
     @DeleteMapping("/users/kick")
     fun kickUserFromGroup(
-        @RequestParam(required = true) userID: Long,
-        @RequestParam(required = true) groupID: Long,
+        @RequestParam(required = true) userId: Long,
+        @RequestParam(required = true) groupId: Long,
         user: User)
     : ResponseEntity<Any> {
         try {
-            groupService.kickUserFromGroup(user.id, userID, groupID)
+            groupService.kickUserFromGroup(user.id, userId, groupId)
         } catch (e: UnauthorizedException) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mapOf("errorMessage" to e.message))
         } catch (e: RuntimeException) {

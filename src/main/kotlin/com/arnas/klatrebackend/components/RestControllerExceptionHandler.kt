@@ -101,7 +101,7 @@ class RestControllerExceptionHandler {
         exception: NotUpdatedException
     ): ResponseEntity<Map<String, Any>> {
         val message = exception.message ?: "Not updated"
-        val response: ResponseEntity<Map<String, Any>> = ResponseEntity.status(400).body(mapOf("message" to message))
+        val response: ResponseEntity<Map<String, Any>> = ResponseEntity.status(500).body(mapOf("message" to message))
         return response
     }
 
