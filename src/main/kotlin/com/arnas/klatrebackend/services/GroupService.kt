@@ -27,7 +27,16 @@ open class GroupService(
 
     override fun getGroups(userId: Long): List<GroupWithPlaces> {
         val groups = groupRepository.getGroups(userId)
-        val groupWithPlaces = groups.map { GroupWithPlaces(it, placeRepository.getPlacesByGroupId(it.id))}
+        val groupWithPlaces = groups.map {
+            GroupWithPlaces(
+                it.id,
+                it.owner,
+                it.name,
+                it.personal,
+                it.uuid,
+                it.description,
+                placeRepository.getPlacesByGroupId(it.id))
+        }
         return groupWithPlaces
     }
 
