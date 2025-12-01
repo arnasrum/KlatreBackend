@@ -12,7 +12,7 @@ import java.util.Objects;
 
 @Primary
 @Repository
-public class ImageRepositoryJava implements ImageRepositoryInterface {
+public class ImageRepositoryJava implements ImageRepository {
 
     NamedParameterJdbcTemplate jdbcTemplate;
 

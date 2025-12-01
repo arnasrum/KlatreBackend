@@ -2,11 +2,11 @@ package com.arnas.klatrebackend.features.invites;
 
 import com.arnas.klatrebackend.annotation.RequireGroupAccess;
 import com.arnas.klatrebackend.features.auth.Role;
-import com.arnas.klatrebackend.exceptions.UnauthorizedException;
-import com.arnas.klatrebackend.exceptions.InviteAlreadyProcessedException;
-import com.arnas.klatrebackend.exceptions.NotUpdatedException;
-import com.arnas.klatrebackend.features.groups.GroupRepositoryInterface;
-import com.arnas.klatrebackend.features.users.UserRepositoryInterface;
+import com.arnas.klatrebackend.util.exceptions.UnauthorizedException;
+import com.arnas.klatrebackend.util.exceptions.InviteAlreadyProcessedException;
+import com.arnas.klatrebackend.util.exceptions.NotUpdatedException;
+import com.arnas.klatrebackend.features.groups.GroupRepository;
+import com.arnas.klatrebackend.features.users.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,13 +16,13 @@ import java.util.List;
 public class InviteServiceDefault implements InviteService {
 
     private final InviteRepository inviteRepository;
-    private final UserRepositoryInterface userRepository;
-    private final GroupRepositoryInterface groupRepository;
+    private final UserRepository userRepository;
+    private final GroupRepository groupRepository;
 
     public InviteServiceDefault(
             InviteRepository inviteRepository,
-            UserRepositoryInterface userRepository,
-            GroupRepositoryInterface groupRepository
+            UserRepository userRepository,
+            GroupRepository groupRepository
     ) {
         this.inviteRepository = inviteRepository;
         this.userRepository = userRepository;

@@ -1,8 +1,8 @@
 package com.arnas.klatrebackend.components
 
-import com.arnas.klatrebackend.exceptions.UnauthorizedException
-import com.arnas.klatrebackend.exceptions.InviteAlreadyProcessedException
-import com.arnas.klatrebackend.exceptions.NotUpdatedException
+import com.arnas.klatrebackend.util.exceptions.UnauthorizedException
+import com.arnas.klatrebackend.util.exceptions.InviteAlreadyProcessedException
+import com.arnas.klatrebackend.util.exceptions.NotUpdatedException
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger

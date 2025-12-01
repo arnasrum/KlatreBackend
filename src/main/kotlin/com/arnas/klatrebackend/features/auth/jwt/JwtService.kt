@@ -1,5 +1,6 @@
-package com.arnas.klatrebackend.features.auth
+package com.arnas.klatrebackend.features.auth.jwt
 
+import com.arnas.klatrebackend.features.auth.jwt.JwtServiceInterface
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jws
 import io.jsonwebtoken.Jwts

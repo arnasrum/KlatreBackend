@@ -2,7 +2,7 @@ package com.arnas.klatrebackend.features.groups
 
 import com.arnas.klatrebackend.features.gradesystems.GradingSystem
 import com.arnas.klatrebackend.features.places.PlaceRequest
-import com.arnas.klatrebackend.exceptions.UnauthorizedException
+import com.arnas.klatrebackend.util.exceptions.UnauthorizedException
 import com.arnas.klatrebackend.features.users.User
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/groups")
 class GroupController(
-    private val groupService: GroupServiceInterface,
+    private val groupService: GroupService,
 ) {
 
     @GetMapping("")

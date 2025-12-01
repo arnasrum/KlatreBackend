@@ -1,7 +1,7 @@
 package com.arnas.klatrebackend.components;
 
-import com.arnas.klatrebackend.features.auth.JwtServiceInterface;
-import com.arnas.klatrebackend.features.users.UserServiceInterface;
+import com.arnas.klatrebackend.features.auth.jwt.JwtServiceInterface;
+import com.arnas.klatrebackend.features.users.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -25,11 +25,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String AUTH_COOKIE_NAME = "authToken";
     private final JwtServiceInterface jwtService;
-    private final UserServiceInterface userService;
+    private final UserService userService;
 
     public JwtAuthenticationFilter(
             @Autowired JwtServiceInterface jwtService,
-            @Autowired UserServiceInterface userService
+            @Autowired UserService userService
     ) {
         this.jwtService = jwtService;
         this.userService = userService;

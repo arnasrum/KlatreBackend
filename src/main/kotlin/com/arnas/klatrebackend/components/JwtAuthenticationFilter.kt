@@ -1,7 +1,7 @@
 package com.arnas.klatrebackend.components
 
-import com.arnas.klatrebackend.features.auth.JwtService
-import com.arnas.klatrebackend.features.users.UserService
+import com.arnas.klatrebackend.features.auth.jwt.JwtService
+import com.arnas.klatrebackend.features.users.UserServiceDefault
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -17,7 +17,7 @@ import java.util.*
 @Component
 class JwtAuthenticationFilterDefault(
     private val jwtService: JwtService,
-    private val userService: UserService
+    private val userService: UserServiceDefault
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(

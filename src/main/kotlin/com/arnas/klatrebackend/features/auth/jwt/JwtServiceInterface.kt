@@ -1,4 +1,4 @@
-package com.arnas.klatrebackend.features.auth
+package com.arnas.klatrebackend.features.auth.jwt
 
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jws

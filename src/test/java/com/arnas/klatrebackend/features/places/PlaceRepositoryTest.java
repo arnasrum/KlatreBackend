@@ -12,11 +12,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @DataJdbcTest
 @Testcontainers
 @ActiveProfiles("test")
-@Import(PlaceRepository.class)
+@Import(PlaceRepositoryDefault.class)
 public class PlaceRepositoryTest {
 
     @Autowired
-    private PlaceRepository placeRepository;
+    private PlaceRepositoryDefault placeRepository;
 
     @Container
     @ServiceConnection

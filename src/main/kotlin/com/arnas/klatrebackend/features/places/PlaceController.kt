@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/places")
 @RestController
 class PlaceController(
-    private val placeService: PlaceServiceInterface,
+    private val placeService: PlaceService,
 ) {
 
 

@@ -3,9 +3,9 @@ package com.arnas.klatrebackend.features.climbingsessions;
 import com.arnas.klatrebackend.features.gradesystems.Grade;
 import com.arnas.klatrebackend.features.places.Place;
 import com.arnas.klatrebackend.features.routes.Route;
-import com.arnas.klatrebackend.features.gradesystems.GradeSystemRepositoryInterface;
-import com.arnas.klatrebackend.features.places.PlaceRepositoryInterface;
-import com.arnas.klatrebackend.features.routes.RouteRepositoryInterface;
+import com.arnas.klatrebackend.features.gradesystems.GradeSystemRepository;
+import com.arnas.klatrebackend.features.places.PlaceRepository;
+import com.arnas.klatrebackend.features.routes.RouteRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,11 +25,11 @@ public class ClimbingSessionServiceTest {
     @Mock
     private ClimbingSessionRepository climbingSessionRepository;
     @Mock
-    private PlaceRepositoryInterface placeRepository;
+    private PlaceRepository placeRepository;
     @Mock
-    private GradeSystemRepositoryInterface gradingSystemRepository;
+    private GradeSystemRepository gradingSystemRepository;
     @Mock
-    private RouteRepositoryInterface routeRepository;
+    private RouteRepository routeRepository;
     @InjectMocks
     private ClimbingSessionServiceDefault climbingSessionService;
 

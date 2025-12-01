@@ -10,7 +10,7 @@ import com.arnas.klatrebackend.annotation.RequireGroupAccess
 import com.arnas.klatrebackend.features.auth.GroupAccessSource
 import com.arnas.klatrebackend.features.auth.Role
 import com.arnas.klatrebackend.features.climbingsessions.ClimbingSessionRepository
-import com.arnas.klatrebackend.features.places.PlaceServiceInterface
+import com.arnas.klatrebackend.features.places.PlaceService
 import com.arnas.klatrebackend.features.routes.RouteRepository
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.KProperty1
@@ -19,7 +19,7 @@ import kotlin.reflect.KProperty1
 @Component
 class AccessControlAspect(
     private val accessControlService: AccessControlService,
-    private val placeService: PlaceServiceInterface,
+    private val placeService: PlaceService,
     private val routeRepository: RouteRepository,
     private val climbingSessionRepository: ClimbingSessionRepository
 ) {

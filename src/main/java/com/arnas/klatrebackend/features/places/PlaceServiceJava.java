@@ -5,12 +5,11 @@ import com.arnas.klatrebackend.features.gradesystems.Grade;
 import com.arnas.klatrebackend.features.gradesystems.GradingSystemWithGrades;
 import com.arnas.klatrebackend.features.routes.Route;
 import com.arnas.klatrebackend.features.routes.RouteRepository;
-import com.arnas.klatrebackend.features.gradesystems.GradeSystemRepositoryInterface;
+import com.arnas.klatrebackend.features.gradesystems.GradeSystemRepository;
 import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,19 +19,19 @@ import java.util.Optional;
 
 import static java.lang.Math.abs;
 
-@Primary
 @Service
-public class PlaceServiceDefault implements PlaceServiceInterface {
+public class PlaceServiceJava implements PlaceService {
 
-    private final PlaceRepositoryInterface placeRepository;
-    private final GradeSystemRepositoryInterface gradingSystemRepository;
+    private final PlaceRepository placeRepository;
+    private final GradeSystemRepository gradingSystemRepository;
     private final RouteRepository routeRepository;
 
     @Autowired
-    public PlaceServiceDefault(
-            PlaceRepositoryInterface placeRepository,
-            GradeSystemRepositoryInterface gradingSystemRepository,
-            RouteRepository routeRepository) {
+    public PlaceServiceJava(
+        PlaceRepository placeRepository,
+        GradeSystemRepository gradingSystemRepository,
+        RouteRepository routeRepository
+    ) {
         this.placeRepository = placeRepository;
         this.gradingSystemRepository = gradingSystemRepository;
         this.routeRepository = routeRepository;

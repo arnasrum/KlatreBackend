@@ -1,7 +1,6 @@
 package com.arnas.klatrebackend.features.images
 
 import com.arnas.klatrebackend.features.users.User
-import com.arnas.klatrebackend.features.images.ImageServiceInterface
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.FileSystemResource
@@ -21,7 +20,7 @@ import java.io.File
 @Tag(name = "Image", description = "Image CRUD operations")
 @RequestMapping("/api/images")
 class ImageController(
-    private val imageService: ImageServiceInterface,
+    private val imageService: ImageService,
 ) {
 
     @Value("\${app.image.upload.dir}")

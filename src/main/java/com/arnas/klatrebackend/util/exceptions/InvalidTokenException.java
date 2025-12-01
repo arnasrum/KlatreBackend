@@ -1,4 +1,4 @@
-package com.arnas.klatrebackend.exceptions;
+package com.arnas.klatrebackend.util.exceptions;
 
 public class InvalidTokenException extends Exception {
     public InvalidTokenException(String message) {

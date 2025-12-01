@@ -1,5 +1,6 @@
 package com.arnas.klatrebackend.features.auth
 
+import com.arnas.klatrebackend.features.auth.login.LoginServiceInterface
 import com.arnas.klatrebackend.features.users.User
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value

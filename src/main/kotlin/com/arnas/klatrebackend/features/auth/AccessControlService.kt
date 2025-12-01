@@ -1,13 +1,13 @@
 package com.arnas.klatrebackend.features.auth
 
-import com.arnas.klatrebackend.features.groups.GroupRepository
+import com.arnas.klatrebackend.features.groups.GroupRepositoryDefault
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
 @Service
 class AccessControlService(
-    private val groupRepository: GroupRepository,
+    private val groupRepository: GroupRepositoryDefault,
 ) {
 
     @Cacheable(value = ["userGroupAccess"], key = "#userId + ':' + #groupId")

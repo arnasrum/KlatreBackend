@@ -1,7 +1,7 @@
 package com.arnas.klatrebackend.features.invites;
 
-import com.arnas.klatrebackend.features.groups.GroupRepositoryInterface;
-import com.arnas.klatrebackend.features.users.UserRepositoryInterface;
+import com.arnas.klatrebackend.features.groups.GroupRepository;
+import com.arnas.klatrebackend.features.users.UserRepository;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -15,9 +15,9 @@ public class InviteServiceTest {
     @Mock
     private InviteRepository inviteRepository;
     @Mock
-    private UserRepositoryInterface userRepository;
+    private UserRepository userRepository;
     @Mock
-    private GroupRepositoryInterface groupRepository;
+    private GroupRepository groupRepository;
     @InjectMocks
     private InviteService inviteService;
 

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/gradingSystems")
-class GradeSystemController(private val gradeSystemService: GradeSystemServiceInterface) {
+class GradeSystemController(private val gradeSystemService: GradeSystemService) {
 
     data class GradeEntry(
         val name: String,

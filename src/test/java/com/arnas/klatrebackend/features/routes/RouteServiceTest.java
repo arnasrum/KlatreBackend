@@ -1,9 +1,9 @@
 package com.arnas.klatrebackend.features.routes;
 
 
-import com.arnas.klatrebackend.features.groups.GroupRepositoryInterface;
-import com.arnas.klatrebackend.features.places.PlaceRepositoryInterface;
-import com.arnas.klatrebackend.features.images.ImageServiceInterface;
+import com.arnas.klatrebackend.features.groups.GroupRepository;
+import com.arnas.klatrebackend.features.places.PlaceRepository;
+import com.arnas.klatrebackend.features.images.ImageService;
 import com.arnas.klatrebackend.features.auth.AccessControlService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,16 +24,16 @@ import static org.mockito.Mockito.*;
 public class RouteServiceTest {
 
     @Mock
-    private RouteRepositoryInterface routeRepository;
+    private RouteRepository routeRepository;
 
     @Mock
-    private ImageServiceInterface imageService;
+    private ImageService imageService;
     
     @Mock
-    private GroupRepositoryInterface groupRepository;
+    private GroupRepository groupRepository;
 
     @Mock
-    private PlaceRepositoryInterface placeRepository;
+    private PlaceRepository placeRepository;
 
     @Mock
     private AccessControlService accessControlService;

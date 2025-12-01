@@ -1,8 +1,7 @@
-package com.arnas.klatrebackend.features.auth
+package com.arnas.klatrebackend.features.auth.login
 
-import com.arnas.klatrebackend.features.auth.LoginServiceInterface
-import com.arnas.klatrebackend.features.auth.JwtService
-import com.arnas.klatrebackend.features.users.UserService
+import com.arnas.klatrebackend.features.auth.jwt.JwtService
+import com.arnas.klatrebackend.features.users.UserServiceDefault
 import com.nimbusds.jose.shaded.gson.JsonObject
 import com.nimbusds.jose.shaded.gson.JsonParser
 import org.springframework.beans.factory.annotation.Value
@@ -14,7 +13,7 @@ import java.net.http.HttpResponse
 
 @Service
 class LoginService(
-    private val userService: UserService,
+    private val userService: UserServiceDefault,
     private val jwtService: JwtService,
     @param:Value("\${GOOGLE_CLIENT_ID}") private val googleClientId: String,
     @param:Value("\${GOOGLE_CLIENT_SECRET}") private val googleClientSecret: String

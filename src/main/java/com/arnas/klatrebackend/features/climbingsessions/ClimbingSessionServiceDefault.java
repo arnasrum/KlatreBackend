@@ -3,8 +3,8 @@ package com.arnas.klatrebackend.features.climbingsessions;
 import com.arnas.klatrebackend.annotation.RequireGroupAccess;
 import com.arnas.klatrebackend.features.auth.GroupAccessSource;
 import com.arnas.klatrebackend.features.gradesystems.Grade;
-import com.arnas.klatrebackend.features.gradesystems.GradeSystemRepository;
-import com.arnas.klatrebackend.features.places.PlaceRepositoryInterface;
+import com.arnas.klatrebackend.features.gradesystems.GradeSystemRepositoryDefault;
+import com.arnas.klatrebackend.features.places.PlaceRepository;
 import com.arnas.klatrebackend.features.routes.RouteRepository;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,14 +17,14 @@ import java.util.stream.Stream;
 public class ClimbingSessionServiceDefault implements ClimbingSessionService {
 
     final private ClimbingSessionRepository climbingSessionRepository;
-    final private PlaceRepositoryInterface placeRepository;
-    final private GradeSystemRepository gradingSystemRepository;
+    final private PlaceRepository placeRepository;
+    final private GradeSystemRepositoryDefault gradingSystemRepository;
     final private RouteRepository routeRepository;
 
     public ClimbingSessionServiceDefault(
             @Autowired ClimbingSessionRepository climbingSessionRepository,
-            @Autowired PlaceRepositoryInterface placeRepository,
-            @Autowired GradeSystemRepository gradingSystemRepository,
+            @Autowired PlaceRepository placeRepository,
+            @Autowired GradeSystemRepositoryDefault gradingSystemRepository,
             @Autowired RouteRepository routeRepository) {
         this.climbingSessionRepository = climbingSessionRepository;
         this.placeRepository = placeRepository;
