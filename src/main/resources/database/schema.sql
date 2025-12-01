@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS climbing_sessions, group_invites, user_groups, image, routes, klatre_groups, users, roles, places, route_sends, route_attempts, grading_systems, grades CASCADE;
+DROP TABLE IF EXISTS climbing_sessions, group_invites, user_groups, images, routes, klatre_groups, users, roles, places, route_sends, route_attempts, grading_systems, grades CASCADE;
 
 CREATE TABLE IF NOT EXISTS users(
     id BIGSERIAL PRIMARY KEY,
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS places(
     group_id BIGINT REFERENCES klatre_groups(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS image(
+CREATE TABLE IF NOT EXISTS images(
     id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
     content_type TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS routes(
     user_id BIGINT REFERENCES users(id),
     date_added TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     place_id BIGSERIAL REFERENCES places(id) ON DELETE CASCADE,
-    image_id TEXT REFERENCES image(id) ON DELETE SET NULL
+    image_id TEXT REFERENCES images(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS user_groups(

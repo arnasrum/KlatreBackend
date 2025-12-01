@@ -29,8 +29,8 @@ public class ImageRepositoryJava implements ImageRepositoryInterface {
         return jdbcTemplate.query(sql, parameters,
             (rs, index) -> new Image(
                 rs.getString("id"),
-                rs.getString("contentType"),
-                rs.getLong("fileSize")
+                rs.getString("content_type"),
+                rs.getLong("file_size")
             )
         ).getFirst();
     }
@@ -45,14 +45,14 @@ public class ImageRepositoryJava implements ImageRepositoryInterface {
     @Override
     @NotNull
     public String storeImageMetaData(@NotNull String contentType, long size, long userId) {
-        var sql = "INSERT INTO images(id, contentType, fileSize) VALUES (:id, :contentType, :fileSize)";
+        var sql = "INSERT INTO images(user_id, content_type, file_size) VALUES (:userId, :contentType, :fileSize)";
         var keyholder = new GeneratedKeyHolder();
         var parameters = new MapSqlParameterSource()
-                .addValue("id", userId)
+                .addValue("userId", userId)
                 .addValue("contentType", contentType)
                 .addValue("fileSize", size);
         jdbcTemplate.update(sql, parameters, keyholder);
-        return Objects.requireNonNull(keyholder.getKey()).toString();
+        return Objects.requireNonNull(keyholder.getKeys().get("id")).toString();
     }
 
     @Override
@@ -63,8 +63,8 @@ public class ImageRepositoryJava implements ImageRepositoryInterface {
         return jdbcTemplate.query(sql, parameters,
                 (rs, index) -> new Image(
                         rs.getString("id"),
-                        rs.getString("contentType"),
-                        rs.getLong("fileSize")
+                        rs.getString("content_type"),
+                        rs.getLong("file_size")
                 )
         ).getFirst();
     }

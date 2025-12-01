@@ -4,6 +4,7 @@ import com.arnas.klatrebackend.dataclasses.Image
 import com.arnas.klatrebackend.interfaces.repositories.ImageRepositoryInterface
 import com.arnas.klatrebackend.interfaces.services.ImageServiceInterface
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Primary
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
@@ -13,6 +14,7 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 
 @Service
+@Primary
 class ImageService(
     val imageRepository: ImageRepositoryInterface,
 ): ImageServiceInterface {
