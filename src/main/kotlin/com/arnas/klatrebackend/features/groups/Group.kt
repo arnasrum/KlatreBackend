@@ -1,0 +1,30 @@
+package com.arnas.klatrebackend.features.groups
+
+import com.arnas.klatrebackend.features.places.Place
+
+data class Group(
+    var id: Long,
+    var owner: Long,
+    var name: String,
+    var personal: Boolean,
+    var uuid: String,
+    var description: String? = null,
+)
+
+data class GroupWithPlaces(
+    var id: Long,
+    var owner: Long,
+    var name: String,
+    var personal: Boolean,
+    var uuid: String,
+    var description: String? = null,
+    var places: List<Place>
+)
+
+data class AddGroupRequest(
+    var name: String,
+    var owner: Long,
+    var personal: Boolean?,
+    var description: String? = null,
+    var invites: List<String>? = null,
+)

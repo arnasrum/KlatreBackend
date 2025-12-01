@@ -1,17 +1,17 @@
 package com.arnas.klatrebackend.aspects
 
-import com.arnas.klatrebackend.repositories.ClimbingSessionRepository
-import com.arnas.klatrebackend.services.AccessControlService
+import com.arnas.klatrebackend.features.auth.AccessControlService
 import org.aspectj.lang.JoinPoint
 import org.aspectj.lang.annotation.Aspect
 import org.aspectj.lang.annotation.Before
 import org.aspectj.lang.reflect.MethodSignature
 import org.springframework.stereotype.Component
 import com.arnas.klatrebackend.annotation.RequireGroupAccess
-import com.arnas.klatrebackend.dataclasses.GroupAccessSource
-import com.arnas.klatrebackend.dataclasses.Role
-import com.arnas.klatrebackend.interfaces.repositories.RouteRepositoryInterface
-import com.arnas.klatrebackend.interfaces.services.PlaceServiceInterface
+import com.arnas.klatrebackend.features.auth.GroupAccessSource
+import com.arnas.klatrebackend.features.auth.Role
+import com.arnas.klatrebackend.features.climbingsessions.ClimbingSessionRepository
+import com.arnas.klatrebackend.features.places.PlaceServiceInterface
+import com.arnas.klatrebackend.features.routes.RouteRepository
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.KProperty1
 
@@ -20,7 +20,7 @@ import kotlin.reflect.KProperty1
 class AccessControlAspect(
     private val accessControlService: AccessControlService,
     private val placeService: PlaceServiceInterface,
-    private val routeRepository: RouteRepositoryInterface,
+    private val routeRepository: RouteRepository,
     private val climbingSessionRepository: ClimbingSessionRepository
 ) {
 
@@ -79,9 +79,10 @@ class AccessControlAspect(
                     }
                     routeId = args[routeIdIndex] as Long
                 }
-                val route = routeRepository.getRouteById(routeId)
-                    ?: throw IllegalArgumentException("Boulder with ID $routeId not found")
-                val place = placeService.getPlaceById(route.placeId)
+                val routeOptional = routeRepository.getRouteById(routeId)
+                if(routeOptional.isEmpty) throw IllegalArgumentException("Route with ID $routeId not found")
+
+                val place = placeService.getPlaceById(routeOptional.get().placeId)
                     ?: throw IllegalArgumentException("Place not found")
                 place.groupId
             }
@@ -91,8 +92,8 @@ class AccessControlAspect(
                     throw IllegalArgumentException("Parameter 'sessionId' not found in method arguments")
                 }
                 val sessionId = args[sessionIdIndex] as Long
-                climbingSessionRepository.getSessionById(sessionId)?.groupId
-                    ?: climbingSessionRepository.getSessionById(sessionId)?.groupId
+                climbingSessionRepository.getClimbingSessionById(sessionId)?.groupId
+                    ?: climbingSessionRepository.getClimbingSessionById(sessionId)?.groupId
                     ?: throw IllegalArgumentException("Session with ID $sessionId not found")
             }
         }

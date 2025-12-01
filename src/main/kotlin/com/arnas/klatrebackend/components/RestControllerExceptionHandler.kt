@@ -1,6 +1,6 @@
 package com.arnas.klatrebackend.components
 
-import com.arnas.klatrebackend.dataclasses.UnauthorizedException
+import com.arnas.klatrebackend.exceptions.UnauthorizedException
 import com.arnas.klatrebackend.exceptions.InviteAlreadyProcessedException
 import com.arnas.klatrebackend.exceptions.NotUpdatedException
 import jakarta.servlet.http.HttpServletRequest
@@ -69,6 +69,7 @@ class RestControllerExceptionHandler {
         exception: RuntimeException
     ): ResponseEntity<Map<String, Any>> {
         val message = exception.message ?: "Bad request"
+        exception.printStackTrace();
         val response: ResponseEntity<Map<String, Any>> = ResponseEntity.status(400).body(mapOf("message" to message))
         logHttpEvent(request, exception)
         return response

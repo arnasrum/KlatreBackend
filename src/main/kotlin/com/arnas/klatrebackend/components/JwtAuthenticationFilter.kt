@@ -1,7 +1,7 @@
 package com.arnas.klatrebackend.components
 
-import com.arnas.klatrebackend.services.JwtService
-import com.arnas.klatrebackend.services.UserService
+import com.arnas.klatrebackend.features.auth.JwtService
+import com.arnas.klatrebackend.features.users.UserService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

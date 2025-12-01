@@ -1,7 +1,7 @@
 package com.arnas.klatrebackend.services;
 
 
-import com.arnas.klatrebackend.interfaces.services.JwtServiceInterface;
+import com.arnas.klatrebackend.features.auth.JwtServiceInterface;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;

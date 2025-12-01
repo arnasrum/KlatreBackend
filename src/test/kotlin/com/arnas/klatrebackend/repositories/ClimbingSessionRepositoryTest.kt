@@ -1,8 +1,8 @@
 package com.arnas.klatrebackend.repositories
 
-import com.arnas.klatrebackend.dataclasses.RouteAttemptDTO
-import com.arnas.klatrebackend.dataclasses.UpdateAttemptRequest
-import com.arnas.klatrebackend.interfaces.repositories.ClimbingSessionRepositoryInterface
+import com.arnas.klatrebackend.features.climbingsessions.RouteAttemptDTO
+import com.arnas.klatrebackend.features.climbingsessions.ClimbingSessionRepository
+import com.arnas.klatrebackend.features.climbingsessions.RouteAttempt
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest
@@ -21,7 +21,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 class ClimbingSessionRepositoryTest {
 
     @Autowired
-    private lateinit var climbingSessionRepository: ClimbingSessionRepositoryInterface
+    private lateinit var climbingSessionRepository: ClimbingSessionRepository
 
     companion object {
         @Container
@@ -69,7 +69,7 @@ class ClimbingSessionRepositoryTest {
         
         assert(sessionId > 0) { "Session ID should be positive" }
         
-        val activeSession = climbingSessionRepository.getActiveSession(sessionId)
+        val activeSession = climbingSessionRepository.getActiveSession(1L, 1L)
         assert(activeSession != null) { "Active session should exist" }
         assert(activeSession?.userId == userId) { "User ID mismatch" }
         assert(activeSession?.groupId == groupId) { "Group ID mismatch" }
@@ -104,7 +104,7 @@ class ClimbingSessionRepositoryTest {
         
         assert(rowsAffected == 1) { "One row should be affected" }
         
-        val activeSession = climbingSessionRepository.getActiveSession(sessionId)
+        val activeSession = climbingSessionRepository.getActiveSession(1L, 1L)
         assert(activeSession == null) { "Session should no longer be active" }
     }
 
@@ -124,13 +124,7 @@ class ClimbingSessionRepositoryTest {
         val placeId = 1L
         
         val sessionId = climbingSessionRepository.openActiveSession(userId, groupId, placeId)
-        val routeAttemptDTO = RouteAttemptDTO(
-            routeId = 1L,
-            attempts = 3,
-            completed = true,
-            timestamp = System.currentTimeMillis(),
-            session = sessionId
-        )
+        val routeAttemptDTO = RouteAttemptDTO(3, true, 1L, System.currentTimeMillis(), sessionId)
         
         val createdAttempt = climbingSessionRepository.addRouteAttemptToActiveSession(sessionId, routeAttemptDTO)
         
@@ -177,14 +171,9 @@ class ClimbingSessionRepositoryTest {
         "INSERT INTO route_attempts(id, route_id, attempts, completed, session, last_updated) VALUES (1, 1, 2, false, 100, 1000000);"
     ])
     fun `test updateRouteAttempt modifies attempt`() {
-        val updateRequest = UpdateAttemptRequest(
-            id = 1L,
-            attempts = 5,
-            completed = true,
-            timestamp = System.currentTimeMillis()
-        )
-        
-        val rowsAffected = climbingSessionRepository.updateRouteAttempt(updateRequest)
+        val newRouteAttempt = RouteAttempt(1L, 5, true, 1L, System.currentTimeMillis(), 100)
+
+        val rowsAffected = climbingSessionRepository.updateRouteAttempt(newRouteAttempt)
         
         assert(rowsAffected == 1) { "One row should be affected" }
         
@@ -232,7 +221,7 @@ class ClimbingSessionRepositoryTest {
         
         assert(rowsAffected == 1) { "One row should be affected" }
         
-        val session = climbingSessionRepository.getSessionById(sessionId)
+        val session = climbingSessionRepository.getClimbingSessionById(sessionId)
         assert(session == null) { "Session should be deleted" }
     }
 
@@ -251,7 +240,7 @@ class ClimbingSessionRepositoryTest {
         
         val sessionId = climbingSessionRepository.openActiveSession(userId, groupId, placeId)
         
-        val session = climbingSessionRepository.getSessionById(sessionId)
+        val session = climbingSessionRepository.getClimbingSessionById(sessionId)
         
         assert(session != null) { "Session should exist" }
         assert(session?.id == sessionId) { "Session ID mismatch" }
@@ -263,7 +252,7 @@ class ClimbingSessionRepositoryTest {
     @Test
     @Sql("/database/schema.sql")
     fun `test getSessionById returns null for non-existent session`() {
-        val session = climbingSessionRepository.getSessionById(999L)
+        val session = climbingSessionRepository.getClimbingSessionById(999L)
         assert(session == null) { "Session should not exist" }
     }
 }

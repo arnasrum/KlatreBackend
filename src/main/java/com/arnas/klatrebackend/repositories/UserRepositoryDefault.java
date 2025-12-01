@@ -1,7 +1,7 @@
 package com.arnas.klatrebackend.repositories;
 
-import com.arnas.klatrebackend.dataclasses.User;
-import com.arnas.klatrebackend.interfaces.repositories.UserRepositoryInterface;
+import com.arnas.klatrebackend.features.users.User;
+import com.arnas.klatrebackend.features.users.UserRepositoryInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;

@@ -1,8 +1,8 @@
 package com.arnas.klatrebackend.services;
 
-import com.arnas.klatrebackend.interfaces.repositories.UserRepositoryInterface;
-import com.arnas.klatrebackend.dataclasses.User;
-import com.arnas.klatrebackend.interfaces.services.UserServiceInterface;
+import com.arnas.klatrebackend.features.users.UserRepositoryInterface;
+import com.arnas.klatrebackend.features.users.User;
+import com.arnas.klatrebackend.features.users.UserServiceInterface;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 

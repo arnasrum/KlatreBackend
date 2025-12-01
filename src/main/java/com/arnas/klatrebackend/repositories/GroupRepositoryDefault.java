@@ -1,9 +1,9 @@
 package com.arnas.klatrebackend.repositories;
 
-import com.arnas.klatrebackend.interfaces.repositories.GroupRepositoryInterface;
-import com.arnas.klatrebackend.dataclasses.AddGroupRequest;
-import com.arnas.klatrebackend.dataclasses.Group;
-import com.arnas.klatrebackend.dataclasses.GroupUser;
+import com.arnas.klatrebackend.features.groups.GroupRepositoryInterface;
+import com.arnas.klatrebackend.features.groups.AddGroupRequest;
+import com.arnas.klatrebackend.features.groups.Group;
+import com.arnas.klatrebackend.features.users.GroupUser;
 import jakarta.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Primary;

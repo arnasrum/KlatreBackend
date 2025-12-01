@@ -1,7 +1,7 @@
 package com.arnas.klatrebackend.components;
 
-import com.arnas.klatrebackend.interfaces.services.JwtServiceInterface;
-import com.arnas.klatrebackend.interfaces.services.UserServiceInterface;
+import com.arnas.klatrebackend.features.auth.JwtServiceInterface;
+import com.arnas.klatrebackend.features.users.UserServiceInterface;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
