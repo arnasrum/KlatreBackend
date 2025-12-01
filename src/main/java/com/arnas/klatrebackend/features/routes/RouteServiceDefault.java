@@ -1,6 +1,6 @@
 package com.arnas.klatrebackend.features.routes;
 
-import com.arnas.klatrebackend.annotation.RequireGroupAccess;
+import com.arnas.klatrebackend.features.auth.RequireGroupAccess;
 import com.arnas.klatrebackend.features.auth.GroupAccessSource;
 import com.arnas.klatrebackend.features.auth.Role;
 import com.arnas.klatrebackend.features.images.ImageService;

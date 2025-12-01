@@ -1,6 +1,6 @@
 package com.arnas.klatrebackend.features.groups
 
-import com.arnas.klatrebackend.annotation.RequireGroupAccess
+import com.arnas.klatrebackend.features.auth.RequireGroupAccess
 import com.arnas.klatrebackend.features.gradesystems.GradingSystem
 import com.arnas.klatrebackend.features.users.GroupUser
 import com.arnas.klatrebackend.features.places.PlaceRequest

@@ -1,6 +1,6 @@
 package com.arnas.klatrebackend.features.climbingsessions;
 
-import com.arnas.klatrebackend.annotation.RequireGroupAccess;
+import com.arnas.klatrebackend.features.auth.RequireGroupAccess;
 import com.arnas.klatrebackend.features.auth.GroupAccessSource;
 import com.arnas.klatrebackend.features.gradesystems.Grade;
 import com.arnas.klatrebackend.features.gradesystems.GradeSystemRepositoryDefault;

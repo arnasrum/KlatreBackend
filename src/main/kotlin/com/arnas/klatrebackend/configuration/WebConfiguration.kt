@@ -1,6 +1,6 @@
 package com.arnas.klatrebackend.configuration
 
-import com.arnas.klatrebackend.components.UserResolver
+import com.arnas.klatrebackend.features.users.UserResolver
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer

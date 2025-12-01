@@ -1,6 +1,6 @@
 package com.arnas.klatrebackend.configuration
 
-import com.arnas.klatrebackend.components.JwtAuthenticationFilterDefault
+import com.arnas.klatrebackend.features.auth.jwt.JwtAuthenticationFilterDefault
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity

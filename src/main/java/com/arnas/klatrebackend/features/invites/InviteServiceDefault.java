@@ -1,6 +1,6 @@
 package com.arnas.klatrebackend.features.invites;
 
-import com.arnas.klatrebackend.annotation.RequireGroupAccess;
+import com.arnas.klatrebackend.features.auth.RequireGroupAccess;
 import com.arnas.klatrebackend.features.auth.Role;
 import com.arnas.klatrebackend.util.exceptions.UnauthorizedException;
 import com.arnas.klatrebackend.util.exceptions.InviteAlreadyProcessedException;

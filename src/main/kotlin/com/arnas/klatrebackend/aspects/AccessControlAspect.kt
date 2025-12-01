@@ -6,12 +6,13 @@ import org.aspectj.lang.annotation.Aspect
 import org.aspectj.lang.annotation.Before
 import org.aspectj.lang.reflect.MethodSignature
 import org.springframework.stereotype.Component
-import com.arnas.klatrebackend.annotation.RequireGroupAccess
+import com.arnas.klatrebackend.features.auth.RequireGroupAccess
 import com.arnas.klatrebackend.features.auth.GroupAccessSource
 import com.arnas.klatrebackend.features.auth.Role
 import com.arnas.klatrebackend.features.climbingsessions.ClimbingSessionRepository
 import com.arnas.klatrebackend.features.places.PlaceService
 import com.arnas.klatrebackend.features.routes.RouteRepository
+import com.arnas.klatrebackend.util.exceptions.UnauthorizedException
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.KProperty1
 
@@ -99,9 +100,9 @@ class AccessControlAspect(
         }
 
         val userRole = accessControlService.getUserGroupRole(userId, groupId)
-            ?: throw RuntimeException("User has no access to this group")
+            ?: throw UnauthorizedException("User has no access to this group")
         if (userRole > requireGroupAccess.minRole.id) {
-            throw RuntimeException("User does not have sufficient permissions. Required: ${requireGroupAccess.minRole}, User has role: ${Role.fromId(userRole)}")
+            throw UnauthorizedException("User does not have sufficient permissions. Required: ${requireGroupAccess.minRole}, User has role: ${Role.fromId(userRole)}")
         }
     }
 

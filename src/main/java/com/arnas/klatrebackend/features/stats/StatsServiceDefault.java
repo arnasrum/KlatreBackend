@@ -1,6 +1,6 @@
 package com.arnas.klatrebackend.features.stats;
 
-import com.arnas.klatrebackend.annotation.RequireGroupAccess;
+import com.arnas.klatrebackend.features.auth.RequireGroupAccess;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

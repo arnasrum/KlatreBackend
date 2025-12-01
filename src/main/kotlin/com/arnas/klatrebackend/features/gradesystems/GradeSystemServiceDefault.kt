@@ -1,6 +1,6 @@
 package com.arnas.klatrebackend.features.gradesystems
 
-import com.arnas.klatrebackend.annotation.RequireGroupAccess
+import com.arnas.klatrebackend.features.auth.RequireGroupAccess
 import com.arnas.klatrebackend.features.auth.Role
 import org.springframework.stereotype.Service
 

@@ -1,7 +1,4 @@
-package com.arnas.klatrebackend.annotation
-
-import com.arnas.klatrebackend.features.auth.Role
-import com.arnas.klatrebackend.features.auth.GroupAccessSource
+package com.arnas.klatrebackend.features.auth
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)

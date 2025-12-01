@@ -1,6 +1,5 @@
-package com.arnas.klatrebackend.components
+package com.arnas.klatrebackend.features.users
 
-import com.arnas.klatrebackend.features.users.User
 import com.arnas.klatrebackend.features.auth.jwt.JwtService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.core.MethodParameter
@@ -37,12 +36,12 @@ class UserResolver(
         } catch (e: Exception) {
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token")
         }
-        
+
         val userId = userInfo["sub"]?.toLongOrNull()
             ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid user ID")
         val email = userInfo["email"] ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing email")
         val name = userInfo["name"] ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing name")
-        
+
         return User(userId, email, name)
     }
 }
