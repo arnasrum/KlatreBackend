@@ -14,6 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -39,7 +40,7 @@ public class RouteServiceTest {
     private AccessControlService accessControlService;
 
     @InjectMocks
-    private RouteService routeService;
+    private RouteServiceDefault routeService;
 
     @Test
     void testAddRoute_Success() {
@@ -93,7 +94,7 @@ public class RouteServiceTest {
         Route route = new Route(routeId, "Route", 1, 1, null, false, "test");
 
         when(routeRepository.deleteRoute(eq(routeId))).thenReturn(1);
-        when(routeRepository.getRouteById(eq(routeId))).thenReturn(route);
+        when(routeRepository.getRouteById(eq(routeId))).thenReturn(Optional.of(route));
         
         routeService.deleteRoute(routeId);
 
@@ -196,7 +197,7 @@ public class RouteServiceTest {
         Route oldRoute = new Route(routeId, "oldName", 1, 1, null, false, null);
         Route newRoute = new Route(routeId, "New Name", 1, 1, "Desc", false, null);
 
-        when(routeRepository.getRouteById(eq(routeId))).thenReturn(oldRoute);
+        when(routeRepository.getRouteById(eq(routeId))).thenReturn(Optional.of(oldRoute));
         when(routeRepository.updateRoute(eq(newRoute))).thenReturn(1);
 
         routeService.updateRoute(routeUpdateDTO, userId);
@@ -228,7 +229,7 @@ public class RouteServiceTest {
         Route oldRoute = new Route(routeId, "oldName", 1, 1, null, false, null);
         Route newRoute = new Route(routeId, "New Name", 99, 99, "Desc", true, null);
 
-        when(routeRepository.getRouteById(eq(routeId))).thenReturn(oldRoute);
+        when(routeRepository.getRouteById(eq(routeId))).thenReturn(Optional.of(oldRoute));
         when(routeRepository.updateRoute(eq(newRoute))).thenReturn(1);
 
         routeService.updateRoute(routeUpdateDTO, userId);

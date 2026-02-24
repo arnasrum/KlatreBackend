@@ -1,7 +1,5 @@
 package com.arnas.klatrebackend.features.climbingsessions;
 
-import com.arnas.klatrebackend.dataclasses.*;
-
 import java.util.List;
 
 public interface ClimbingSessionService {

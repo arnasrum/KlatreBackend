@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -134,7 +135,7 @@ public class ClimbingSessionServiceTest {
         when(gradingSystemRepository.getGradesBySystemId(gradingSystemId))
             .thenReturn(grades);
         when(routeRepository.getRouteById(anyLong()))
-            .thenReturn(route);
+            .thenReturn(Optional.of(route));
         when(climbingSessionRepository.getClimbingSessionById(sessionId))
             .thenReturn(openSession);
         when(placeRepository.getPlaceById(anyLong()))
@@ -182,9 +183,9 @@ public class ClimbingSessionServiceTest {
         when(placeRepository.getPlaceById(placeId))
                 .thenReturn(place);
         when(routeRepository.getRouteById(routeId1))
-                .thenReturn(route1);
+                .thenReturn(Optional.of(route1));
         when(routeRepository.getRouteById(routeId2))
-                .thenReturn(route2);
+                .thenReturn(Optional.of(route2));
         when(climbingSessionRepository.getRouteAttemptsBySessionId(sessionId))
                 .thenReturn(attempts);
         when(gradingSystemRepository.getGradesBySystemId(gradingSystemId))

@@ -11,7 +11,7 @@ import java.util.Date
 
 @Service
 class JwtService(
-    @param:Value("\${JWT_SECRET}") private val jwtSecret: String,
+    @param:Value($$"${jwt.secret}") private val jwtSecret: String,
 ): JwtServiceInterface {
 
     override fun createJwtToken(subject: String, claims: Map<String, String>): String {

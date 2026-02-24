@@ -1,6 +1,5 @@
 package com.arnas.klatrebackend.features.climbingsessions;
 
-import com.arnas.klatrebackend.dataclasses.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
