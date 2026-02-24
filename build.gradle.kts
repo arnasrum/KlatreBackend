@@ -1,9 +1,10 @@
 plugins {
     java
-    kotlin("jvm") version "2.1.21"
-    kotlin("plugin.spring") version "1.9.25"
-    id("org.springframework.boot") version "3.4.0"
-    id("io.spring.dependency-management") version "1.1.6"
+    kotlin("jvm") version "2.2.20"
+    kotlin("plugin.spring") version "2.3.0"
+
+    id("org.springframework.boot") version "3.4.2"
+    id("io.spring.dependency-management") version "1.1.7"
 }
 
 group = "com.arnas"
@@ -63,6 +64,7 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
     implementation("org.json:json:20240303")
     implementation("org.springframework.boot:spring-boot-starter-aop")
+    //implementation("org.springframework.boot:spring-boot-starter-aspectj")
     implementation("org.apache.logging.log4j:log4j-bom:2.25.1")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.0")
