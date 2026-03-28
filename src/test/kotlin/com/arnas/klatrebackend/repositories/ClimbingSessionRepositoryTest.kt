@@ -2,6 +2,7 @@ package com.arnas.klatrebackend.repositories
 
 import com.arnas.klatrebackend.features.climbingsessions.RouteAttemptDTO
 import com.arnas.klatrebackend.features.climbingsessions.ClimbingSessionRepository
+import com.arnas.klatrebackend.features.climbingsessions.ClimbingSessionRepositoryDefault
 import com.arnas.klatrebackend.features.climbingsessions.RouteAttempt
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,7 +18,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @DataJdbcTest
 @Testcontainers
 @ActiveProfiles("test")
-@Import(ClimbingSessionRepository::class)
+@Import(ClimbingSessionRepositoryDefault::class)
 class ClimbingSessionRepositoryTest {
 
     @Autowired
