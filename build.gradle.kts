@@ -1,9 +1,9 @@
 plugins {
     java
-    kotlin("jvm") version "2.2.20"
-    kotlin("plugin.spring") version "2.3.0"
+    kotlin("jvm") version "2.3.20"
+    kotlin("plugin.spring") version "2.3.20"
 
-    id("org.springframework.boot") version "3.4.2"
+    id("org.springframework.boot") version "3.5.13"
     id("io.spring.dependency-management") version "1.1.7"
 }
 
@@ -12,7 +12,7 @@ version = "0.0.1-SNAPSHOT"
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -20,7 +20,7 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict")
     }
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 sourceSets {
@@ -28,16 +28,10 @@ sourceSets {
         kotlin {
             srcDirs("src/main/kotlin")
         }
-        java {
-            srcDirs("src/main/java")
-        }
     }
     test {
         kotlin {
             srcDirs("src/test/kotlin")
-        }
-        java {
-            srcDirs("src/test/java")
         }
     }
 }
@@ -58,6 +52,7 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("com.ninja-squad:springmockk:4.0.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testImplementation(libs.junit)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("io.jsonwebtoken:jjwt-api:0.13.0")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
