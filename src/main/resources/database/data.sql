@@ -169,16 +169,4 @@ SELECT MAX(id) FROM grading_systems;
 SELECT setval('grading_systems_id_seq', (SELECT MAX(id) FROM grading_systems));
 
 
-CREATE TABLE IF NOT EXISTS group_invites(
-    id BIGSERIAL PRIMARY KEY,
-    group_id BIGSERIAL REFERENCES klatre_groups(id) ON DELETE CASCADE,
-    user_id BIGSERIAL REFERENCES users(id) ON DELETE CASCADE,
-    sender_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
-    status VARCHAR(50) NOT NULL DEFAULT 'pending', -- 'pending', 'accepted', 'declined', 'revoked', 'expired'
-    invited_at BIGINT DEFAULT EXTRACT(EPOCH FROM NOW()),
-    accepted_at BIGINT,
-    declined_at BIGINT,
-    revoked_at BIGINT
-    );
-
 INSERT INTO group_invites(group_id, user_id, sender_id) VALUES (3, 1, 2);

@@ -69,7 +69,7 @@ class RouteRepositoryDefault(
             .addValue("imageId", imageId)
             .addValue("userId", userId)
         val keyHolder = GeneratedKeyHolder()
-        jdbcTemplate.update(sql, parameters, keyHolder)
+        jdbcTemplate.update(sql, parameters, keyHolder, arrayOf("id"))
         return keyHolder.key!!.toLong()
     }
 

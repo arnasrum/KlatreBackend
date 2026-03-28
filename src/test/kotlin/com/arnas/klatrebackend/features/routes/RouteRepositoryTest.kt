@@ -72,9 +72,11 @@ class RouteRepositoryTest {
     @Sql("/database/schema.sql")
     @Sql("/database/data.sql")
     fun testDeleteRouteBase() {
-        val routeOpt = routeRepository.getRouteById(1)
+        // Insert a route with no route_attempts referencing it
+        val routeDTO = RouteDTO("deletable", 1, 1, null, true, null)
+        val routeId = routeRepository.addRoute(routeDTO, null, 1)
+        val routeOpt = routeRepository.getRouteById(routeId)
         assert(routeOpt.isPresent) { "Expected route to be present" }
-        val routeId = routeOpt.get().id
         routeRepository.deleteRoute(routeId)
         val fetchedRoute = routeRepository.getRouteById(routeId)
         Assertions.assertFalse(fetchedRoute.isPresent, "Route should be null")

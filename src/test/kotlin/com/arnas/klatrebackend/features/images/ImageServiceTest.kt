@@ -177,14 +177,14 @@ class ImageServiceTest {
         val newUploadDir = tempDir.resolve("new-upload-dir").toString()
         ReflectionTestUtils.setField(imageService, "uploadDir", newUploadDir)
 
-        assertDoesNotThrow { }
+        assertDoesNotThrow { imageService.init() }
 
         assertTrue(File(newUploadDir).exists())
     }
 
     @Test
     fun testInit_DirectoryAlreadyExists() {
-        assertDoesNotThrow { }
+        assertDoesNotThrow { imageService.init() }
 
         assertTrue(File(tempDir.toString()).exists())
     }

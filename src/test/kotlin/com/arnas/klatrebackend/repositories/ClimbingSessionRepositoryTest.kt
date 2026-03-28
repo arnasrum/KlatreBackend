@@ -34,7 +34,12 @@ class ClimbingSessionRepositoryTest {
     }
 
     @Test
+    @Sql("/database/schema.sql")
     @Sql(statements = [
+        "INSERT INTO users(id, email, name) VALUES (1, 'test@test.com', 'Test User');",
+        "INSERT INTO klatre_groups(id, owner, name, personal) VALUES (1, 1, 'Test Group', false);",
+        "INSERT INTO grading_systems(id, name, climb_type, is_global) VALUES (1, 'V-Scale', 'boulder', true);",
+        "INSERT INTO places(id, name, group_id) VALUES (1, 'Test Place', 1);",
         "INSERT INTO climbing_sessions(group_id, user_id, place_id, active, created_at) VALUES (1, 1, 1, false, 1609459200000);",
         "INSERT INTO climbing_sessions(group_id, user_id, place_id, active, created_at) VALUES (1, 1, 1, false, 1609545600000);"
     ])

@@ -34,7 +34,8 @@ class ClimbingSessionRepositoryJavaTest(
     @Sql("/database/schema.sql")
     @Sql("/database/data.sql")
     fun testGetClimbingSessionByIdEmptyTable() {
-        val fetchedResult = climbingSessionRepository.getClimbingSessionById(1L)
+        // data.sql inserts sessions with auto-generated IDs, so use an ID that doesn't exist
+        val fetchedResult = climbingSessionRepository.getClimbingSessionById(999L)
         Assertions.assertNull(fetchedResult)
     }
 
@@ -42,13 +43,13 @@ class ClimbingSessionRepositoryJavaTest(
     @Sql("/database/schema.sql")
     @Sql("/database/data.sql")
     @Sql(statements = [
-        "INSERT INTO climbing_sessions(id, active, user_id, group_id, place_id, created_at) VALUES (1, true, 1, 1, 1, 987654321);",
-        "INSERT INTO route_attempts(route_id, attempts, completed, session, last_updated) VALUES (1, 10, true, 1 , 123456789);"
+        "INSERT INTO climbing_sessions(id, active, user_id, group_id, place_id, created_at) VALUES (100, true, 1, 1, 1, 987654321);",
+        "INSERT INTO route_attempts(id, route_id, attempts, completed, session, last_updated) VALUES (100, 1, 10, true, 100 , 123456789);"
     ])
     fun testGetClimbingSessionByIdBasic() {
-        val expectedResult = ClimbingSession(1, 1, 1, 1, 987654321, true,
-            listOf(RouteAttempt(1, 10, true, 1, 123456789, 1)))
-        val fetchedResult = climbingSessionRepository.getClimbingSessionById(1L)
+        val expectedResult = ClimbingSession(100, 1, 1, 1, 987654321, true,
+            listOf(RouteAttempt(100, 10, true, 1, 123456789, 100)))
+        val fetchedResult = climbingSessionRepository.getClimbingSessionById(100L)
         Assertions.assertEquals(expectedResult, fetchedResult)
     }
 
@@ -56,8 +57,8 @@ class ClimbingSessionRepositoryJavaTest(
     @Sql("/database/schema.sql")
     @Sql("/database/data.sql")
     @Sql(statements = [
-        "INSERT INTO climbing_sessions(id, active, user_id, group_id, place_id, created_at) VALUES (1, true, 1, 1, 1, 987654321);",
-        "INSERT INTO route_attempts(route_id, attempts, completed, session, last_updated) VALUES (1, 10, true, 1 , 123456789);"
+        "INSERT INTO climbing_sessions(id, active, user_id, group_id, place_id, created_at) VALUES (100, true, 1, 1, 1, 987654321);",
+        "INSERT INTO route_attempts(id, route_id, attempts, completed, session, last_updated) VALUES (100, 1, 10, true, 100 , 123456789);"
     ])
     fun testGetClimbingSessionByIdBasicWrongUser() {
         val fetchedResult = climbingSessionRepository.getClimbingSessionById(999L)
@@ -68,11 +69,11 @@ class ClimbingSessionRepositoryJavaTest(
     @Sql("/database/schema.sql")
     @Sql("/database/data.sql")
     @Sql(statements = [
-        "INSERT INTO climbing_sessions(id, active, user_id, group_id, place_id, created_at) VALUES (1, true, 1, 1, 1, 987654321);"
+        "INSERT INTO climbing_sessions(id, active, user_id, group_id, place_id, created_at) VALUES (100, true, 1, 1, 1, 987654321);"
     ])
     fun testGetClimbingSessionByIdNoRouteAttempts() {
-        val expectedResult = ClimbingSession(1, 1, 1, 1, 987654321, true, emptyList())
-        val fetchedResult = climbingSessionRepository.getClimbingSessionById(1L)
+        val expectedResult = ClimbingSession(100, 1, 1, 1, 987654321, true, emptyList())
+        val fetchedResult = climbingSessionRepository.getClimbingSessionById(100L)
         Assertions.assertEquals(expectedResult, fetchedResult)
     }
 
@@ -80,9 +81,8 @@ class ClimbingSessionRepositoryJavaTest(
     @Sql("/database/schema.sql")
     @Sql("/database/data.sql")
     @Sql(statements = [
-        "INSERT INTO climbing_sessions(id, active, user_id, group_id, place_id, created_at) VALUES (1, true, 1, 1, 1, 987654321);"
+        "INSERT INTO climbing_sessions(id, active, user_id, group_id, place_id, created_at) VALUES (100, true, 1, 1, 1, 987654321);"
     ])
     fun testGetActiveSessionBasic() {
     }
 }
-

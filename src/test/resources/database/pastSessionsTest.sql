@@ -55,19 +55,19 @@ VALUES
 
 -- Past Session 1: Should be returned by getPastSessions(201)
 INSERT INTO climbing_sessions (id, active, user_id, group_id, place_id, created_at) VALUES
-(1, FALSE, 101, 201, 301, NOW() - INTERVAL '2 days');
+(1, FALSE, 101, 201, 301, FLOOR(EXTRACT(EPOCH FROM NOW() - INTERVAL '2 days'))::BIGINT);
 
 -- Past Session 2: Should be returned by getPastSessions(201)
 INSERT INTO climbing_sessions (id, active, user_id, group_id, place_id, created_at) VALUES
-(2, FALSE, 101, 201, 301, NOW() - INTERVAL '1 day');
+(2, FALSE, 101, 201, 301, FLOOR(EXTRACT(EPOCH FROM NOW() - INTERVAL '1 day'))::BIGINT);
 
 -- Active Session: Should NOT be returned by getPastSessions(201) because active = TRUE
 INSERT INTO climbing_sessions (id, active, user_id, group_id, place_id, created_at) VALUES
-(3, TRUE, 101, 201, 301, NOW());
+(3, TRUE, 101, 201, 301, FLOOR(EXTRACT(EPOCH FROM NOW()))::BIGINT);
 
 -- Session for a different group: Should NOT be returned by getPastSessions(201)
 INSERT INTO climbing_sessions (id, active, user_id, group_id, place_id, created_at) VALUES
-(4,FALSE, 999, 999, 301, NOW() - INTERVAL '3 days');
+(4,FALSE, 999, 999, 301, FLOOR(EXTRACT(EPOCH FROM NOW() - INTERVAL '3 days'))::BIGINT);
 
 -- Attempts for Past Session 1
 INSERT INTO route_attempts (id, route_id, attempts, completed, session, last_updated) VALUES

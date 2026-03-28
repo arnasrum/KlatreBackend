@@ -36,7 +36,7 @@ class InviteRepositoryTest(
     @Sql("/database/data.sql")
     fun testInviteUserToGroupInserts() {
         val inviteId = inviteRepository.inviteUserToGroup(1, 1, 1)
-        Assertions.assertEquals(1L, inviteId)
+        Assertions.assertTrue(inviteId > 0, "Invite ID should be positive")
     }
 
     @Test

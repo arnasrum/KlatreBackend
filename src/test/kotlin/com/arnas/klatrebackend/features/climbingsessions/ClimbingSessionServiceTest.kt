@@ -3,7 +3,7 @@ package com.arnas.klatrebackend.features.climbingsessions
 import com.arnas.klatrebackend.features.gradesystems.Grade
 import com.arnas.klatrebackend.features.places.Place
 import com.arnas.klatrebackend.features.routes.Route
-import com.arnas.klatrebackend.features.gradesystems.GradeSystemRepository
+import com.arnas.klatrebackend.features.gradesystems.GradeSystemRepositoryDefault
 import com.arnas.klatrebackend.features.places.PlaceRepository
 import com.arnas.klatrebackend.features.routes.RouteRepository
 import org.junit.jupiter.api.Test
@@ -27,7 +27,7 @@ class ClimbingSessionServiceTest {
     private lateinit var placeRepository: PlaceRepository
 
     @Mock
-    private lateinit var gradingSystemRepository: GradeSystemRepository
+    private lateinit var gradingSystemRepository: GradeSystemRepositoryDefault
 
     @Mock
     private lateinit var routeRepository: RouteRepository
@@ -203,13 +203,9 @@ class ClimbingSessionServiceTest {
     @Test
     fun testGetRouteAttempts_EmptyList() {
         val sessionId = 1L
-        val placeId = 201L
-        val groupId = 101L
 
-        val openSession = ClimbingSession(sessionId, 1L, placeId, groupId, 123456789, true, emptyList())
-
-        `when`(climbingSessionRepository.getClimbingSessionById(sessionId))
-            .thenReturn(openSession)
+        `when`(climbingSessionRepository.getRouteAttemptsBySessionId(sessionId))
+            .thenReturn(emptyList())
 
         val result = climbingSessionService.getRouteAttempts(sessionId)
 
